@@ -1,100 +1,74 @@
+/*
 #pragma cling add_include_path("/opt/homebrew/opt/boost/include")
 #pragma cling add_library_path("/opt/homebrew/opt/boost/lib")
 #pragma cling load("libboost_filesystem.dylib")
 #pragma cling load("libboost_system.dylib")
+*/
 
 #include <iostream>
 #include <fstream>
 #include <cstring>
 #include <algorithm>
 #include <sys/time.h>
+//#include <boost/filesystem.hpp>
+//#include <boost/system/error_code.hpp>
 
-#include "../include/PoCA.h"
+//#include "../include/PoCA.h"
+
 
 using namespace std;
+/*
 extern double Z1;
 extern double Z2;
 extern double Z3;
 extern double Z4;
+*/
 
-void analysis(){
+void analysis(const char *infile, const char *outfile){
 TRandom *rand = new TRandom();
-double sigma=100*0.001;
+double sigma=57*0.01;
 
-//TFile *f = new TFile("../../build/root_file/all_muCRY_air.root","");
-TFile *f = new TFile("../../build/root_file/muCRY_i.root","");
+TFile *f = new TFile(infile,"");
 TTree *t = (TTree*)f->Get("T1");
 
-std::vector<double> *vReadoutPosX=0; //Edep X in readout bar
-std::vector<double> *vReadoutPosY=0; //Edep Y in readout bar
-std::vector<double> *vReadoutPosZ=0; //Edep Z in readout bar
-std::vector<double> *vReadoutEdep=0; //Edep Energy in readout bar
-std::vector<double> *vReadoutE=0; //Total Energy in readout bar
-std::vector<int> *vReadoutTrkid=0; //Trk id in readout bar
-std::vector<int> *vReadoutTrkparentid=0; //Trk parent id in readout bar
-std::vector<double> *vPx=0;
-std::vector<double> *vPy=0;
-std::vector<double> *vPz=0;
+double RpcTrkPx[16], RpcTrkPy[16], RpcTrkPz[16], RpcTrkE[16];
+double RpcTrkEdep[16];
+double RpcTrkX[16], RpcTrkY[16], RpcTrkZ[16];
+double validRpcTrkX[8], validRpcTrkY[8], validRpcTrkZ[8];
+double RPCX[4],RPCY[4], RPCZ[4], RPCZ1[4], RPCZ2[4];
+bool Status;
 
-//std::vector<double> *vPbPosX=0;
-//std::vector<double> *vPbPosY=0;
-//std::vector<double> *vPbPosZ=0;
-//std::vector<int> *vPbTrkid=0;
-
-t->SetBranchAddress("vReadoutPosX",&vReadoutPosX);
-t->SetBranchAddress("vReadoutPosY",&vReadoutPosY);
-t->SetBranchAddress("vReadoutPosZ",&vReadoutPosZ);
-t->SetBranchAddress("vReadoutEdep",&vReadoutEdep);
-t->SetBranchAddress("vReadoutE",&vReadoutE);
-t->SetBranchAddress("vReadoutTrkid",&vReadoutTrkid);
-t->SetBranchAddress("vReadoutTrkparentid",&vReadoutTrkparentid);
-t->SetBranchAddress("vPx",&vPx);
-t->SetBranchAddress("vPy",&vPy);
-t->SetBranchAddress("vPz",&vPz);
-//t->SetBranchAddress("vPbPosX",&vPbPosX);
-//t->SetBranchAddress("vPbPosY",&vPbPosY);
-//t->SetBranchAddress("vPbPosZ",&vPbPosZ);
-//t->SetBranchAddress("vPbTrkid",&vPbTrkid);
+t->SetBranchAddress("RpcTrkPx",&RpcTrkPx);
+t->SetBranchAddress("RpcTrkPy",&RpcTrkPy);
+t->SetBranchAddress("RpcTrkPz",&RpcTrkPz);
+t->SetBranchAddress("RpcTrkE",&RpcTrkE);
+t->SetBranchAddress("RpcTrkEdep",&RpcTrkEdep);
+t->SetBranchAddress("RpcTrkX",&RpcTrkX);
+t->SetBranchAddress("RpcTrkY",&RpcTrkY);
+t->SetBranchAddress("RpcTrkZ",&RpcTrkZ);
+t->SetBranchAddress("RpcStatus",&Status);
 //t->Print();
 
 //new file and new tree
-TFile * fn = new TFile("../root/muCRY_air.root","recreate");
+TFile * fn = new TFile(outfile,"recreate");
 TTree * tn = new TTree("T1","tree");
 tn = t->CloneTree(0);
 
-double muonE[4];
-double rec_x[4], rec_y[4], rec_z[4];
-double rec_x_smear[4], rec_y_smear[4];
-double angle, angle_smear;
-double costheta, costheta_smear;
+double m_RpcTrkX_smear[4], m_RpcTrkY_smear[4];
+double m_costheta, m_costheta_smear;
 double poca_x, poca_y, poca_z, dca;
 int poca_status;
-double poca_x_smear, poca_y_smear, poca_z_smear, dca_smear;
-int poca_status_smear;
-double angle_gem12;
-tn->Branch("muonE", muonE, "muonE[4]/D");
-tn->Branch("rec_x", rec_x, "rec_x[4]/D");
-tn->Branch("rec_y", rec_y, "rec_y[4]/D");
-tn->Branch("rec_z", rec_z, "rec_z[4]/D");
-tn->Branch("rec_x_smear", rec_x_smear, "rec_x_smear[4]/D");
-tn->Branch("rec_y_smear", rec_y_smear, "rec_y_smear[4]/D");
-tn->Branch("angle", &angle, "angle/D");
-tn->Branch("angle_smear", &angle_smear, "angle_smear/D");
-tn->Branch("costheta", &costheta, "costheta/D");
-tn->Branch("costheta_smear", &costheta_smear, "costheta_smear/D");
+tn->Branch("RpcTrkX_smear", m_RpcTrkX_smear, "RpcTrkX_smear[4]/D");
+tn->Branch("RpcTrkY_smear", m_RpcTrkY_smear, "RpcTrkY_smear[4]/D");
+//tn->Branch("GemTrkZ_smear", m_GemTrkZ_smear, "GemTrkZ_smear[16]/D");
+tn->Branch("costheta", &m_costheta, "costheta/D");
+tn->Branch("costheta_smear", &m_costheta_smear, "costheta_smear/D");
 tn->Branch("poca_x", &poca_x, "poca_x/D");
 tn->Branch("poca_y", &poca_y, "poca_y/D");
 tn->Branch("poca_z", &poca_z, "poca_z/D");
 tn->Branch("dca", &dca, "dca/D");
 tn->Branch("poca_status", &poca_status, "poca_status/I");
-tn->Branch("poca_x_smear", &poca_x_smear, "poca_x_smear/D");
-tn->Branch("poca_y_smear", &poca_y_smear, "poca_y_smear/D");
-tn->Branch("poca_z_smear", &poca_z_smear, "poca_z_smear/D");
-tn->Branch("dca_smear", &dca_smear, "dca_smear/D");
-tn->Branch("poca_status_smear", &poca_status_smear, "poca_status_smear/I");
-tn->Branch("angle_gem12", &angle_gem12, "angle_gem12/D");
 
-double gem_z_sim[4] = {Z1,Z2,Z3,Z4};
 
 struct timeval start;
 struct timeval end;
@@ -102,167 +76,229 @@ unsigned long timer;
 
 gettimeofday(&start, NULL); // 计时开始
 
+double radius, tanphi, phi, deltaphi, newphi;
+int zone_lr; //0:0; 1:left; 2:right
+
 int nevent = t->GetEntries();
+int eventcount = 0; 
+int eventvalid = 0;
+int cos8 = 0;
 for(int ievent=0; ievent<nevent; ievent++){
         if (ievent % (int)(nevent / 10) == 0) cout << "Processing progress: " << ievent / (int)(nevent / 10) << "0%" << endl;
         t->GetEntry(ievent);
 
-        // initialization
-        for(int igem=0; igem<4; igem++){
-                rec_x[igem]=0;
-                rec_y[igem]=0;
-                rec_z[igem]=0;
-        }
-        double Etot[4]={0,0,0,0};
-        bool gemstatus[4]={false};
-
-        TVector3 *pmom[4];
-        double nhit = vReadoutTrkid->size();
-        if(nhit < 4) continue;
-        //cout<<"nhit = "<<nhit<<endl;
-        for(int itrk=0; itrk<nhit; itrk++){
-                // muon track id
-                // trk id = 1 <==> parent id = 0
-                //if((*vReadoutTrkid)[itrk]==1) continue;
-                if((*vReadoutTrkid)[itrk]!=1) continue;
-                // cout<<"vReadoutTrkid = "<<(*vReadoutTrkid)[itrk]<<endl;
-                //cout<<"trkid = "<<(*vReadoutTrkid)[itrk]<<" , parentid = "<<(*vReadoutTrkparentid)[itrk]<<endl;
-                //if((*vReadoutTrkparentid)[itrk]==0) if((*vReadoutTrkid)[itrk]!=1) cout<<"what!!!"<<endl;
-
-                // gem layer number
-                int igem=-1;
-                if( fabs((*vReadoutPosZ)[itrk]-gem_z_sim[0])<1 ) igem=0;
-                if( fabs((*vReadoutPosZ)[itrk]-gem_z_sim[1])<1 ) igem=1;
-                if( fabs((*vReadoutPosZ)[itrk]-gem_z_sim[2])<1 ) igem=2;
-                if( fabs((*vReadoutPosZ)[itrk]-gem_z_sim[3])<1 ) igem=3;
-                if(igem==-1) continue;
-                // cout<<"igem = "<<igem<<endl;
-
-                // energy weight position
-                muonE[igem]=(*vReadoutE)[itrk];
-                Etot[igem]+=(*vReadoutEdep)[itrk];
-                rec_x[igem]+=(*vReadoutEdep)[itrk]*(*vReadoutPosX)[itrk];
-                rec_y[igem]+=(*vReadoutEdep)[itrk]*(*vReadoutPosY)[itrk];
-                //rec_z[igem]+=(*vReadoutEdep)[itrk]*(*vReadoutPosZ)[itrk];
-                rec_z[igem]+=(*vReadoutEdep)[itrk]*gem_z_sim[igem];
-                pmom[igem] = new TVector3((*vPx)[itrk],(*vPy)[itrk],(*vPz)[itrk]);
-                gemstatus[igem]=true;
-        }
-
-        bool hasFalse=false;
-        for (bool element : gemstatus) {
-            if (!element) {
-                hasFalse = true;
-                break;
+        /*
+        bool validEvent = true;
+        for(int j=0; j<16; j++){
+            if(GemTrkX[j] == 0){ // Assuming GemTrkX is not supposed to be 0 if it has valid data
+                validEvent = false;
+                break; // Stop checking GemTrkX for this event
             }
         }
-        if (hasFalse) {
-            //cout<<"Don't have signals in all GEM detector"<<endl;
-            continue;
+
+        if(!validEvent){
+            continue; // Skip the rest of the event processing
         }
+        */
+        
+        bool lastGroupValid = (RpcTrkX[15] != 0) && (RpcTrkY[15] != 0) && (RpcTrkZ[15] != 0); // Check if the last group of data points is not all zeros
+        if(lastGroupValid)
+        {
+            eventcount++; // Increment eventcount if the last group is valid
+            //std::cout << "RpcTrkX[15]: " << RpcTrkX[15] << std::endl;
+            //std::cout << "RpcTrkY[15]: " << RpcTrkY[15] << std::endl;
+            //std::cout << "RpcTrkZ[15]: " << RpcTrkZ[15] << std::endl;
+        }
+
+        
+        if(!Status)
+            {//std::cout << "Status is false" << std::endl;
+             continue;
+        }
+        
+        eventvalid++ ;
+
+        //std::cout << ievent << " Status is true" << std::endl;
+
+        for (int i = 0; i < 8; i++) {
+        validRpcTrkX[i] = (RpcTrkX[2*i] + RpcTrkX[2*i+1]) / 2.0 ;
+        validRpcTrkY[i] = (RpcTrkY[2*i] + RpcTrkY[2*i+1]) / 2.0;
+        validRpcTrkZ[i] = (RpcTrkZ[2*i] + RpcTrkZ[2*i+1]) / 2.0;
+        }
+
+        for (int i = 0; i < 4; ++i) {
+        RPCX[i] = validRpcTrkX[2*i + 1];
+        RPCZ1[i] = validRpcTrkZ[2*i + 1];
+        RPCY[i] = validRpcTrkY[2*i];
+        RPCZ2[i] = validRpcTrkZ[2*i];
+        }
+
+        
+        for (int i = 0; i < 4; ++i) {
+        cout << "RPCX[" << i << "] = " << RPCX[i] << endl;
+        cout << "RPCY[" << i << "] = " << RPCY[i] << endl;
+        }
+        
+
+        for (int i = 0; i < 4; i++) {
+        RPCZ[i] = (RPCZ1[i] + RPCZ2[i]) / 2.0 ;
+        }
+         
+        /*
+        for (int i = 0; i < 4; ++i) {
+        cout << "RPCZ[" << i << "] = " << RPCZ[i] << endl;
+        }
+        */
 
         for(int igem=0; igem<4; igem++){
-        rec_x[igem] = rec_x[igem]/Etot[igem];
-        rec_y[igem] = rec_y[igem]/Etot[igem];
-        rec_z[igem] = rec_z[igem]/Etot[igem];
-        rec_x_smear[igem] = rec_x[igem]+rand->Gaus(0,sigma);
-        rec_y_smear[igem] = rec_y[igem]+rand->Gaus(0,sigma);
+        //m_GemTrkZ_smear[igem] = RPCZ[igem]+rand->Gaus(0,sigma);
+        radius = sqrt(RPCX[igem]*RPCX[igem] + RPCY[igem]*RPCY[igem]);
+        //cout << "radius: " << radius << endl;
+        tanphi = RPCY[igem]/RPCX[igem];
+        //cout << "tanphi: " << tanphi << endl;
+        
+        if(RPCX[igem]>0) zone_lr=2;
+        else if(RPCX[igem]<0) zone_lr=1;
+        else zone_lr=0;
+        /*
+        if(RPCX[igem]>0 && RPCY[igem]>0) zone_lr=1;
+        else if(RPCX[igem]<0 && RPCY[igem]>0) zone_lr=2;
+        else if(RPCX[igem]<0 && RPCY[igem]<0) zone_lr=3;
+        else if(RPCX[igem]>0 && RPCY[igem]<0) zone_lr=4;
+        cout << "zone_lr: " << zone_lr << endl;
+        */
+        if(zone_lr==2) phi = atan(tanphi);
+        else if(zone_lr==1) phi = atan(tanphi)+TMath::Pi();
+        else if(zone_lr==0) cout<<"phi=90 or -90, wrong!"<<endl;
+        
+        /*
+        if(zone_lr==1) phi = atan(tanphi);
+        else if(zone_lr==2) phi = atan(tanphi)+TMath::Pi();
+        else if(zone_lr==3) phi = atan(tanphi)+TMath::Pi();
+        else if(zone_lr==4) phi = atan(tanphi);
+        */
+        //cout << "phi: " << phi << endl;
+        deltaphi = rand->Gaus(0,sigma) / radius;
+        //cout << "deltaphi: " << deltaphi << endl;
+        newphi = phi+deltaphi;
+        //cout << "newphi: " << newphi << endl;
+        m_RpcTrkX_smear[igem] = radius*cos(newphi);
+        //cout << "m_GemTrkX_smear[" << igem << "]: " << m_GemTrkX_smear[igem] << endl;
+        m_RpcTrkY_smear[igem] = radius*sin(newphi);
+        //cout << "m_GemTrkY_smear[" << igem << "]: " << m_GemTrkY_smear[igem] << endl;
         }
-
-        for(int igem=0; igem<4; igem++){
-        //cout<<"gem layer "<<igem<<": x="<<rec_x[igem]<<" , y="<<rec_y[igem]<<" , z="<<rec_z[igem]<<endl;
-        //cout<<"gem layer "<<igem<<": muon E ="<<muonE[igem]<<endl;
-        }
-
-        // Edep in Pb box
-        //cout<<"vPbTrkid->size() = "<<vPbTrkid->size()<<endl;
-//        for(int itrk=0; itrk<vPbTrkid->size(); itrk++){
-//        if((*vPbTrkid)[itrk]!=1) continue;
-        //cout<<"Pb pos x="<<(*vPbPosX)[itrk]<<" , y="<<(*vPbPosY)[itrk]<<" , z="<<(*vPbPosZ)[itrk]<<endl;
-//        }
-
+        
+        /*
         // angle <incoming vector, outcoming vector>
-        TVector3 *Pos1 = new TVector3(rec_x[0],rec_y[0],rec_z[0]);
-        TVector3 *Pos2 = new TVector3(rec_x[1],rec_y[1],rec_z[1]);
-        TVector3 *Pos3 = new TVector3(rec_x[2],rec_y[2],rec_z[2]);
-        TVector3 *Pos4 = new TVector3(rec_x[3],rec_y[3],rec_z[3]);
-        TVector3 Veci = *Pos2 - *Pos1;
-        TVector3 Veco = *Pos4 - *Pos3;
-        angle = Veci.Angle(Veco) * 180 / M_PI;
-        costheta = cos(Veci.Angle(Veco));
-        //cout<<"angle = "<<angle/3.1415926*180.<<endl;
-        //angle = cal_ang(rec_x[0],rec_y[0],rec_z[0],rec_x[1],rec_y[1],rec_z[1],rec_x[2],rec_y[2],rec_z[2],rec_x[3],rec_y[3],rec_z[3]); // old function
+        TVector3 *Pos1 = new TVector3(GemTrkX[0],GemTrkY[0],GemTrkZ[0]);
+        TVector3 *Pos2 = new TVector3(GemTrkX[1],GemTrkY[1],GemTrkZ[1]);
+        TVector3 Vec_muon = *Pos2 - *Pos1;
+        TVector3 Vec_beam(0,0,1);
+        m_costheta = cos(Vec_beam.Angle(Vec_muon));
+        */
 
-        TVector3 *Pos1_smear = new TVector3(rec_x_smear[0],rec_y_smear[0],rec_z[0]);
-        TVector3 *Pos2_smear = new TVector3(rec_x_smear[1],rec_y_smear[1],rec_z[1]);
-        TVector3 *Pos3_smear = new TVector3(rec_x_smear[2],rec_y_smear[2],rec_z[2]);
-        TVector3 *Pos4_smear = new TVector3(rec_x_smear[3],rec_y_smear[3],rec_z[3]);
+        TVector3 *Pos1 = new TVector3(RPCX[0],RPCY[0],RPCZ[0]);
+        TVector3 *Pos2 = new TVector3(RPCX[1],RPCY[1],RPCZ[1]);
+        TVector3 *Pos3 = new TVector3(RPCX[2],RPCY[2],RPCZ[2]);
+        TVector3 *Pos4 = new TVector3(RPCX[3],RPCY[3],RPCZ[3]);
+        TVector3 Veci = *Pos2 - *Pos1;
+        Veci.Print();
+        TVector3 Veco = *Pos4 - *Pos3;
+        Veco.Print();
+        double angle = Veci.Angle(Veco) * 180 / M_PI;
+        m_costheta = cos(Veci.Angle(Veco));
+        
+        /*
+        if (m_costheta < 0) {
+        
+        for (int i = 0; i < 4; ++i) {
+        cout << "RPCX[" << i << "] = " << RPCX[i] << endl;
+        cout << "RPCY[" << i << "] = " << RPCY[i] << endl;
+        }
+        for (int i = 0; i < 4; ++i) {
+        cout << "RPCZ[" << i << "] = " << RPCZ[i] << endl;
+        }
+        cout << "radius: " << radius << endl;
+        cout << "tanphi: " << tanphi << endl;
+        cout << "zone_lr: " << zone_lr << endl;
+        cout << "phi: " << phi << endl;
+        cout << "deltaphi: " << deltaphi << endl;
+        cout << "newphi: " << newphi << endl;
+        cout << "m_GemTrkX_smear[" << igem << "]: " << m_GemTrkX_smear[igem] << endl;
+        cout << "m_GemTrkY_smear[" << igem << "]: " << m_GemTrkY_smear[igem] << endl;
+        Veci.Print();
+        Veco.Print();        
+        std::cout << "Angle: " << angle << " degrees" << std::endl;
+        std::cout << "Cosine of the angle: " << m_costheta << std::endl;
+        } 
+        */
+        
+        /*
+        TVector3 *Pos1_smear = new TVector3(m_GemTrkX_smear[0],m_GemTrkY_smear[0],m_GemTrkZ_smear[0]);
+        TVector3 *Pos2_smear = new TVector3(m_GemTrkX_smear[1],m_GemTrkY_smear[1],m_GemTrkZ_smear[1]);
+        TVector3 Vec_muon_smear = *Pos2_smear - *Pos1_smear;
+        TVector3 Vec_beam_smear(0,0,1);
+        m_costheta_smear = cos(Vec_beam_smear.Angle(Vec_muon_smear));
+        */
+
+        TVector3 *Pos1_smear = new TVector3(m_RpcTrkX_smear[0],m_RpcTrkY_smear[0],RPCZ[0]);
+        TVector3 *Pos2_smear = new TVector3(m_RpcTrkX_smear[1],m_RpcTrkY_smear[1],RPCZ[1]);
+        TVector3 *Pos3_smear = new TVector3(m_RpcTrkX_smear[2],m_RpcTrkY_smear[2],RPCZ[2]);
+        TVector3 *Pos4_smear = new TVector3(m_RpcTrkX_smear[3],m_RpcTrkY_smear[3],RPCZ[3]);
         TVector3 Veci_smear = *Pos2_smear - *Pos1_smear;
         TVector3 Veco_smear = *Pos4_smear - *Pos3_smear;
-        angle_smear = Veci_smear.Angle(Veco_smear) * 180 / M_PI;
-        costheta_smear = cos(Veci_smear.Angle(Veco_smear));
-        //angle_smear = cal_ang(rec_x_smear[0],rec_y_smear[0],rec_z[0],rec_x_smear[1],rec_y_smear[1],rec_z[1],rec_x_smear[2],rec_y_smear[2],rec_z[2],rec_x_smear[3],rec_y_smear[3],rec_z[3]);
-        angle_gem12 = pmom[0]->Angle(*pmom[1]);
+        double angle_smear = Veci_smear.Angle(Veco_smear) * 180 / M_PI;
+        m_costheta_smear = cos(Veci_smear.Angle(Veco_smear));
 
+        if(m_costheta_smear<=0.8) {cos8++;}
 
         // calculate PoCA, DCA
 
-        if(CheckPoCAStatus({rec_x[0],rec_y[0],rec_z[0]},
-                           {rec_x[1],rec_y[1],rec_z[1]},
-                           {rec_x[2],rec_y[2],rec_z[2]},
-                           {rec_x[3],rec_y[3],rec_z[3]}))
+        /*
+        if(CheckPoCAStatus({RPCX[0],RPCY[0],RPCZ[0]},
+                           {RPCX[1],RPCY[1],RPCZ[1]},
+                           {RPCX[2],RPCY[2],RPCZ[2]},
+                           {RPCX[3],RPCY[3],RPCZ[3]}))
         {
                 poca_status = 1;
-                V3 poca = GetPoCAPoint({rec_x[0],rec_y[0],rec_z[0]},
-                                       {rec_x[1],rec_y[1],rec_z[1]},
-                                       {rec_x[2],rec_y[2],rec_z[2]},
-                                       {rec_x[3],rec_y[3],rec_z[3]});
+                V3 poca = GetPoCAPoint({RPCX[0],RPCY[0],RPCZ[0]},
+                                       {RPCX[1],RPCY[1],RPCZ[1]},
+                                       {RPCX[2],RPCY[2],RPCZ[2]},
+                                       {RPCX[3],RPCY[3],RPCZ[3]});
                 poca_x = poca.x;
                 poca_y = poca.y;
                 poca_z = poca.z;
-                dca = GetDCA({rec_x[0],rec_y[0],rec_z[0]},
-                             {rec_x[1],rec_y[1],rec_z[1]},
-                             {rec_x[2],rec_y[2],rec_z[2]},
-                             {rec_x[3],rec_y[3],rec_z[3]});
+                dca = GetDCA({RPCX[0],RPCY[0],RPCZ[0]},
+                             {RPCX[1],RPCY[1],RPCZ[1]},
+                             {RPCX[2],RPCY[2],RPCZ[2]},
+                             {RPCX[3],RPCY[3],RPCZ[3]});
         }
         else poca_status = 0;
-
-
-        // old function
-        /*
-        struct Line l1 = {{rec_x[0],rec_y[0],rec_z[0]}, {rec_x[1],rec_y[1],rec_z[1]}};
-        struct Line l2 = {{rec_x[2],rec_y[2],rec_z[2]}, {rec_x[3],rec_y[3],rec_z[3]}};
-        struct Line lper = line_perpendicular(l1,l2);
-        poca_x = (lper.p1.x + lper.p2.x) / 2;
-        poca_y = (lper.p1.y + lper.p2.y) / 2;
-        poca_z = (lper.p1.z + lper.p2.z) / 2;
-        dca = sqrt((lper.p1.x-lper.p2.x)*(lper.p1.x-lper.p2.x)+(lper.p1.y-lper.p2.y)*(lper.p1.y-lper.p2.y)+(lper.p1.z-lper.p2.z)*(lper.p1.z-lper.p2.z));
-        poca_status = lper.status;
         */
 
-        V3 poca_smear = GetPoCAPoint({rec_x_smear[0],rec_y_smear[0],rec_z[0]},
-                                     {rec_x_smear[1],rec_y_smear[1],rec_z[1]},
-                                     {rec_x_smear[2],rec_y_smear[2],rec_z[2]},
-                                     {rec_x_smear[3],rec_y_smear[3],rec_z[3]});
-        poca_x_smear = poca_smear.x;
-        poca_y_smear = poca_smear.y;
-        poca_z_smear = poca_smear.z;
-        dca_smear = GetDCA({rec_x_smear[0],rec_y_smear[0],rec_z[0]},
-                           {rec_x_smear[1],rec_y_smear[1],rec_z[1]},
-                           {rec_x_smear[2],rec_y_smear[2],rec_z[2]},
-                           {rec_x_smear[3],rec_y_smear[3],rec_z[3]});
-
-        if(CheckPoCAStatus({rec_x_smear[0],rec_y_smear[0],rec_z[0]},
-                           {rec_x_smear[1],rec_y_smear[1],rec_z[1]},
-                           {rec_x_smear[2],rec_y_smear[2],rec_z[2]},
-                           {rec_x_smear[3],rec_y_smear[3],rec_z[3]})) poca_status_smear = 1;
-        else poca_status_smear = 0;
-
         tn->Fill();
+
+        memset(validRpcTrkX, 0, sizeof(validRpcTrkX));
+        memset(RpcTrkY, 0, sizeof(RpcTrkY));
+        memset(RpcTrkZ, 0, sizeof(RpcTrkZ));
+        memset(RPCX, 0, sizeof(RPCX));
+        memset(RPCZ1, 0, sizeof(RPCZ1));
+        memset(RPCY, 0, sizeof(RPCY));
+        memset(RPCZ2, 0, sizeof(RPCZ2));
+        memset(RPCZ, 0, sizeof(RPCZ));
+        //memset(m_GemTrkZ_smear, 0, sizeof(m_GemTrkZ_smear));
+        memset(m_RpcTrkX_smear, 0, sizeof(m_RpcTrkX_smear));
+        memset(m_RpcTrkY_smear, 0, sizeof(m_RpcTrkY_smear));
 }
 gettimeofday(&end, NULL); // 计时结束
 timer = 1000000 * (end.tv_sec - start.tv_sec) + end.tv_usec - start.tv_usec;
 printf("time = %ld us\n", timer);
+std::cout << "Event count: " << eventcount << std::endl;
+std::cout << "Event valid: " << eventvalid << std::endl;
+std::cout << "cos<0.8: " << cos8 << std::endl;
+double quotient = static_cast<double>(eventvalid) / eventcount; 
+double efficiency = quotient * 100; 
+std::cout << std::fixed << std::setprecision(2) << efficiency << "%" << std::endl;
 
 fn->cd();
 fn->Write();

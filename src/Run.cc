@@ -23,7 +23,8 @@ Run::Run()
 {
    totEdep=0;
   _GunEng = 0;
-  rootFileName = "test.root";
+  //rootFileName = "test.root";
+  rootFileName = "muCRY_i.root";
   fRunMessenger = new RunMessenger(this);
 }
 
@@ -44,6 +45,7 @@ Run*  Run::GetInstance()
 
 void Run::initTree() {
   std::cout << "Init Tree File." << std::endl;
+  rootFileName = "muCRY_i.root";
   _file = new TFile(rootFileName.c_str(), "RECREATE");
   _tree = new TTree("T1", "Simple Out Tree");
 
@@ -88,14 +90,15 @@ void Run::initTree() {
 
 //  _tree->Branch("GemTrkID", &GemTrkID, "GemTrkID[4]/I");
 //  _tree->Branch("GemTrkMID", &GemTrkMID, "GemTrkMID[4]/I");
-  _tree->Branch("GemTrkPx", &GemTrkPx, "GemTrkPx[4]/D");
-  _tree->Branch("GemTrkPy", &GemTrkPy, "GemTrkPy[4]/D");
-  _tree->Branch("GemTrkPz", &GemTrkPz, "GemTrkPz[4]/D");
-  _tree->Branch("GemTrkE", &GemTrkE, "GemTrkE[4]/D");
-  _tree->Branch("GemTrkEdep", &GemTrkEdep, "GemTrkEdep[4]/D");
-  _tree->Branch("GemTrkX", &GemTrkX, "GemTrkX[4]/D");
-  _tree->Branch("GemTrkY", &GemTrkY, "GemTrkY[4]/D");
-  _tree->Branch("GemTrkZ", &GemTrkZ, "GemTrkZ[4]/D");
+  _tree->Branch("RpcTrkPx", &RpcTrkPx, "RpcTrkPx[16]/D");
+  _tree->Branch("RpcTrkPy", &RpcTrkPy, "RpcTrkPy[16]/D");
+  _tree->Branch("RpcTrkPz", &RpcTrkPz, "RpcTrkPz[16]/D");
+  _tree->Branch("RpcTrkE", &RpcTrkE, "RpcTrkE[16]/D");
+  _tree->Branch("RpcTrkEdep", &RpcTrkEdep, "RpcTrkEdep[16]/D");
+  _tree->Branch("RpcTrkX", &RpcTrkX, "RpcTrkX[16]/D");
+  _tree->Branch("RpcTrkY", &RpcTrkY, "RpcTrkY[16]/D");
+  _tree->Branch("RpcTrkZ", &RpcTrkZ, "vTrkZ[16]/D");
+  _tree->Branch("RpcStatus", &RpcStatus, "RpcStatus/O");
 
 /*
   _tree->Branch("vPbTrkid",&vPbTrkid); //Trk id in Pb Box
@@ -172,20 +175,22 @@ void Run::initTree() {
   std::vector<Double_t>().swap(vPbPosY);
   std::vector<Double_t>().swap(vPbPosZ);
   
-  for (int i=0; i<4; i++)
+  for (int i=0; i<16; i++)
   {
-    GemTrkID[i]=0;
-    GemTrkMID[i]=0;
-    GemTrkPx[i]=0;
-    GemTrkPy[i]=0;
-    GemTrkPz[i]=0;
-    GemTrkE[i]=0;
-    GemTrkEdep[i]=0;
-    GemTrkX[i]=0;
-    GemTrkY[i]=0;
-    GemTrkZ[i]=0;
-    GemTrkStatus[i]=false;
+    RpcTrkID[i]=0;
+    RpcTrkMID[i]=0;
+    RpcTrkPx[i]=0;
+    RpcTrkPy[i]=0;
+    RpcTrkPz[i]=0;
+    RpcTrkE[i]=0;
+    RpcTrkEdep[i]=0;
+    RpcTrkX[i]=0;
+    RpcTrkY[i]=0;
+    RpcTrkZ[i]=0;
+    RpcTrkStatus[i]=false;
   }
+
+  //bool RpcStatus = false;
 
   G4cout << "ROOT Name = " << rootFileName << G4endl;
 
@@ -284,64 +289,68 @@ void Run::ClearAll(){
   std::vector<Double_t>().swap(vPbPosY);
   std::vector<Double_t>().swap(vPbPosZ);
  
-  for (int i=0; i<4; i++)
+  for (int i=0; i<16; i++)
   {
-    GemTrkID[i]=0;
-    GemTrkMID[i]=0;
-    GemTrkPx[i]=0;
-    GemTrkPy[i]=0;
-    GemTrkPz[i]=0;
-    GemTrkE[i]=0;
-    GemTrkEdep[i]=0;
-    GemTrkX[i]=0;
-    GemTrkY[i]=0;
-    GemTrkZ[i]=0;
-    GemTrkStatus[i]=false;
+    RpcTrkID[i]=0;
+    RpcTrkMID[i]=0;
+    RpcTrkPx[i]=0;
+    RpcTrkPy[i]=0;
+    RpcTrkPz[i]=0;
+    RpcTrkE[i]=0;
+    RpcTrkEdep[i]=0;
+    RpcTrkX[i]=0;
+    RpcTrkY[i]=0;
+    RpcTrkZ[i]=0;
+    RpcTrkStatus[i]=false;
   }
 }
 
-void Run::SetGemTrkID(int i, int ID){
-  GemTrkID[i]=ID;
+void Run::SetRpcTrkID(int i, int ID){
+  RpcTrkID[i]=ID;
 }
 
-void Run::SetGemTrkMID(int i, int MID){
-  GemTrkMID[i]=MID;
+void Run::SetRpcTrkMID(int i, int MID){
+  RpcTrkMID[i]=MID;
 }
 
-void Run::SetGemTrkPx(int i, double Px){
-  GemTrkPx[i]=Px;
+void Run::SetRpcTrkPx(int i, double Px){
+  RpcTrkPx[i]=Px;
 }
 
-void Run::SetGemTrkPy(int i, double Py){
-  GemTrkPy[i]=Py;
+void Run::SetRpcTrkPy(int i, double Py){
+  RpcTrkPy[i]=Py;
 }
 
-void Run::SetGemTrkPz(int i, double Pz){
-  GemTrkPz[i]=Pz;
+void Run::SetRpcTrkPz(int i, double Pz){
+  RpcTrkPz[i]=Pz;
 }
 
-void Run::SetGemTrkE(int i, double E){
-  GemTrkE[i]=E;
+void Run::SetRpcTrkE(int i, double E){
+  RpcTrkE[i]=E;
 }
 
-void Run::SetGemTrkEdep(int i, double Edep){
-  GemTrkEdep[i]=Edep;
+void Run::SetRpcTrkEdep(int i, double Edep){
+  RpcTrkEdep[i]=Edep;
 }
 
-void Run::SetGemTrkX(int i, double X){
-  GemTrkX[i]=X;
+void Run::SetRpcTrkX(int i, double X){
+  RpcTrkX[i]=X;
 }
 
-void Run::SetGemTrkY(int i, double Y){
-  GemTrkY[i]=Y;
+void Run::SetRpcTrkY(int i, double Y){
+  RpcTrkY[i]=Y;
 }
 
-void Run::SetGemTrkZ(int i, double Z){
-  GemTrkZ[i]=Z;
+void Run::SetRpcTrkZ(int i, double Z){
+  RpcTrkZ[i]=Z;
 }
 
-void Run::SetGemTrkStatus(int i, bool status){
-  GemTrkStatus[i]=status;
+void Run::SetRpcTrkStatus(int i, bool status){
+  RpcTrkStatus[i]=status;
+}
+
+void Run::SetRpcStatus(bool rpcstatus){
+  RpcStatus = rpcstatus;
 }
 
 void Run::SetGemTruthZ(int i, double Z){

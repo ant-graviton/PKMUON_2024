@@ -68,11 +68,34 @@ void EventAction::BeginOfEventAction(const G4Event* evt)
  
 void EventAction::EndOfEventAction(const G4Event* evt)
 {  
+    /*
     bool status=true;
-    for(int i=0; i<4; i++){
+    for(int i=0; i<16; i++){
         status = status && Run::GetInstance()->GetGemTrkStatus(i);
     }
+    */
+    
+    /*
+    for(int i = 0 ; i < 16 ; i++){
+        std::cout << "igem = "<< i << ", status ="  << Run::GetInstance()->GetGemTrkStatus(i) << std::endl;
+      }
+    */
+    
+    
+    bool mustatus = true;
+    for(int i=0; i<16; i++){
+        /*
+        if (!Run::GetInstance()->GetGemTrkStatus(i)) {
+            G4cout << "Muon " << i << " status is false" << G4endl;
+        }
+        */
+        mustatus = mustatus && Run::GetInstance()->GetRpcTrkStatus(i);
+    }
+    
+    Run::GetInstance()->SetRpcStatus(mustatus);
+    //std::cout << "Stored RpcStatus in Branch: " << mustatus << std::endl;
 
+    /*
     if(status){
         G4int event_id = evt->GetEventID();
         if (event_id % 10000 == 0) {
@@ -81,5 +104,16 @@ void EventAction::EndOfEventAction(const G4Event* evt)
         }
         Run::GetInstance()->Fill();
     }
+    */
+    
+    G4int event_id = evt->GetEventID();
+        if (event_id % 10000 == 0) {
+                //G4cout << ">>> Event " << evt->GetEventID() << " done" << G4endl;
+                Run::GetInstance()->AutoSave();
+        }
+        Run::GetInstance()->Fill();
+    
+    //Run::GetInstance()->SetRpcStatus(mustatus);
+
 }
 

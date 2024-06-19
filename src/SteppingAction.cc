@@ -29,6 +29,7 @@
 //#include "Run.hh"
 
 //
+
 #include "SteppingAction.hh"
 #include "G4SteppingManager.hh"
 #include "G4UnitsTable.hh"
@@ -46,7 +47,7 @@
 #include "DetectorConstruction.hh"
 #include "G4RunManager.hh"
 
-SteppingAction::SteppingAction():fScoringVolume(nullptr),fScoringVolume2(nullptr),fScoringVolume3(nullptr)
+SteppingAction::SteppingAction():fScoringVolume4(nullptr)
 {}
 
 SteppingAction::~SteppingAction()
@@ -62,47 +63,21 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep)
   G4double energy = aStep->GetTotalEnergyDeposit();
   G4double totalenergy = aStep->GetTrack()->GetTotalEnergy();
   if(energy>0){
- 
-/*
-    if (!fScoringVolume) { 
+    
+    /*
+    if (!fScoringVolume1) { 
       const DetectorConstruction * detectorConstruction
      	= static_cast<const DetectorConstruction*>
      	(G4RunManager::GetRunManager()->GetUserDetectorConstruction());
-      fScoringVolume = detectorConstruction->GetScoringVolume();   
+      fScoringVolume1 = detectorConstruction->GetScoringVolume1();   
     }
-*/
     if (!fScoringVolume2) { 
       const DetectorConstruction * detectorConstruction
      	= static_cast<const DetectorConstruction*>
      	(G4RunManager::GetRunManager()->GetUserDetectorConstruction());
       fScoringVolume2 = detectorConstruction->GetScoringVolume2();   
     }
-/*
-    if (!fScoringVolume3) { 
-      const DetectorConstruction * detectorConstruction
-     	= static_cast<const DetectorConstruction*>
-     	(G4RunManager::GetRunManager()->GetUserDetectorConstruction());
-      fScoringVolume3 = detectorConstruction->GetScoringVolume3();   
-    }
-*/
-/*
-    if (volume == fScoringVolume) {
-      G4int iTrkID = aStep->GetTrack()->GetTrackID();
-      Run::GetInstance()->AddTrkID(iTrkID);
-     
-      Run::GetInstance()->AddEnergy1(energy);
-      G4StepPoint* prePoint  = aStep->GetPreStepPoint();
-      G4StepPoint* postPoint = aStep->GetPostStepPoint();
-      G4double x = (prePoint->GetPosition().x()+ postPoint->GetPosition().x())/2.;
-      G4double y = (prePoint->GetPosition().y()+ postPoint->GetPosition().y())/2.;
-      G4double z = (prePoint->GetPosition().z()+ postPoint->GetPosition().z())/2.;
-      Run::GetInstance()->AddX(x/mm);
-      Run::GetInstance()->AddY(y/mm);
-      Run::GetInstance()->AddZ(z/mm);
-      Run::GetInstance()->AddEdep(energy/MeV);   
-    }
-*/
-    if (volume == fScoringVolume2) {
+    if ( (volume == fScoringVolume1) || (volume == fScoringVolume2) ) {
       G4int iTrkID = aStep->GetTrack()->GetTrackID();
       G4int iTrkparentID = aStep->GetTrack()->GetParentID();
       //Run::GetInstance()->AddReadoutTrkid(iTrkID);
@@ -115,16 +90,16 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep)
       G4double y = (prePoint->GetPosition().y()+ postPoint->GetPosition().y())/2.;
       G4double z = (prePoint->GetPosition().z()+ postPoint->GetPosition().z())/2.;
       int igem=-1;
-      if(std::fabs(z/mm-Z1)<deltaZ) igem=0;
-      else if(std::fabs(z/mm-Z2)<deltaZ) igem=1;
-      else if(std::fabs(z/mm-Z3)<deltaZ) igem=2;
-      else if(std::fabs(z/mm-Z4)<deltaZ) igem=3;
+      if(volume == fScoringVolume1) igem=0;
+      else if(volume == fScoringVolume2) igem=1;
       else return;
 
       G4ThreeVector curDirection =  aStep->GetPreStepPoint()->GetMomentumDirection();
       G4double px = curDirection.x();
       G4double py = curDirection.y();
       G4double pz = curDirection.z();
+
+      if(Run::GetInstance()->GetGemTrkStatus(igem)==true) return;
 
       Run::GetInstance()->SetGemTrkPx(igem,px);
       Run::GetInstance()->SetGemTrkPy(igem,py);
@@ -136,51 +111,105 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep)
       Run::GetInstance()->SetGemTrkZ(igem,z/mm);
       Run::GetInstance()->SetGemTrkStatus(igem,true);
 
-      //Run::GetInstance()->AddReadoutEdepX(x/mm);
-      //Run::GetInstance()->AddReadoutEdepY(y/mm);
-      //Run::GetInstance()->AddReadoutEdepZ(z/mm);
-      //Run::GetInstance()->AddReadoutEdep(energy/MeV);
-      //Run::GetInstance()->AddReadoutE(totalenergy/MeV);
-
-      //Run::GetInstance()->AddPx(px);
-      //Run::GetInstance()->AddPy(py);
-      //Run::GetInstance()->AddPz(pz);
-
-      //G4cout<<"TrkID = "<<iTrkID<<G4endl;
-      //G4cout<<"TrkParentID = "<<iTrkparentID<<G4endl;
-      //G4cout<<"x,y,z = "<<x/mm<<" , "<<y/mm<<" , "<<z/mm<<" mm"<<G4endl;
-      //G4cout<<"energy = "<<energy/MeV<<" MeV"<<G4endl;
-      //G4cout<<"taotal energy = "<<totalenergy/MeV<<" MeV"<<G4endl;
-
-      //kill the track touched the bottom floor.
-      //aStep->GetTrack()->SetTrackStatus(fStopAndKill);
-      //Run::GetInstance()->SetStatus(true);
-
     }
-/*
-    if (volume == fScoringVolume3) {
+    */
+    if (!fScoringVolume4) { 
+      const DetectorConstruction * detectorConstruction
+     	= static_cast<const DetectorConstruction*>
+     	(G4RunManager::GetRunManager()->GetUserDetectorConstruction());
+      fScoringVolume4 = detectorConstruction->GetScoringVolume4();   
+    }
+
+    //G4cout << "Volume name: " << volume->GetName() << G4endl; // 输出当前体积的名称
+
+    double Z[] = {Z1, Z2, Z3, Z4, Z5, Z6, Z7, Z8, Z9, Z10, Z11, Z12, Z13, Z14, Z15, Z16};
+    int num_layers = sizeof(Z) / sizeof(Z[0]); 
+
+    if ( volume == fScoringVolume4 ) {
+      //G4cout << "Muon entered fScoringVolume4." << G4endl;
+      
+      G4int iTrkID = aStep->GetTrack()->GetTrackID();
+      G4int iTrkparentID = aStep->GetTrack()->GetParentID();
+      //Run::GetInstance()->AddReadoutTrkid(iTrkID);
+      //Run::GetInstance()->AddReadoutTrkparentid(iTrkparentID);
+      if( !(iTrkID==1 && iTrkparentID==0) ) return;
+
       G4StepPoint* prePoint  = aStep->GetPreStepPoint();
       G4StepPoint* postPoint = aStep->GetPostStepPoint();
       G4double x = (prePoint->GetPosition().x()+ postPoint->GetPosition().x())/2.;
       G4double y = (prePoint->GetPosition().y()+ postPoint->GetPosition().y())/2.;
       G4double z = (prePoint->GetPosition().z()+ postPoint->GetPosition().z())/2.;
 
-      Run::GetInstance()->AddPbEdepX(x/mm);
-      Run::GetInstance()->AddPbEdepY(y/mm);
-      Run::GetInstance()->AddPbEdepZ(z/mm);
+      //G4cout << "x: " << x << ", y: " << y << ", z: " << z << G4endl;
+      
+      /*
+      if(std::fabs(z/mm-Z1)<deltaZ) igem=0;
+        else if(std::fabs(z/mm-Z2)<deltaZ) igem=1;
+        else if(std::fabs(z/mm-Z3)<deltaZ) igem=2;
+        else if(std::fabs(z/mm-Z4)<deltaZ) igem=3;
+        else if(std::fabs(z/mm-Z5)<deltaZ) igem=4;
+        else if(std::fabs(z/mm-Z6)<deltaZ) igem=5;
+        else if(std::fabs(z/mm-Z7)<deltaZ) igem=6;
+        else if(std::fabs(z/mm-Z8)<deltaZ) igem=7;
+        else if(std::fabs(z/mm-Z9)<deltaZ) igem=8;
+        else if(std::fabs(z/mm-Z10)<deltaZ) igem=9;
+        else if(std::fabs(z/mm-Z11)<deltaZ) igem=10;
+        else if(std::fabs(z/mm-Z12)<deltaZ) igem=11;
+        else if(std::fabs(z/mm-Z13)<deltaZ) igem=12;
+        else if(std::fabs(z/mm-Z14)<deltaZ) igem=13;
+        else if(std::fabs(z/mm-Z15)<deltaZ) igem=14;
+        else if(std::fabs(z/mm-Z16)<deltaZ) igem=15;
+      else return;
+      */
 
-      G4int iTrkID = aStep->GetTrack()->GetTrackID();
-      Run::GetInstance()->AddPbTrkid(iTrkID);
+      
+      int igem = -1; 
 
-      //G4cout<<"TrkID = "<<iTrkID<<G4endl;
-      //G4cout<<"x,y,z = "<<x/mm<<" , "<<y/mm<<" , "<<z/mm<<" mm"<<G4endl;
-      //G4cout<<"energy = "<<energy/MeV<<" MeV"<<G4endl;
-      //G4cout<<"total energy = "<<totalenergy/MeV<<" MeV"<<G4endl;
+      for (int i = 0; i < num_layers; ++i) {
+          if (std::fabs(z/mm - Z[i]) <= deltaZ) {
+              igem = i;
+              //std::cout << "Z[" << i << "] = " << z << std::endl;
+              break; 
+          }
+      }
+
+      //std::cout << "igem = " << igem << std::endl;
+
+      if (igem == -1) {return;}
+
+      G4ThreeVector curDirection =  aStep->GetPreStepPoint()->GetMomentumDirection();
+      G4double px = curDirection.x();
+      G4double py = curDirection.y();
+      G4double pz = curDirection.z();
+
+      if(Run::GetInstance()->GetRpcTrkStatus(igem)==true) return;
+
+      Run::GetInstance()->SetRpcTrkPx(igem,px);
+      Run::GetInstance()->SetRpcTrkPy(igem,py);
+      Run::GetInstance()->SetRpcTrkPz(igem,pz);
+      Run::GetInstance()->SetRpcTrkE(igem,totalenergy/MeV);
+      Run::GetInstance()->SetRpcTrkEdep(igem,energy/MeV);
+      Run::GetInstance()->SetRpcTrkX(igem,x/mm);
+      Run::GetInstance()->SetRpcTrkY(igem,y/mm);
+      Run::GetInstance()->SetRpcTrkZ(igem,z/mm);
+      Run::GetInstance()->SetRpcTrkStatus(igem,true);
+
+      /*
+      for(int i = 0 ; i < 16 ; i++){
+        std::cout << "igem = "<< i << ", status ="  << Run::GetInstance()->GetGemTrkStatus(i) << std::endl;
+      }
+      */
 
     }
+
+
+/*
+    else {
+    // 输出未进入的体积名称
+    G4cout << "Muon did not enter fScoringVolume4." << G4endl;
+}
 */
-
-
+   
   }
   
 }

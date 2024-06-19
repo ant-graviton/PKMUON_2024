@@ -32,7 +32,7 @@
 
 #include "RunAction.hh"
 #include "Run.hh"
-//#include "PrimaryGeneratorAction.hh"
+#include "PrimaryGeneratorAction.hh"
 #include "GpsPrimaryGeneratorAction.hh"
 
 #include "G4Run.hh"

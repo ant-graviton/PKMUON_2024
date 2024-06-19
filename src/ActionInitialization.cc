@@ -28,7 +28,7 @@
 /// \brief Implementation of the ActionInitialization class
 
 #include "ActionInitialization.hh"
-//#include "PrimaryGeneratorAction.hh"
+#include "PrimaryGeneratorAction.hh"
 #include "GpsPrimaryGeneratorAction.hh"
 #include "RunAction.hh"
 #include "EventAction.hh"
@@ -58,7 +58,7 @@ void ActionInitialization::BuildForMaster() const
 
 void ActionInitialization::Build() const
 {
-  // PrimaryGeneratorAction* primary = new PrimaryGeneratorAction();
+  //PrimaryGeneratorAction* primary = new PrimaryGeneratorAction();
   GpsPrimaryGeneratorAction * primary = new GpsPrimaryGeneratorAction();
   SetUserAction(primary);
     

@@ -64,4 +64,3 @@ foreach(_script ${muPos_SCRIPTS})
     COPYONLY
     )
 endforeach()
-

@@ -51,6 +51,7 @@ class DetectorConstruction : public G4VUserDetectorConstruction
     G4LogicalVolume* GetScoringVolume() const { return fScoringVolume; };
     G4LogicalVolume* GetScoringVolume2() const { return fScoringVolume2; };
     G4LogicalVolume* GetScoringVolume3() const { return fScoringVolume3; };
+    G4LogicalVolume* GetScoringVolume4() const { return fScoringVolume4; };
            
   // G4double GetWorldSize() {return fWorldSize;}; 
 
@@ -61,6 +62,7 @@ class DetectorConstruction : public G4VUserDetectorConstruction
      G4LogicalVolume*  fScoringVolume;
      G4LogicalVolume*  fScoringVolume2;
      G4LogicalVolume*  fScoringVolume3;
+     G4LogicalVolume*  fScoringVolume4;
 
      G4Material* vacum;
      G4Material* air;
@@ -82,6 +84,12 @@ class DetectorConstruction : public G4VUserDetectorConstruction
      G4Material* Readout_bar_Mat;
      G4Material* Gem_Mat;
      G4Material* world_Mat;
+     G4Material* al;
+     G4Material* glass;
+     G4Material* graphite;
+     G4Material* PET;
+     G4Material* FR4;
+     G4Material* F134a;
 
      G4double Xcenter, Ycenter, Zcenter;
      const G4int num_Gem_hole=8;
@@ -178,6 +186,98 @@ class DetectorConstruction : public G4VUserDetectorConstruction
      G4double pku_bar_y1;
      G4double pku_bar_y2;
      G4double pku_bar_z;
+
+     G4double readoutbar_x;
+     G4double readoutbar_y;
+     G4double readoutbar_z;
+     G4double readoutbar_gap;
+     G4double num_readoutbar;
+
+     G4double readoutplate_x;
+     G4double readoutplate_y;
+     G4double readoutplate_z;
+
+     G4double insulation_x;
+     G4double insulation_y;
+     G4double insulation_z;
+
+     G4double glass_x;
+     G4double glass_y;
+     G4double glass_z;
+
+     G4double graphite_x;
+     G4double graphite_y;
+     G4double graphite_z;
+
+     G4double gasgap;
+     G4double rpc_x;
+     G4double rpc_y;
+     G4double rpc_z;
+
+     G4double ini;
+
+     G4double al_x;
+     G4double al_y;
+     G4double al_z;
+
+     G4double al1_x;
+     G4double al1_y;
+     G4double al1_z;
+
+     G4double gas_x;
+     G4double gas_y;
+     G4double gas_z;
+
+     G4double timereadout_x;
+     G4double timereadout_y;
+     G4double timereadout_z;
+
+     G4double cu1_x;
+     G4double cu1_y;
+     G4double cu1_z;
+
+     G4double cu2_x;
+     G4double cu2_y;
+     G4double cu2_z;
+
+     G4double al_edge;
+     G4double lsgap;
+     G4double timegap;
+
+     G4double Zcenter1;
+     G4double Zcenter2;
+     G4double Zcenter3;
+     G4double Zcenter4;
+
+     G4double h1;
+     G4double h2;
+     G4double h3;
+     G4double h4;
+
+     G4double rpcgap1;
+     G4double rpcgap2;
+
+     G4double mainbody_x;
+     G4double mainbody_y;
+     G4double mainbody_z;
+
+     G4double Z1;
+     G4double Z2;
+     G4double Z3;
+     G4double Z4;
+     G4double Z5;
+     G4double Z6;
+     G4double Z7;
+     G4double Z8;
+     G4double Z9;
+     G4double Z10;
+     G4double Z11;
+     G4double Z12;
+     G4double Z13;
+     G4double Z14;
+     G4double Z15;
+     G4double Z16;
+    
 };
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 

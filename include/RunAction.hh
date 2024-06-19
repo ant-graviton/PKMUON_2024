@@ -36,13 +36,13 @@
 
 //#include <map>
 
-//class PrimaryGeneratorAction;
+class PrimaryGeneratorAction;
 class GpsPrimaryGeneratorAction;
 class RunAction : public G4UserRunAction
 {
   public:
-  //RunAction(PrimaryGeneratorAction *frunAction);
-    RunAction(  GpsPrimaryGeneratorAction *frunAction);
+    //RunAction(PrimaryGeneratorAction *frunAction);
+    RunAction(GpsPrimaryGeneratorAction *frunAction);
    ~RunAction();
 
   public:
@@ -52,7 +52,7 @@ class RunAction : public G4UserRunAction
   
 private:
     
-  // PrimaryGeneratorAction *fPrimary;
+  //PrimaryGeneratorAction *fPrimary;
   GpsPrimaryGeneratorAction *fPrimary;
 };
 #endif

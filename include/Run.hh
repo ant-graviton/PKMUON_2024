@@ -67,20 +67,22 @@ public:
   G4double GetPx(){return px0;};
   G4double GetPy(){return py0;};
   G4double GetPz(){return pz0;};
-  void SetGemTrkID(int i, int ID);
-  void SetGemTrkMID(int i, int MID);
-  void SetGemTrkPx(int i, double Px);
-  void SetGemTrkPy(int i, double Py);
-  void SetGemTrkPz(int i, double Pz);
-  void SetGemTrkE(int i, double E);
-  void SetGemTrkEdep(int i, double Edep);
-  void SetGemTrkX(int i, double X);
-  void SetGemTrkY(int i, double Y);
-  void SetGemTrkZ(int i, double Z);
-  void SetGemTrkStatus(int i, bool status);
-  bool GetGemTrkStatus(int i){return GemTrkStatus[i];};
+  void SetRpcTrkID(int i, int ID);
+  void SetRpcTrkMID(int i, int MID);
+  void SetRpcTrkPx(int i, double Px);
+  void SetRpcTrkPy(int i, double Py);
+  void SetRpcTrkPz(int i, double Pz);
+  void SetRpcTrkE(int i, double E);
+  void SetRpcTrkEdep(int i, double Edep);
+  void SetRpcTrkX(int i, double X);
+  void SetRpcTrkY(int i, double Y);
+  void SetRpcTrkZ(int i, double Z);
+  void SetRpcTrkStatus(int i, bool status);
+  bool GetRpcTrkStatus(int i){return RpcTrkStatus[i];};
   void SetGemTruthZ(int i, double Z);
   double GetGemTruthZ(int i){return GemTruthZ[i];};
+  void SetRpcStatus(bool RpcStatus);
+  //bool GetRpcStatus(){return RpcStatus};
   
 private:
   G4String rootFileName;
@@ -92,6 +94,7 @@ private:
   Double_t X1,Y1,Z1,px1,py1,pz1;
   Double_t cosTh;
   bool status;
+  bool rpcstatus;
   std::vector<Double_t> vX; //Edep X
   std::vector<Double_t> vY; //Edep Y
   std::vector<Double_t> vZ; //Edep Z
@@ -111,20 +114,23 @@ private:
   std::vector<Double_t> vPy;
   std::vector<Double_t> vPz;
   std::vector<Int_t> vTrkID; //TrackID
+  std::vector<Bool_t> vStatus; 
 
-  Int_t GemTrkID[4]={0};
-  Int_t GemTrkMID[4]={0};
-  Double_t GemTrkPx[4]={0};
-  Double_t GemTrkPy[4]={0};
-  Double_t GemTrkPz[4]={0};
-  Double_t GemTrkE[4]={0};
-  Double_t GemTrkEdep[4]={0};
-  Double_t GemTrkX[4]={0};
-  Double_t GemTrkY[4]={0};
-  Double_t GemTrkZ[4]={0};
-  bool GemTrkStatus[4]={false};
+  Int_t RpcTrkID[16]={0};
+  Int_t RpcTrkMID[16]={0};
+  Double_t RpcTrkPx[16]={0};
+  Double_t RpcTrkPy[16]={0};
+  Double_t RpcTrkPz[16]={0};
+  Double_t RpcTrkE[16]={0};
+  Double_t RpcTrkEdep[16]={0};
+  Double_t RpcTrkX[16]={0};
+  Double_t RpcTrkY[16]={0};
+  Double_t RpcTrkZ[16]={0};
+  bool RpcTrkStatus[16]={false};
   
-  Double_t GemTruthZ[4]={0};
+  Double_t GemTruthZ[16]={0};
+
+  Bool_t RpcStatus;
 
   RunMessenger* fRunMessenger;
     
