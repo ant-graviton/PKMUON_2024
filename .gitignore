@@ -6,4 +6,5 @@ Makefile
 CryMu_*.mac
 SingleEngMu_*.mac
 root_file/
+build/
 *.swp
