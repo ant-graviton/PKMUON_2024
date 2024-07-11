@@ -8,3 +8,4 @@ SingleEngMu_*.mac
 *.root
 build/
 *.swp
+.vscode
