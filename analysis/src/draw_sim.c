@@ -124,7 +124,7 @@ Int_t draw_sim(TString ROOTfilename="new_Simdata.root")
   h2xz->SetTitle("XZ Events-ang>0.05rad");
   h2xz->SetXTitle("x(mm)");
   h2xz->SetYTitle("z(mm)");
-  can1->cd(3);
+  can1->cd(4);
   h3->Draw("colz");  
   h3->SetTitle("XYZ Events-ang>0.05rad");
   h3->SetXTitle("x(mm)");

@@ -1656,6 +1656,7 @@ G4VPhysicalVolume* mainbodyPhys
   G4cout<<" al4 with Zcenter = "<<h4<<" mm"<<G4endl;                                                      
 
 
+#if 0  /* rarget */
   // put al1box in world
 
   G4VPhysicalVolume* al1Phys
@@ -1667,6 +1668,7 @@ G4VPhysicalVolume* mainbodyPhys
                     false,                   //no boolean operation
                     0,                       //copy number
                     1);          //overlaps checking
+#endif
 
 
 /*
