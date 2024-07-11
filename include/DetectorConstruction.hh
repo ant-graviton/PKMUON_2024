@@ -64,7 +64,7 @@ class DetectorConstruction : public G4VUserDetectorConstruction
      G4LogicalVolume*  fScoringVolume3;
      G4LogicalVolume*  fScoringVolume4;
 
-     G4Material* vacum;
+     G4Material* vacuum;
      G4Material* air;
      G4Material* pb;
      G4Material* fe;

@@ -64,7 +64,7 @@ DetectorConstruction::DetectorConstruction()
 
 DetectorConstruction::~DetectorConstruction()
 {
-     delete vacum;
+     delete vacuum;
      delete air;
      delete pb;
      delete cu;
@@ -90,7 +90,7 @@ void DetectorConstruction::DefineMaterials()
   // Get nist material manager
   G4NistManager* nistManager = G4NistManager::Instance();
   // Build materials
-  vacum   = nistManager->FindOrBuildMaterial("G4_Galactic");
+  vacuum   = nistManager->FindOrBuildMaterial("G4_Galactic");
   air   = nistManager->FindOrBuildMaterial("G4_AIR");
   pb   = nistManager->FindOrBuildMaterial("G4_Pb");
   fe   = nistManager->FindOrBuildMaterial("G4_Fe");
@@ -204,6 +204,8 @@ void DetectorConstruction::DefineMaterials()
   Readout_bar_Mat = cu;
   Gem_Mat = gasMixture;
   world_Mat = air;
+  //world_Mat = vacuum;
+  //world_Mat = G4NistManager::Instance()->FindOrBuildMaterial("G4_WATER");
 
 }
 
@@ -864,7 +866,7 @@ G4VPhysicalVolume *DetectorConstruction::DefineVolumes()
 
   G4LogicalVolume* rpcLog
     = new G4LogicalVolume(rpc_box,
-                          vacum,
+                          vacuum,
                           "rpcLog",
                           0,               //opt: fieldManager
                           0,               //opt: SensitiveDetector
@@ -1100,7 +1102,7 @@ G4VPhysicalVolume *DetectorConstruction::DefineVolumes()
 
   G4LogicalVolume* mainbodyLog
     = new G4LogicalVolume(mainbody,
-                          vacum,
+                          vacuum,
                           "mainbodyLog",
                           0,               //opt: fieldManager
                           0,               //opt: SensitiveDetector
@@ -1169,7 +1171,7 @@ G4VPhysicalVolume *DetectorConstruction::DefineVolumes()
   
   G4LogicalVolume* VacboxPLog 
     = new G4LogicalVolume(Vacbox_box_PKU,
-			  vacum,
+			  vacuum,
                           "VacboxPLog",
                           0,               //opt: fieldManager
                           0,               //opt: SensitiveDetector
@@ -1178,7 +1180,7 @@ G4VPhysicalVolume *DetectorConstruction::DefineVolumes()
   
   G4LogicalVolume* VacboxKLog 
     = new G4LogicalVolume(Vacbox_box_PKU,
-			  vacum,
+			  vacuum,
                           "VacboxKLog",
                           0,               //opt: fieldManager
                           0,               //opt: SensitiveDetector
@@ -1187,7 +1189,7 @@ G4VPhysicalVolume *DetectorConstruction::DefineVolumes()
   
   G4LogicalVolume* VacboxULog 
     = new G4LogicalVolume(Vacbox_box_PKU,
-			  vacum,
+			  vacuum,
                           "VacboxULog",
                           0,               //opt: fieldManager
                           0,               //opt: SensitiveDetector
