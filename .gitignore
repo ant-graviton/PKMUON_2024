@@ -5,6 +5,6 @@ cmake_install.cmake
 Makefile
 CryMu_*.mac
 SingleEngMu_*.mac
-root_file/
+*.root
 build/
 *.swp
