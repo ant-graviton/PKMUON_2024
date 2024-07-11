@@ -24,7 +24,7 @@ extern double Z3;
 extern double Z4;
 */
 
-void analysis(const char *infile, const char *outfile){
+void analysis(const char *infile = "../../build/root_file/CryMu.root", const char *outfile = "../../build/root_file/CryMuAna.root"){
 TRandom *rand = new TRandom();
 double sigma=57*0.01;
 

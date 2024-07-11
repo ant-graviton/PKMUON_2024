@@ -9,3 +9,5 @@ SingleEngMu_*.mac
 build/
 *.swp
 .vscode
+*.pdf
+*.log

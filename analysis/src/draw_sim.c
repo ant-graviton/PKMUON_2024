@@ -105,7 +105,7 @@ Int_t draw_sim(TString ROOTfilename="new_Simdata.root")
   h3->SetZTitle("z (mm)");
 */
 
-  TCanvas *can1=new TCanvas("d2c1","abc",2000,500);
+  TCanvas *can1=new TCanvas("d2c1","abc",2000,2000);
   can1->Divide(2,2);
  // can1->cd(1);
  // h3->Draw("lego");
@@ -130,5 +130,6 @@ Int_t draw_sim(TString ROOTfilename="new_Simdata.root")
   h3->SetXTitle("x(mm)");
   h3->SetXTitle("y(mm)");
   h3->SetYTitle("z(mm)");
+  can1->SaveAs("draw_sim.pdf");
   return t;
 }

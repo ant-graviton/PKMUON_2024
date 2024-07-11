@@ -2,7 +2,7 @@
 #include <fstream>
 using namespace std;
 
-Int_t PoCA_sim(TString ROOTfilename)
+Int_t PoCA_sim(TString ROOTfilename = "../../build/root_file/CryMuAna.root")
 {
 	const Int_t Nx=10,Ny=10,Nz=15; //控制像元大小
 	const Double_t Xdown=-100, Xup=100, Ydown=-100, Yup=100, Zdown=-250, Zup=250;
