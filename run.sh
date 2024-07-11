@@ -1,5 +1,7 @@
 #!/bin/bash
 
+mkdir -p root_file
+
 # 循环运行Geant4模拟，传入不同的i值
 for i in $(seq 1 $(lscpu | grep '^CPU(s):' | grep -o '[0-9]\+')); do
 
