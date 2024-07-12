@@ -29,11 +29,10 @@ include("${ROOT_DIR}/ROOTUseFile.cmake")   #ROOT6
 include(${Geant4_USE_FILE})
 include(${ROOT_USE_FILE})
 
-
 #----------------------------------------------------------------------------
 # Locate sources and headers for this project
 #
-include_directories(${PROJECT_SOURCE_DIR}/include 
+include_directories(${PROJECT_SOURCE_DIR}/include
                     ${Geant4_INCLUDE_DIR}
                     ${ROOT_INCLUDE_DIRS}
                     )
@@ -54,13 +53,12 @@ target_link_libraries(muPos ${Geant4_LIBRARIES}  ${ROOT_LIBRARIES})
 # relies on these scripts being in the current working directory.
 #
 set(muPos_SCRIPTS
-   vis.mac  SingleEngMu.mac CryMu.mac run_cry.sh run.sh
-  )
+    vis.mac  SingleEngMu.mac CryMu.mac run_cry.sh run.sh
+    )
 
 foreach(_script ${muPos_SCRIPTS})
-  configure_file(
-    ${PROJECT_SOURCE_DIR}/${_script}
-    ${PROJECT_BINARY_DIR}/${_script}
-    COPYONLY
-    )
+configure_file(${PROJECT_SOURCE_DIR}/${_script}
+               ${PROJECT_BINARY_DIR}/${_script}
+               COPYONLY
+               )
 endforeach()

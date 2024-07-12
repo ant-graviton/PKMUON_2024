@@ -1,17 +1,25 @@
 #!/bin/bash
 
+N=500
+NPROC=$(grep MHz /proc/cpuinfo | wc -l)
+IPROC=0
+PIDS=()
+mkdir -p root_file
+
 # 循环运行Geant4模拟，传入不同的i值
-for i in {0..99}
-#for i in {0..19}
-#for i in {0..199}
-do
+for I in $(seq 0 ${N}); do
+    if [ $IPROC = $NPROC ]; then
+        wait $PIDS
+        PIDS=(${PIDS[@]:1})
+    else
+        let IPROC+=1
+    fi
+    cp CryMu.mac CryMu_$I.mac
+    sed -i "s/CryMu\\.root/CryMu_${I}.root/g" CryMu_$I.mac
 
-  cp CryMu.mac CryMu_$i.mac
-  sed -i "" "s/muCRY_i.root/muCRY_${i}.root/g" CryMu_$i.mac
-
-  # 运行Geant4模拟
-  ./muPos CryMu_$i.mac &
-
+    # 运行Geant4模拟
+    echo ./muPos CryMu_$I.mac
+    ./muPos CryMu_$I.mac &> root_file/CryMu_${I}.root.log &
+    PIDS=(${PIDS[@]} $!)
 done
-
-#rm -rf CryMu_*.mac
+wait

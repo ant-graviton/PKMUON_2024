@@ -18,8 +18,8 @@
 /gps/pos/shape Square
 /gps/pos/centre 0 0 -527 mm
 
-/gps/pos/halfx 50 cm
-/gps/pos/halfy 50 cm
+/gps/pos/halfx 10.15 cm
+/gps/pos/halfy 10.15 cm
 #/gps/pos/rot1 -1 0 0
 #/gps/pos/rot2  0 0 1 
 
@@ -249,6 +249,6 @@
 
 # Number of beams generated
 #/run/beamOn 1 # for check
-/rlt/SetFileName root_file/muCRY_i.root
+/rlt/SetFileName root_file/CryMu.root
 /run/printProgress 1000
-/run/beamOn 10000
+/run/beamOn 100000

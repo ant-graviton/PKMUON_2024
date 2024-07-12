@@ -23,8 +23,7 @@ Run::Run()
 {
    totEdep=0;
   _GunEng = 0;
-  //rootFileName = "test.root";
-  rootFileName = "muCRY_i.root";
+  rootFileName = "CryMu.root";
   fRunMessenger = new RunMessenger(this);
 }
 
@@ -45,7 +44,6 @@ Run*  Run::GetInstance()
 
 void Run::initTree() {
   std::cout << "Init Tree File." << std::endl;
-  rootFileName = "muCRY_i.root";
   _file = new TFile(rootFileName.c_str(), "RECREATE");
   _tree = new TTree("T1", "Simple Out Tree");
 
