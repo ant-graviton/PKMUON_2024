@@ -16,6 +16,6 @@ for ROOTFILE in $(ls -v ../build/root_file/CryMu_*.root); do
     PIDS=(${PIDS[@]} $!)
 done
 wait
-hadd -f ../build/root_file/CryMuAna.root ../build/root_file/CryMuAna_*.root
+hadd -f ../build/root_file/CryMuAna.root $(ls -v ../build/root_file/CryMuAna_*.root)
 root -l -q -b 'src/PoCA_sim.C("../build/root_file/CryMuAna.root")'
 root -l -q -b 'src/draw_sim.C'

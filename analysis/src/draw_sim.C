@@ -62,7 +62,7 @@ TCanvas *draw_sim(const char *filename = "new_Simdata.root")
     // [TODO] Plot sig.
   }
 
-  TCanvas *c1 = new TCanvas("c1", "c1");
+  TCanvas *c1 = new TCanvas("c1", "c1", 2000, 1600);
   c1->Divide(2, 2);
 
   c1->cd(1);
