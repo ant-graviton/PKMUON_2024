@@ -7,7 +7,7 @@ PIDS=()
 mkdir -p root_file
 
 # 循环运行Geant4模拟，传入不同的i值
-for I in $(seq 0 ${N}); do
+for I in $(seq 0 $[N-1]); do
     if [ $IPROC = $NPROC ]; then
         wait $PIDS
         PIDS=(${PIDS[@]:1})
