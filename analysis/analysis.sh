@@ -1,6 +1,6 @@
 #!/bin/bash
 
-NPROC=$(grep MHz /proc/cpuinfo | wc -l)
+NPROC=8
 N=0
 PIDS=()
 

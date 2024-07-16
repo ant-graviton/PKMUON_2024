@@ -1,7 +1,7 @@
 #!/bin/bash
 
 N=500
-NPROC=$(grep MHz /proc/cpuinfo | wc -l)
+NPROC=8
 IPROC=0
 PIDS=()
 mkdir -p root_file
