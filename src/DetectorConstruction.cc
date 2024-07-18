@@ -29,8 +29,6 @@
 #include "DetectorConstruction.hh"
 #include "G4NistManager.hh"
 #include "G4Box.hh"
-#include "G4Tubs.hh"
-#include "G4Cons.hh"
 #include "G4LogicalVolume.hh"
 #include "G4PVPlacement.hh"
 #include "G4SystemOfUnits.hh"
@@ -41,11 +39,6 @@
 #include "G4GeometryManager.hh"
 #include "G4PhysicalVolumeStore.hh"
 #include "G4PhysicalConstants.hh"
-#include "G4LogicalSkinSurface.hh"
-#include "G4MaterialPropertiesTable.hh"
-#include "G4GenericTrap.hh"
-#include "G4UserLimits.hh"
-#include "Run.hh"
 
 DetectorConstruction::DetectorConstruction() : fScoringVolume(nullptr) { }
 
@@ -129,14 +122,11 @@ void DetectorConstruction::DefineMaterials()
                           0.3);
 
   // 探测器材料
-  Drift_cathode_Mat = cu;
-  Gem_inner_Mat = kaptonLess;
-  Gem_outer_Mat = cuLess;
-  Readout_plate_Mat = cu;
-  Shell_Mat = kapton;
-  Readout_bar_Mat = cu;
-  Gem_Mat = gasMixture;
-  world_Mat = air;
+  Drift_cathode_Mat = cu;  // not used temporarily
+  Gem_inner_Mat = kaptonLess;  // not used temporarily
+  Gem_outer_Mat = cuLess;  // not used temporarily
+  Shell_Mat = kapton;  // not used temporarily
+  Gem_Mat = gasMixture;  // not used temporarily
 }
 
 
@@ -146,6 +136,7 @@ void DetectorConstruction::DefineConstants()
   Gem_outer_x = 1 * m;
   Gem_outer_y = 1 * m;
   Gem_outer_z = 50 * um;  // [XXX] Original: 5 um.
+
   Gem_inner_x = 1 * m;
   Gem_inner_y = 1 * m;
   Gem_inner_z = 50 * um;
@@ -158,30 +149,38 @@ void DetectorConstruction::DefineConstants()
   box_y = 1 * m;
   box_z = 1 * m;
 
-  readoutbar_x = 2.0 * mm;
-  readoutbar_y = 200 * mm;
-  readoutbar_z = 0.1 * mm;
-  readoutbar_gap = 0.54 * mm;
-
-  readoutplate_x = 300 * mm;
-  readoutplate_y = 300 * mm;
-  readoutplate_z = 1.6 * mm;
-
   insulation_x = 300 * mm;
   insulation_y = 300 * mm;
   insulation_z = 0.1 * mm;
-
-  glass_x = 300 * mm;
-  glass_y = 300 * mm;
-  glass_z = 2.7 * mm;
 
   graphite_x = 203 * mm;
   graphite_y = 203 * mm;
   graphite_z = 0.2 * mm;
 
+  glass_x = 300 * mm;
+  glass_y = 300 * mm;
+  glass_z = 2.7 * mm;
+
   cu1_x = 300 * mm;
   cu1_y = 300 * mm;
   cu1_z = 0.1 * mm;
+
+  gasgap_x = glass_x;
+  gasgap_y = glass_y;
+  gasgap_z = 2 * mm;
+
+  readoutplate_x = 300 * mm;
+  readoutplate_y = 300 * mm;
+  readoutplate_z = 1.6 * mm;
+
+  readoutbar_x = 2.0 * mm;
+  readoutbar_y = 200 * mm;
+  readoutbar_z = 0.1 * mm;
+  readoutbar_gap = 0.54 * mm;
+
+  timereadout_x = 200 * mm;
+  timereadout_y = 200 * mm;
+  timereadout_z = 1.6 * mm;
 
   cu2_x = 200 * mm;
   cu2_y = 200 * mm;
@@ -190,27 +189,24 @@ void DetectorConstruction::DefineConstants()
   al_x = 430 * mm;
   al_y = 430 * mm;
   al_z = 45 * mm;
-
-  al1_x = 200 * mm;
-  al1_y = 200 * mm;
-  al1_z = 10 * mm;
+  al_edge = 5.0 * mm;
 
   gas_x = al_x - al_edge * 2;
   gas_y = al_y - al_edge * 2;
   gas_z = al_z - al_edge * 2;
-
-  gasgap_x = glass_x;
-  gasgap_y = glass_y;
-  gasgap_z = 2 * mm;
 
   rpc_x = 300 * mm;
   rpc_y = 300 * mm;
   rpc_z = insulation_z * 2 + glass_z * 2 + graphite_z * 2 + readoutbar_z +
           readoutplate_z + gasgap_z * 2 + cu2_z;
 
-  timereadout_x = 200 * mm;
-  timereadout_y = 200 * mm;
-  timereadout_z = 1.6 * mm;
+  mainbody_x = 300 * mm;
+  mainbody_y = 300 * mm;
+  mainbody_z = 2 * rpc_z + timereadout_z + cu2_z;
+
+  world_x = 2.2 * box_x;
+  world_y = 2.2 * box_y;
+  world_z = 2.2 * (box_z + Gem_z * num_Gem);
 
   gap1 = 4.8 * mm;
   gap2 = 2 * mm;
@@ -220,24 +216,13 @@ void DetectorConstruction::DefineConstants()
           + (num_Gem_outer * Gem_outer_z + num_Gem_inner * Gem_inner_z)
           + drift_cathode_z + readoutbar_z + readoutplate_z;
 
-  world_x = 2.2 * box_x;
-  world_y = 2.2 * box_y;
-  world_z = 2.2 * (box_z + Gem_z * num_Gem);
-
-  al_edge = 5.0 * mm;
   lsgap = 6.0 * mm;
-
   rpcgap1 = 200 * mm;
   rpcgap2 = 500 * mm;
-
   h1 = rpcgap1 + rpcgap2 / 2;
   h2 = rpcgap2 / 2;
   h3 = -rpcgap2 / 2;
   h4 = -rpcgap1 - rpcgap2 / 2;
-
-  mainbody_x = 300 * mm;
-  mainbody_y = 300 * mm;
-  mainbody_z = 2 * rpc_z + timereadout_z + cu2_z;
 }
 
 
@@ -253,7 +238,7 @@ G4VPhysicalVolume *DetectorConstruction::DefineVolumes()
   // ------------------------------------------------------------
   // Logical volumes.
   // ------------------------------------------------------------
-  DECLARE_BOX_LOGICAL_VOLUME(world,        world_Mat);
+  DECLARE_BOX_LOGICAL_VOLUME(world,        air      );
   DECLARE_BOX_LOGICAL_VOLUME(insulation,   PET      );
   DECLARE_BOX_LOGICAL_VOLUME(graphite,     graphite );
   DECLARE_BOX_LOGICAL_VOLUME(glass,        glass    );

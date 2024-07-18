@@ -35,85 +35,69 @@ class G4Material;
 class G4VPhysicalVolume;
 class G4LogicalVolume;
 
-#include "G4Material.hh"
+class DetectorConstruction : public G4VUserDetectorConstruction {
+public:
 
-class DetectorConstruction : public G4VUserDetectorConstruction
-{
-  public:
+  DetectorConstruction();
+  ~DetectorConstruction();
 
-    DetectorConstruction();
-   ~DetectorConstruction();
+  virtual G4VPhysicalVolume *Construct();
+  G4LogicalVolume *GetScoringVolume() const { return fScoringVolume; };
 
-    virtual G4VPhysicalVolume* Construct();
-    G4LogicalVolume* GetScoringVolume() const { return fScoringVolume; };
+private:
+  void DefineMaterials();
+  void DefineConstants();
+  G4VPhysicalVolume *DefineVolumes();
+  G4LogicalVolume *fScoringVolume;
 
-  private:
-     void DefineMaterials();
-     void DefineConstants();
-     G4VPhysicalVolume* DefineVolumes();
-     G4LogicalVolume* fScoringVolume;
+  // Basic materials.
+  G4Material *vacuum, *air;
+  G4Material *pb, *fe, *w, *cu, *al;
+  G4Material *glass, *graphite;
+  G4Material *PET, *F134a, *FR4;
+  G4Material *cuLess;
+  G4Material *kapton, *kaptonLess;
+  G4Material *gasMixture;
 
-     // Basic materials.
-     G4Material* vacuum;
-     G4Material* air;
-     G4Material* pb;
-     G4Material* fe;
-     G4Material* w;
-     G4Material* cu;
-     G4Material* al;
-     G4Material* glass;
-     G4Material* graphite;
-     G4Material* PET;
-     G4Material* F134a;
-     G4Material* FR4;
-     G4Material* cuLess;
-     G4Material* kapton;
-     G4Material* kaptonLess;
-     G4Material* gasMixture;
+  // Detector-specific materials.
+  G4Material *Drift_cathode_Mat;
+  G4Material *Gem_inner_Mat;
+  G4Material *Gem_outer_Mat;
+  G4Material *Shell_Mat;
+  G4Material *Gem_Mat;
 
-     // Detector-specific materials.
-     G4Material* Drift_cathode_Mat;
-     G4Material* Gem_inner_Mat;
-     G4Material* Gem_outer_Mat;
-     G4Material* Readout_plate_Mat;
-     G4Material* Shell_Mat;
-     G4Material* Readout_bar_Mat;
-     G4Material* Gem_Mat;
-     G4Material* world_Mat;
+  const G4int num_Gem_outer = 4 * 2;
+  const G4int num_Gem_inner = 4;
+  const G4int num_Gem = 4;
+  const G4int num_readoutbar = 80;
 
-     const G4int num_Gem_outer = 4 * 2;
-     const G4int num_Gem_inner = 4;
-     const G4int num_Gem = 4;
-     const G4int num_readoutbar = 80;
+  // [TODO] Use exclusively RPC or GEM.
 
-     // [TODO] Reorder the variables.
 #define DECLARE_XYZ(name)  G4double name##_x, name##_y, name##_z
-     DECLARE_XYZ(Gem_outer);
-     DECLARE_XYZ(Gem_inner);
-     DECLARE_XYZ(drift_cathode);
-     DECLARE_XYZ(box);
-     DECLARE_XYZ(readoutbar);
-     G4double readoutbar_gap;
-     DECLARE_XYZ(readoutplate);
-     DECLARE_XYZ(insulation);
-     DECLARE_XYZ(glass);
-     DECLARE_XYZ(graphite);
-     DECLARE_XYZ(cu1);
-     DECLARE_XYZ(cu2);
-     DECLARE_XYZ(al);
-     DECLARE_XYZ(al1);
-     DECLARE_XYZ(gas);
-     DECLARE_XYZ(gasgap);
-     DECLARE_XYZ(rpc);
-     DECLARE_XYZ(timereadout);
-     G4double gap1, gap2;
-     DECLARE_XYZ(Gem);
-     DECLARE_XYZ(world);
-     G4double al_edge;
-     G4double lsgap;
-     G4double rpcgap1, rpcgap2;
-     G4double h1, h2, h3, h4;
-     DECLARE_XYZ(mainbody);
+  DECLARE_XYZ(Gem_outer);
+  DECLARE_XYZ(Gem_inner);
+  DECLARE_XYZ(drift_cathode);
+  DECLARE_XYZ(box);
+  DECLARE_XYZ(insulation);
+  DECLARE_XYZ(graphite);
+  DECLARE_XYZ(glass);
+  DECLARE_XYZ(cu1);
+  DECLARE_XYZ(gasgap);
+  DECLARE_XYZ(readoutplate);
+  DECLARE_XYZ(readoutbar);
+  G4double readoutbar_gap;
+  DECLARE_XYZ(timereadout);
+  DECLARE_XYZ(cu2);
+  DECLARE_XYZ(al);
+  G4double al_edge;
+  DECLARE_XYZ(gas);
+  DECLARE_XYZ(rpc);
+  DECLARE_XYZ(mainbody);
+  DECLARE_XYZ(world);
+  G4double gap1, gap2;
+  DECLARE_XYZ(Gem);
+  G4double lsgap;
+  G4double rpcgap1, rpcgap2, h1, h2, h3, h4;
 #undef DECLARE_XYZ
 };
 
