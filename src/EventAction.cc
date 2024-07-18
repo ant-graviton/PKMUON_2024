@@ -25,95 +25,29 @@
 //
 // Previous authors: G. Guerrieri, S. Guatelli and M. G. Pia, INFN Genova, Italy
 // Authors (since 2007): S. Guatelli, University of Wollongong, Australia
-// 
+//
 #include "EventAction.hh"
-
 #include "G4Event.hh"
-#include "G4EventManager.hh"
-#include "G4ios.hh"
-#include "G4SDManager.hh"
-#include "G4UnitsTable.hh"
-#include "RunAction.hh"
-#include "G4RunManager.hh"
 #include "Run.hh"
-#include "G4SystemOfUnits.hh"
 
-EventAction::EventAction()
-
-{ 
-  
-}
- 
-EventAction::~EventAction()
+void EventAction::BeginOfEventAction(const G4Event *)
 {
+  Run::GetInstance()->ClearAll();
 }
 
-void EventAction::BeginOfEventAction(const G4Event* evt)
+void EventAction::EndOfEventAction(const G4Event *evt)
 {
+  // Compute event status.
+  bool mustatus = true;
+  for(int i = 0; i < 16; i++) {
+    if(!Run::GetInstance()->GetRpcTrkStatus(i)) {  // logical and
+      mustatus = false; break;
+    }
+  }
+  Run::GetInstance()->SetRpcStatus(mustatus);
 
- Run::GetInstance()->ClearAll();
- G4PrimaryVertex *pv = evt->GetPrimaryVertex(0);
- G4double kinE =  pv-> GetPrimary()->GetKineticEnergy();
- G4ThreeVector mom =  pv->GetPrimary()->GetMomentum();
-
-// Run::GetInstance()->RecPrimPartEng(kinE/MeV);
-// Run::GetInstance()->SetPos(pv->GetX0()/mm,pv->GetY0()/mm,pv->GetZ0()/mm);
-// Run::GetInstance()->SetPxyz(mom.x()/MeV,mom.y()/MeV,mom.z()/MeV);
-
-//G4cout<<"(x,y,z) = "<<pv->GetX0()/mm<<" "<<pv->GetY0()/mm<<" "<<pv->GetZ0()/mm<<" mm"<<G4endl;
-//G4cout<<"Momentum direction= "<<pv->GetPrimary()->GetMomentumDirection()<<G4endl;
-//G4cout<<"total Energy = "<<pv->GetPrimary()->GetTotalEnergy()<<G4endl;
- 
+  // Output the event as an TTree entry.
+  Run::GetInstance()->Fill();
+  G4int event_id = evt->GetEventID();
+  if((event_id + 1) % 10000 == 0) Run::GetInstance()->AutoSave();
 }
- 
-void EventAction::EndOfEventAction(const G4Event* evt)
-{  
-    /*
-    bool status=true;
-    for(int i=0; i<16; i++){
-        status = status && Run::GetInstance()->GetGemTrkStatus(i);
-    }
-    */
-    
-    /*
-    for(int i = 0 ; i < 16 ; i++){
-        std::cout << "igem = "<< i << ", status ="  << Run::GetInstance()->GetGemTrkStatus(i) << std::endl;
-      }
-    */
-    
-    
-    bool mustatus = true;
-    for(int i=0; i<16; i++){
-        /*
-        if (!Run::GetInstance()->GetGemTrkStatus(i)) {
-            G4cout << "Muon " << i << " status is false" << G4endl;
-        }
-        */
-        mustatus = mustatus && Run::GetInstance()->GetRpcTrkStatus(i);
-    }
-    
-    Run::GetInstance()->SetRpcStatus(mustatus);
-    //std::cout << "Stored RpcStatus in Branch: " << mustatus << std::endl;
-
-    /*
-    if(status){
-        G4int event_id = evt->GetEventID();
-        if (event_id % 10000 == 0) {
-                //G4cout << ">>> Event " << evt->GetEventID() << " done" << G4endl;
-                Run::GetInstance()->AutoSave();
-        }
-        Run::GetInstance()->Fill();
-    }
-    */
-    
-    G4int event_id = evt->GetEventID();
-        if (event_id % 10000 == 0) {
-                //G4cout << ">>> Event " << evt->GetEventID() << " done" << G4endl;
-                Run::GetInstance()->AutoSave();
-        }
-        Run::GetInstance()->Fill();
-    
-    //Run::GetInstance()->SetRpcStatus(mustatus);
-
-}
-

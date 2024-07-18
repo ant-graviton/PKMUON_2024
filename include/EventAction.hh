@@ -37,11 +37,7 @@ class G4Event;
 class EventAction : public G4UserEventAction
 {
 public:
-  EventAction();
-  ~EventAction();
-
-  void BeginOfEventAction(const G4Event*);
-  void EndOfEventAction(const G4Event*);
-
+  virtual void BeginOfEventAction(const G4Event*) override;
+  virtual void EndOfEventAction(const G4Event*) override;
 };
 #endif

@@ -37,13 +37,8 @@ class G4VSteppingVerbose;
 class ActionInitialization : public G4VUserActionInitialization
 {
   public:
-    ActionInitialization();
-    virtual ~ActionInitialization();
-
-    virtual void BuildForMaster() const;
-    virtual void Build() const;
-
-    virtual G4VSteppingVerbose* InitializeSteppingVerbose() const;
+    virtual void Build() const override;
+    virtual G4VSteppingVerbose* InitializeSteppingVerbose() const override;
 };
 
 #endif

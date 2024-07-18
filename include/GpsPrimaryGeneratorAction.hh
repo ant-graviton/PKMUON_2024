@@ -47,7 +47,7 @@ class GpsPrimaryGeneratorAction: public G4VUserPrimaryGeneratorAction
     GpsPrimaryGeneratorAction();
     ~GpsPrimaryGeneratorAction();
 
-    virtual void GeneratePrimaries(G4Event*);
+    virtual void GeneratePrimaries(G4Event*) override;
 
   private:
     G4GeneralParticleSource* fGeneralParticleSource;

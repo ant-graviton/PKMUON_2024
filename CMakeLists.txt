@@ -1,6 +1,6 @@
 #----------------------------------------------------------------------------
 # Setup the project
-cmake_minimum_required(VERSION 2.9 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.12)
 project(muPos)
 
 #----------------------------------------------------------------------------
@@ -20,8 +20,8 @@ endif()
 #
 find_package(ROOT REQUIRED)
 # Include ROOT's CMake functions for dictionary generation
-#include("${ROOT_DIR}/modules/RootNewMacros.cmake")  #ROOT5
-include("${ROOT_DIR}/ROOTUseFile.cmake")   #ROOT6
+#include("${ROOT_DIR}/modules/RootNewMacros.cmake")  # ROOT5
+include("${ROOT_DIR}/ROOTUseFile.cmake")   # ROOT6
 
 #----------------------------------------------------------------------------
 # Setup Geant4 include directories and compile definitions
@@ -32,12 +32,9 @@ include(${ROOT_USE_FILE})
 #----------------------------------------------------------------------------
 # Locate sources and headers for this project
 #
-include_directories(${PROJECT_SOURCE_DIR}/include
-                    ${Geant4_INCLUDE_DIR}
-                    ${ROOT_INCLUDE_DIRS}
-                    )
-file(GLOB sources ${PROJECT_SOURCE_DIR}/src/*.cc)
-file(GLOB headers ${PROJECT_SOURCE_DIR}/include/*.hh)
+include_directories(${PROJECT_SOURCE_DIR}/include ${Geant4_INCLUDE_DIR} ${ROOT_INCLUDE_DIRS})
+file(GLOB sources CONFIGURE_DEPENDS ${PROJECT_SOURCE_DIR}/src/*.cc)
+file(GLOB headers CONFIGURE_DEPENDS ${PROJECT_SOURCE_DIR}/include/*.hh)
 
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17") #newly added
 #set(CMAKE_CXX_STANDARD 17)
@@ -45,20 +42,15 @@ file(GLOB headers ${PROJECT_SOURCE_DIR}/include/*.hh)
 # Add the executable, and link it to the Geant4 libraries
 #
 add_executable(muPos muPos.cc ${sources} ${headers})
-target_link_libraries(muPos ${Geant4_LIBRARIES}  ${ROOT_LIBRARIES})
+target_link_libraries(muPos ${Geant4_LIBRARIES} ${ROOT_LIBRARIES})
 
 #----------------------------------------------------------------------------
 # Copy all scripts to the build directory, i.e. the directory in which we
 # build muPos. This is so that we can run the executable directly because it
 # relies on these scripts being in the current working directory.
 #
-set(muPos_SCRIPTS
-    vis.mac  SingleEngMu.mac CryMu.mac run_cry.sh run.sh
-    )
+set(muPos_SCRIPTS vis.mac SingleEngMu.mac CryMu.mac run_cry.sh run.sh)
 
 foreach(_script ${muPos_SCRIPTS})
-configure_file(${PROJECT_SOURCE_DIR}/${_script}
-               ${PROJECT_BINARY_DIR}/${_script}
-               COPYONLY
-               )
+configure_file(${PROJECT_SOURCE_DIR}/${_script} ${PROJECT_BINARY_DIR}/${_script} COPYONLY)
 endforeach()

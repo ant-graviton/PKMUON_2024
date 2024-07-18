@@ -55,7 +55,7 @@
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 DetectorConstruction::DetectorConstruction()
-  : G4VUserDetectorConstruction(),fScoringVolume(nullptr),fScoringVolume2(nullptr)
+  : G4VUserDetectorConstruction(),fScoringVolume(nullptr)
 {
   
 }
@@ -1708,11 +1708,7 @@ G4VPhysicalVolume* mainbodyPhys
                     1);          //overlaps checking                  
   */
 
-  //fScoringVolume = GemLog;
-  //fScoringVolume2 = readoutplateLog;
-  //fScoringVolume3 = PbboxLog;
-    fScoringVolume4 = graphiteplateLog;
-  //fScoringVolume4 = alboxLog;
+    fScoringVolume = graphiteplateLog;
 
   // visualization attributes ------------------------------------------------
 

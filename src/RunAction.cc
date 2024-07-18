@@ -26,53 +26,27 @@
 /// \file RunAction.cc
 /// \brief Implementation of the RunAction class
 //
-// 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
+//
 #include "RunAction.hh"
 #include "Run.hh"
-#include "PrimaryGeneratorAction.hh"
-#include "GpsPrimaryGeneratorAction.hh"
 
-#include "G4Run.hh"
-#include "G4UnitsTable.hh"
-#include "G4PhysicalConstants.hh"
-#include "G4SystemOfUnits.hh"
-#include <iomanip>
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-//RunAction::RunAction(PrimaryGeneratorAction* kin)
 RunAction::RunAction(GpsPrimaryGeneratorAction* kin)
-:G4UserRunAction(),
- fPrimary(kin)
+  :G4UserRunAction(), fPrimary(kin)
 {
   Run::GetInstance();
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
 RunAction::~RunAction()
-{ 
-  // delete fHistoManager;
+{
+  // [NOTE] We never delete the singleton Run.
 }
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void RunAction::BeginOfRunAction(const G4Run*)
 {
-   Run::GetInstance()->initTree();  
-
+  Run::GetInstance()->initTree();
 }
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void RunAction::EndOfRunAction(const G4Run*)
 {
   Run::GetInstance()->saveTree();
 }
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

@@ -28,57 +28,28 @@
 /// \brief Implementation of the ActionInitialization class
 
 #include "ActionInitialization.hh"
-#include "PrimaryGeneratorAction.hh"
 #include "GpsPrimaryGeneratorAction.hh"
 #include "RunAction.hh"
 #include "EventAction.hh"
 #include "SteppingAction.hh"
-
 #include "SteppingVerbose.hh"
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-ActionInitialization::ActionInitialization()
- : G4VUserActionInitialization()
-{}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-ActionInitialization::~ActionInitialization()
-{}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-void ActionInitialization::BuildForMaster() const
-{
-
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void ActionInitialization::Build() const
 {
-  //PrimaryGeneratorAction* primary = new PrimaryGeneratorAction();
-  GpsPrimaryGeneratorAction * primary = new GpsPrimaryGeneratorAction();
+  GpsPrimaryGeneratorAction* primary = new GpsPrimaryGeneratorAction();
   SetUserAction(primary);
-    
+
   RunAction* runAction = new RunAction(primary);
   SetUserAction(runAction);
-  
+
   EventAction* eventAction = new EventAction();
   SetUserAction(eventAction);
-  
+
   SteppingAction* stepAction = new SteppingAction();
   SetUserAction(stepAction);
-  
-  
-}  
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+}
 
 G4VSteppingVerbose* ActionInitialization::InitializeSteppingVerbose() const
 {
   return new SteppingVerbose();
-}  
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+}

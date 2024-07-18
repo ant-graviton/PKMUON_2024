@@ -46,9 +46,6 @@ class DetectorConstruction : public G4VUserDetectorConstruction
 
     virtual G4VPhysicalVolume* Construct();
     G4LogicalVolume* GetScoringVolume() const { return fScoringVolume; };
-    G4LogicalVolume* GetScoringVolume2() const { return fScoringVolume2; };
-    G4LogicalVolume* GetScoringVolume3() const { return fScoringVolume3; };
-    G4LogicalVolume* GetScoringVolume4() const { return fScoringVolume4; };
 
   // G4double GetWorldSize() {return fWorldSize;};
 
@@ -57,9 +54,6 @@ class DetectorConstruction : public G4VUserDetectorConstruction
      void DefineConstants();
      G4VPhysicalVolume* DefineVolumes();
      G4LogicalVolume* fScoringVolume;
-     G4LogicalVolume* fScoringVolume2;
-     G4LogicalVolume* fScoringVolume3;
-     G4LogicalVolume* fScoringVolume4;
 
      G4Material* vacuum;
      G4Material* air;
