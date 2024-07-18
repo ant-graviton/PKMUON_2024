@@ -86,95 +86,35 @@ class DetectorConstruction : public G4VUserDetectorConstruction
      const G4int num_Gem = 4;
      const G4int num_readoutbar = 80;
 
-     G4double Gem_outer_x;
-     G4double Gem_outer_y;
-     G4double Gem_outer_z;
-     G4double Gem_inner_x;
-     G4double Gem_inner_y;
-     G4double Gem_inner_z;
-
-     G4double drift_cathode_x;
-     G4double drift_cathode_y;
-     G4double drift_cathode_z;
-
-     G4double Box_x;
-     G4double Box_y;
-     G4double Box_z;
-
-     G4double readoutbar_x;
-     G4double readoutbar_y;
-     G4double readoutbar_z;
+     // [TODO] Reorder the variables.
+#define DECLARE_XYZ(name)  G4double name##_x, name##_y, name##_z
+     DECLARE_XYZ(Gem_outer);
+     DECLARE_XYZ(Gem_inner);
+     DECLARE_XYZ(drift_cathode);
+     DECLARE_XYZ(box);
+     DECLARE_XYZ(readoutbar);
      G4double readoutbar_gap;
-
-     G4double readoutplate_x;
-     G4double readoutplate_y;
-     G4double readoutplate_z;
-
-     G4double insulation_x;
-     G4double insulation_y;
-     G4double insulation_z;
-
-     G4double glass_x;
-     G4double glass_y;
-     G4double glass_z;
-
-     G4double graphite_x;
-     G4double graphite_y;
-     G4double graphite_z;
-
-     G4double cu1_x;
-     G4double cu1_y;
-     G4double cu1_z;
-
-     G4double cu2_x;
-     G4double cu2_y;
-     G4double cu2_z;
-
-     G4double al_x;
-     G4double al_y;
-     G4double al_z;
-
-     G4double al1_x;
-     G4double al1_y;
-     G4double al1_z;
-
-     G4double gas_x;
-     G4double gas_y;
-     G4double gas_z;
-
-     G4double gasgap;
-     G4double rpc_x;
-     G4double rpc_y;
-     G4double rpc_z;
-
-     G4double timereadout_x;
-     G4double timereadout_y;
-     G4double timereadout_z;
-
-     G4double gap1;
-     G4double gap2;
-     G4double Gem_x;
-     G4double Gem_y;
-     G4double Gem_z;
-
-     G4double experimentalHall_x;
-     G4double experimentalHall_y;
-     G4double experimentalHall_z;
-
+     DECLARE_XYZ(readoutplate);
+     DECLARE_XYZ(insulation);
+     DECLARE_XYZ(glass);
+     DECLARE_XYZ(graphite);
+     DECLARE_XYZ(cu1);
+     DECLARE_XYZ(cu2);
+     DECLARE_XYZ(al);
+     DECLARE_XYZ(al1);
+     DECLARE_XYZ(gas);
+     DECLARE_XYZ(gasgap);
+     DECLARE_XYZ(rpc);
+     DECLARE_XYZ(timereadout);
+     G4double gap1, gap2;
+     DECLARE_XYZ(Gem);
+     DECLARE_XYZ(world);
      G4double al_edge;
      G4double lsgap;
-
-     G4double rpcgap1;
-     G4double rpcgap2;
-
-     G4double h1;
-     G4double h2;
-     G4double h3;
-     G4double h4;
-
-     G4double mainbody_x;
-     G4double mainbody_y;
-     G4double mainbody_z;
+     G4double rpcgap1, rpcgap2;
+     G4double h1, h2, h3, h4;
+     DECLARE_XYZ(mainbody);
+#undef DECLARE_XYZ
 };
 
 #endif
