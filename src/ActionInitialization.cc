@@ -32,7 +32,6 @@
 #include "RunAction.hh"
 #include "EventAction.hh"
 #include "SteppingAction.hh"
-#include "SteppingVerbose.hh"
 
 void ActionInitialization::Build() const
 {
@@ -47,9 +46,4 @@ void ActionInitialization::Build() const
 
   SteppingAction* stepAction = new SteppingAction();
   SetUserAction(stepAction);
-}
-
-G4VSteppingVerbose* ActionInitialization::InitializeSteppingVerbose() const
-{
-  return new SteppingVerbose();
 }

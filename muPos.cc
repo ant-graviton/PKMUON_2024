@@ -25,100 +25,62 @@
 //
 /// \file rdecay01.cc
 /// \brief Main program of the radioactivedecay/rdecay01 example
-//
-//
-//
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-#include <string_view>
-#include "G4Types.hh"
-
-#ifdef G4MULTITHREADED
-#include "G4MTRunManager.hh"
-#else
 #include "G4RunManager.hh"
-#endif
-
 #include "G4UImanager.hh"
-#include "Randomize.hh"
-
 #include "DetectorConstruction.hh"
 #include "ActionInitialization.hh"
-#include "SteppingVerbose.hh"
-
 #include "G4UIExecutive.hh"
 #include "G4VisExecutive.hh"
 #include "GetSeedFromTime.hh"
-#include "TRandom3.h"
 #include "FTFP_BERT.hh"
 #include "G4EmStandardPhysics_option4.hh"
 #include "G4StepLimiterPhysics.hh"
 
+int main(int argc,char** argv)
+{
+  // Detect interactive mode (if no arguments) and define UI session.
+  G4UIExecutive* ui = NULL;
+  if(argc == 1) ui = new G4UIExecutive(argc, argv);
 
-
-
-int main(int argc,char** argv) {
-
-  //detect interactive mode (if no arguments) and define UI session
-  G4UIExecutive* ui = 0;
-  if (argc == 1) ui = new G4UIExecutive(argc,argv);
-
-  
-  //choose the Random engine
+  // Choose the random engine.
   CLHEP::HepRandom::setTheEngine(new CLHEP::RanecuEngine);
   G4Random::setTheEngine(new CLHEP::RanecuEngine);
   unsigned long seed = GetSeedFromTime();
-  G4cout << "seed=" <<seed<< G4endl;
+  G4cout << "seed=" << seed << G4endl;
   CLHEP::HepRandom::setTheSeed(seed);
   G4Random::setTheSeed(seed);
-  gRandom->SetSeed(seed);
-  //construct the default run manager
-  //#ifdef G4MULTITHREADED
-  //G4MTRunManager* runManager = new G4MTRunManager;
-  //runManager->SetNumberOfThreads(std::min(4,G4Threading::G4GetNumberOfCores()));
-  //#else
-  //my Verbose output class
-  G4VSteppingVerbose::SetInstance(new SteppingVerbose);
-  G4RunManager* runManager = new G4RunManager;
-  //#endif
 
-  //set mandatory initialization classes
-  //
+  G4RunManager* runManager = new G4RunManager;
+
+  // Set mandatory initialization classes.
   runManager->SetUserInitialization(new DetectorConstruction);
   G4VModularPhysicsList* physicsList = new FTFP_BERT;
   physicsList->ReplacePhysics(new G4EmStandardPhysics_option4());
   physicsList->RegisterPhysics(new G4StepLimiterPhysics());
   runManager->SetUserInitialization(physicsList);
-
   runManager->SetUserInitialization(new ActionInitialization);
 
-  //initialize G4 kernel
   runManager->Initialize();
 
-  //initialize visualization
+  // Initialize visualization.
   G4VisManager* visManager = nullptr;
 
-  //get the pointer to the User Interface manager
+  // Get the pointer to the User Interface manager.
   G4UImanager* UImanager = G4UImanager::GetUIpointer();
 
-  if (ui)  {
-   //interactive mode
-   visManager = new G4VisExecutive;
-   visManager->Initialize();
-   UImanager->ApplyCommand("/control/execute vis.mac");
-   ui->SessionStart();
-   delete ui;
-  }
-  else  {
-   //batch mode
-   G4String command = "/control/execute ";
-   G4String fileName = argv[1];
-   UImanager->ApplyCommand(command+fileName);
+  if (ui)  {  // interactive mode
+    visManager = new G4VisExecutive;
+    visManager->Initialize();
+    UImanager->ApplyCommand("/control/execute vis.mac");
+    ui->SessionStart();
+    delete ui;
+  } else {  // batch mode
+    G4String command = "/control/execute ";
+    G4String fileName = argv[1];
+    UImanager->ApplyCommand(command + fileName);
   }
 
-  //job termination
   delete visManager;
   delete runManager;
 }
-

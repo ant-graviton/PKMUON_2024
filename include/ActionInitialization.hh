@@ -38,7 +38,6 @@ class ActionInitialization : public G4VUserActionInitialization
 {
   public:
     virtual void Build() const override;
-    virtual G4VSteppingVerbose* InitializeSteppingVerbose() const override;
 };
 
 #endif
