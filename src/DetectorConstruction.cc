@@ -47,11 +47,7 @@
 #include "G4UserLimits.hh"
 #include "Run.hh"
 
-DetectorConstruction::DetectorConstruction() : fScoringVolume(nullptr)
-{
-
-}
-
+DetectorConstruction::DetectorConstruction() : fScoringVolume(nullptr) { }
 
 DetectorConstruction::~DetectorConstruction()
 {
@@ -63,7 +59,6 @@ DetectorConstruction::~DetectorConstruction()
   delete kaptonLess;
   delete gasMixture;
 }
-
 
 void DetectorConstruction::DefineMaterials()
 {
@@ -288,45 +283,52 @@ G4VPhysicalVolume *DetectorConstruction::DefineVolumes()
   G4double x_center, z_center;
   G4RotationMatrix *rot;
 
+  // [TODO] Check the formulas of x_center and z_center.
+
   // insulation -> rpc
-  z_center = 0.5 * rpc_z - gasgap_z - 0.5 * insulation_z;
+  z_center = 0.5 * rpc_z - 1 * gasgap_z - 0.5 * insulation_z;
   DECLARE_PHYSICAL_VOLUME(insulation, 1, NULL, G4ThreeVector(0, 0, z_center), rpc);
+
   z_center = 0.5 * rpc_z - 2 * gasgap_z - 1.5 * insulation_z - 2 * graphite_z - 2 * glass_z;
   DECLARE_PHYSICAL_VOLUME(insulation, 2, NULL, G4ThreeVector(0, 0, z_center), rpc);
 
-  // glass -> rpc
-  z_center = 0.5 * rpc_z - 0.5 * glass_z - insulation_z - graphite_z - gasgap_z;
-  DECLARE_PHYSICAL_VOLUME(glass, 1, NULL, G4ThreeVector(0, 0, z_center), rpc);
-  z_center = 0.5 * rpc_z - 1.5 * glass_z - insulation_z - graphite_z - 2 * gasgap_z;
-  DECLARE_PHYSICAL_VOLUME(glass, 2, NULL, G4ThreeVector(0, 0, z_center), rpc);
-
   // graphite -> rpc
-  z_center = 0.5 * rpc_z - 0.5 * graphite_z - insulation_z - gasgap_z;
+  z_center = 0.5 * rpc_z - 1 * gasgap_z - insulation_z - 0.5 * graphite_z;
   DECLARE_PHYSICAL_VOLUME(graphite, 1, NULL, G4ThreeVector(0, 0, z_center), rpc);
-  z_center = 0.5 * rpc_z - 0.5 * graphite_z - insulation_z - graphite_z - glass_z * 2 - 2 * gasgap_z;
+
+  z_center = 0.5 * rpc_z - 2 * gasgap_z - insulation_z - 1.5 * graphite_z - glass_z * 2;
   DECLARE_PHYSICAL_VOLUME(graphite, 2, NULL, G4ThreeVector(0, 0, z_center), rpc);
 
+  // glass -> rpc
+  z_center = 0.5 * rpc_z - 1 * gasgap_z - insulation_z - graphite_z - 0.5 * glass_z;
+  DECLARE_PHYSICAL_VOLUME(glass, 1, NULL, G4ThreeVector(0, 0, z_center), rpc);
+
+  z_center = 0.5 * rpc_z - 2 * gasgap_z - insulation_z - graphite_z - 1.5 * glass_z;
+  DECLARE_PHYSICAL_VOLUME(glass, 2, NULL, G4ThreeVector(0, 0, z_center), rpc);
+
   // cu1 -> rpc
-  z_center = 0.5 * rpc_z - readoutbar_z - insulation_z * 2 - graphite_z * 2 - glass_z * 2 - cu1_z * 0.5 - 2 * gasgap_z;
+  z_center = 0.5 * rpc_z - 2 * gasgap_z - 2 * insulation_z - 2 * graphite_z - 2 * glass_z - readoutbar_z - 0.5 * cu1_z;
   DECLARE_PHYSICAL_VOLUME(cu1,, NULL, G4ThreeVector(0, 0, z_center), rpc);
 
   // gasgap -> rpc
-  z_center = 0.5 * rpc_z - insulation_z - graphite_z - glass_z - gasgap_z * 1.5;
+  z_center = 0.5 * rpc_z - 1.5 * gasgap_z - insulation_z - graphite_z - glass_z;
   DECLARE_PHYSICAL_VOLUME(gasgap, 1, NULL, G4ThreeVector(0, 0, z_center), rpc);
-  z_center = 0.5 * rpc_z - gasgap_z * 0.5;
+
+  z_center = 0.5 * rpc_z - 0.5 * gasgap_z;
   DECLARE_PHYSICAL_VOLUME(gasgap, 2, NULL, G4ThreeVector(0, 0, z_center), rpc);
 
   // readoutplate -> rpc
-  z_center = 0.5*rpc_z - 0.5*readoutplate_z - insulation_z*2 - graphite_z*2 - glass_z*2 - readoutbar_z - 2*gasgap_z - cu1_z;
+  z_center = 0.5*rpc_z - 2*gasgap_z - 2*insulation_z - 2*graphite_z - 2*glass_z - readoutbar_z - cu1_z - 0.5*readoutplate_z;
   DECLARE_PHYSICAL_VOLUME(readoutplate,, NULL, G4ThreeVector(0, 0, z_center), rpc);
 
   // readoutbar -> rpc
-  z_center = 0.5 * rpc_z - 0.5 * readoutbar_z - insulation_z * 2 - graphite_z * 2 - glass_z * 2 - 2 * gasgap_z;
+  z_center = 0.5 * rpc_z - 2 * gasgap_z - 2 * insulation_z - 2 * graphite_z - 2 * glass_z - 0.5 * readoutbar_z;
   {
     G4VisAttributes visAttributes(G4Colour(1.0, 0.0, 0.0));  // red
     visAttributes.SetVisibility(true), visAttributes.SetForceSolid(true);  // solid
     readoutbar_log->SetVisAttributes(visAttributes);
 
+    // [XXX] (num_readoutbar - 1) / 2 == floor((num_readoutbar - 1) / 2.0)
     G4double ini = -readoutbar_x * (num_readoutbar / 2 - 0.5) - readoutbar_gap * ((num_readoutbar - 1) / 2);
     for(int i = 0; i < num_readoutbar; i++) {
       x_center = ini + (readoutbar_gap + readoutbar_x) * i;
@@ -340,7 +342,9 @@ G4VPhysicalVolume *DetectorConstruction::DefineVolumes()
   // rpc -> mainbody
   z_center = -0.5 * mainbody_z + 0.5 * rpc_z;
   DECLARE_PHYSICAL_VOLUME(rpc, 1, NULL, G4ThreeVector(0, 0, z_center), mainbody);
-  z_center = 0.5 * mainbody_z - 0.5 * rpc_z;
+
+  // [XXX] The rotation matrix is not correct?
+  z_center = +0.5 * mainbody_z - 0.5 * rpc_z;
   rot = &(new G4RotationMatrix)->rotateY(180 * deg).rotateZ(90 * deg);
   DECLARE_PHYSICAL_VOLUME(rpc, 2, rot, G4ThreeVector(0, 0, z_center), mainbody);
 
