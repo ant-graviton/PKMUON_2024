@@ -25,44 +25,41 @@
 //
 /// \file DetectorConstruction.hh
 /// \brief Definition of the DetectorConstruction class
-//
-// 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo...... 
 
 #ifndef DetectorConstruction_h
 #define DetectorConstruction_h 1
 
 #include "G4VUserDetectorConstruction.hh"
-//#include "globals.hh"
+
+class G4Material;
+class G4VPhysicalVolume;
+class G4LogicalVolume;
+
 #include "G4Material.hh"
-//#include "G4LogicalVolume.hh"
-//#include "G4PVPlacement.hh"
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 class DetectorConstruction : public G4VUserDetectorConstruction
 {
   public:
-  
+
     DetectorConstruction();
    ~DetectorConstruction();
 
-    virtual     G4VPhysicalVolume* Construct();
+    virtual G4VPhysicalVolume* Construct();
     G4LogicalVolume* GetScoringVolume() const { return fScoringVolume; };
     G4LogicalVolume* GetScoringVolume2() const { return fScoringVolume2; };
     G4LogicalVolume* GetScoringVolume3() const { return fScoringVolume3; };
     G4LogicalVolume* GetScoringVolume4() const { return fScoringVolume4; };
-           
-  // G4double GetWorldSize() {return fWorldSize;}; 
+
+  // G4double GetWorldSize() {return fWorldSize;};
 
   private:
      void DefineMaterials();
      void DefineConstants();
      G4VPhysicalVolume* DefineVolumes();
-     G4LogicalVolume*  fScoringVolume;
-     G4LogicalVolume*  fScoringVolume2;
-     G4LogicalVolume*  fScoringVolume3;
-     G4LogicalVolume*  fScoringVolume4;
+     G4LogicalVolume* fScoringVolume;
+     G4LogicalVolume* fScoringVolume2;
+     G4LogicalVolume* fScoringVolume3;
+     G4LogicalVolume* fScoringVolume4;
 
      G4Material* vacuum;
      G4Material* air;
@@ -100,14 +97,14 @@ class DetectorConstruction : public G4VUserDetectorConstruction
      G4double Gem_outter_bar1_x;
      G4double Gem_outter_bar1_y;
      G4double Gem_outter_bar1_z;
-     
+
      G4double Gem_outter_bar2_x;
      G4double Gem_outter_bar2_y;
      G4double Gem_outter_bar2_z;
      G4double Gem_outter_x;
      G4double Gem_outter_y;
      G4double Gem_outter_z;
-     
+
      G4double Gem_hole_inner_rmin1;
      G4double Gem_hole_inner_rmin2;
      G4double Gem_hole_inner_rmax1;
@@ -115,22 +112,22 @@ class DetectorConstruction : public G4VUserDetectorConstruction
      G4double Gem_hole_inner_hz;
      G4double Gem_hole_inner_phimin;
      G4double Gem_hole_inner_phimax;
-     
+
      G4double Gem_inner_bar1_x;
      G4double Gem_inner_bar1_y;
      G4double Gem_inner_bar1_z;
      G4double Gem_inner_bar2_x;
      G4double Gem_inner_bar2_y;
      G4double Gem_inner_bar2_z;
-     
+
      G4double Gem_inner_x;
      G4double Gem_inner_y;
      G4double Gem_inner_z;
-                             
+
      G4double drift_cathode_x;
      G4double drift_cathode_y;
      G4double drift_cathode_z;
-                             
+
      G4double readout_bar_x;
      G4double readout_bar_gap_x;
      G4double readout_bar_y;
@@ -138,42 +135,42 @@ class DetectorConstruction : public G4VUserDetectorConstruction
      G4double readout_plate_x;
      G4double readout_plate_y;
      G4double readout_plate_z;
-     
+
      G4double gap1;
      G4double gap2;
      G4double Gem_x;
      G4double Gem_y;
-     
-     const G4int num_Gem_outter=4*2;
-     const G4int num_Gem_inner=4;
+
+     const G4int num_Gem_outter = 4*2;
+     const G4int num_Gem_inner = 4;
      G4double Gem_z;
-     
+
      G4double Box_x;
      G4double Box_y;
      G4double Box_z;
-     
+
      G4int num_Gem;
-     
+
      G4double experimentalHall_x;
      G4double experimentalHall_y;
      G4double experimentalHall_z;
-     
+
      G4double Pbplate_x;
      G4double Pbplate_y;
      G4double Pbplate_z;
-     
+
      G4double Pbbox_x;
      G4double Pbbox_y;
      G4double Pbbox_z;
-     
+
      G4double Febox_x;
      G4double Febox_y;
      G4double Febox_z;
- 
+
      G4double Wbox_x;
      G4double Wbox_y;
      G4double Wbox_z;
- 
+
      G4double Vacbox_x;
      G4double Vacbox_y;
      G4double Vacbox_z;
@@ -277,9 +274,7 @@ class DetectorConstruction : public G4VUserDetectorConstruction
      G4double Z14;
      G4double Z15;
      G4double Z16;
-    
+
 };
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 #endif
-

@@ -26,30 +26,22 @@
 // Previous authors: G. Guerrieri, S. Guatelli and M. G. Pia, INFN Genova, Italy
 // Authors (since 2007): S. Guatelli,University of Wollongong, Australia
 // Contributions by F. Ambroglini INFN Perugia, Italy
-// 
+//
 #ifndef EventAction_h
 #define EventAction_h 1
 
 #include "G4UserEventAction.hh"
-//#include "globals.hh"
-#include <map>
 
 class G4Event;
+
 class EventAction : public G4UserEventAction
 {
 public:
   EventAction();
   ~EventAction();
 
-public:
   void BeginOfEventAction(const G4Event*);
   void EndOfEventAction(const G4Event*);
 
-private:
-
- 
- 
 };
 #endif
-
-    

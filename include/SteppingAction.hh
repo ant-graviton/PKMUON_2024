@@ -32,11 +32,10 @@
 #define SteppingAction_h 1
 
 #include "G4UserSteppingAction.hh"
-#include "G4SystemOfUnits.hh"
-#include "G4LogicalVolume.hh"
 #include "globals.hh"
-#include <map>
+
 class G4LogicalVolume;
+
 class SteppingAction : public G4UserSteppingAction
 {
   public:
@@ -45,38 +44,30 @@ class SteppingAction : public G4UserSteppingAction
     void UserSteppingAction(const G4Step*);
 
    private:
-    G4LogicalVolume*  fScoringVolume;
-    G4LogicalVolume*  fScoringVolume2;
-    G4LogicalVolume*  fScoringVolume3;
-    G4LogicalVolume*  fScoringVolume4;
+    G4LogicalVolume* fScoringVolume;
+    G4LogicalVolume* fScoringVolume2;
+    G4LogicalVolume* fScoringVolume3;
+    G4LogicalVolume* fScoringVolume4;
 
    private:
     void printDaughters(const G4LogicalVolume* mother);
-    /*
-    double Z1 = -513.34;
-    double Z2 = -500.;
-    double Z3 = 513.24;
-    double Z4 = 526.58;
-    double deltaZ = 0.1;
-    */
-     G4double Z1 = -459.5;
-     G4double Z2 = -451.9; 
-     G4double Z3 = -445.8;
-     G4double Z4 = -438.2;
-     G4double Z5 = -259.5;
-     G4double Z6 = -251.9;
-     G4double Z7 = -245.8;
-     G4double Z8 = -238.2;
-     G4double Z9 = 240.5;
-     G4double Z10 = 248.1;
-     G4double Z11 = 254.2;
-     G4double Z12 = 261.8;
-     G4double Z13 = 440.5;
-     G4double Z14 = 448.1;
-     G4double Z15 = 454.2;
-     G4double Z16 = 461.8;
-
-     G4double deltaZ = 0.1;
-
+    G4double Z1 = -459.5;
+    G4double Z2 = -451.9;
+    G4double Z3 = -445.8;
+    G4double Z4 = -438.2;
+    G4double Z5 = -259.5;
+    G4double Z6 = -251.9;
+    G4double Z7 = -245.8;
+    G4double Z8 = -238.2;
+    G4double Z9 = 240.5;
+    G4double Z10 = 248.1;
+    G4double Z11 = 254.2;
+    G4double Z12 = 261.8;
+    G4double Z13 = 440.5;
+    G4double Z14 = 448.1;
+    G4double Z15 = 454.2;
+    G4double Z16 = 461.8;
+    G4double deltaZ = 0.1;
 };
+
 #endif

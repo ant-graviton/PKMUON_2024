@@ -27,40 +27,26 @@
 /// \brief Definition of the RunMessenger class
 //
 
-//
-// $Id: RunMessenger.hh 94932 2015-12-18 09:21:29Z gcosmo $
-//
-//
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
-
 #ifndef RunMessenger_h
 #define RunMessenger_h 1
 
 #include "G4UImessenger.hh"
-#include "globals.hh"
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 class Run;
 class G4UIdirectory;
 class G4UIcmdWithAString;
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 class RunMessenger: public G4UImessenger
 {
   public:
    RunMessenger(Run* run);
    ~RunMessenger();
+   virtual void SetNewValue(G4UIcommand*, G4String);
 
-   virtual void SetNewValue(G4UIcommand* ,G4String );
   private:
-   Run*             fRun;
-   G4UIdirectory*         fFileNameDir;
-   G4UIcmdWithAString*    fSetRootFileNameCmd;    
+   Run* fRun;
+   G4UIdirectory* fFileNameDir;
+   G4UIcmdWithAString* fSetRootFileNameCmd;
 };
 
 #endif
-
