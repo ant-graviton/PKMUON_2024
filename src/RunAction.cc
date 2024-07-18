@@ -31,22 +31,19 @@
 #include "Run.hh"
 
 RunAction::RunAction(GpsPrimaryGeneratorAction* kin)
-  :G4UserRunAction(), fPrimary(kin)
+  : G4UserRunAction(), fPrimary(kin)
 {
   Run::GetInstance();
 }
 
-RunAction::~RunAction()
-{
-  // [NOTE] We never delete the singleton Run.
-}
+RunAction::~RunAction() { }
 
 void RunAction::BeginOfRunAction(const G4Run*)
 {
-  Run::GetInstance()->initTree();
+  Run::GetInstance()->InitTree();
 }
 
 void RunAction::EndOfRunAction(const G4Run*)
 {
-  Run::GetInstance()->saveTree();
+  Run::GetInstance()->SaveTree();
 }

@@ -32,22 +32,15 @@
 
 void EventAction::BeginOfEventAction(const G4Event *)
 {
-  Run::GetInstance()->ClearAll();
+  // empty
 }
 
 void EventAction::EndOfEventAction(const G4Event *evt)
 {
-  // Compute event status.
-  bool mustatus = true;
-  for(int i = 0; i < 16; i++) {
-    if(!Run::GetInstance()->GetRpcTrkStatus(i)) {  // logical and
-      mustatus = false; break;
-    }
-  }
-  Run::GetInstance()->SetRpcStatus(mustatus);
-
   // Output the event as an TTree entry.
   Run::GetInstance()->Fill();
+
+  // Save check-points.
   G4int event_id = evt->GetEventID();
   if((event_id + 1) % 10000 == 0) Run::GetInstance()->AutoSave();
 }

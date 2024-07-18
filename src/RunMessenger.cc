@@ -11,23 +11,23 @@ RunMessenger::RunMessenger(Run* run)
   fFileNameDir = new G4UIdirectory("/rlt/");
   fFileNameDir->SetGuidance("provide the root file full name");
 
-  fSetRootFileNameCmd = new G4UIcmdWithAString("/rlt/SetFileName", this);
-  fSetRootFileNameCmd->SetGuidance("save the results in the root file");
-  fSetRootFileNameCmd->SetParameterName("fileName", true);
-  fSetRootFileNameCmd->SetDefaultValue("rlt.root");
-  fSetRootFileNameCmd->AvailableForStates(G4State_PreInit, G4State_Idle);
+  fSetFileNameCmd = new G4UIcmdWithAString("/rlt/SetFileName", this);
+  fSetFileNameCmd->SetGuidance("save the results in the root file");
+  fSetFileNameCmd->SetParameterName("fileName", true);
+  fSetFileNameCmd->SetDefaultValue("rlt.root");
+  fSetFileNameCmd->AvailableForStates(G4State_PreInit, G4State_Idle);
 }
 
 RunMessenger::~RunMessenger()
 {
-  delete fSetRootFileNameCmd;
+  delete fSetFileNameCmd;
   delete fFileNameDir;
 }
 
 void RunMessenger::SetNewValue(G4UIcommand* command, G4String newValues)
 {
-  if(command == fSetRootFileNameCmd) {
+  if(command == fSetFileNameCmd) {
     G4cout << "\n---> root name from file: " << newValues << G4endl;
-    fRun->SetROOTFullName(newValues);
+    fRun->SetRootName(newValues);
   }
 }

@@ -39,8 +39,8 @@ public:
   SteppingVerbose();
  ~SteppingVerbose();
 
-  virtual void TrackingStarted();
-  virtual void StepInfo();
+  virtual void TrackingStarted() override;
+  virtual void StepInfo() override;
 };
 
 #endif

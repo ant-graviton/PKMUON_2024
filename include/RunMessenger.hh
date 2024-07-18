@@ -41,12 +41,12 @@ class RunMessenger: public G4UImessenger
   public:
    RunMessenger(Run* run);
    ~RunMessenger();
-   virtual void SetNewValue(G4UIcommand*, G4String);
+   virtual void SetNewValue(G4UIcommand*, G4String) override;
 
   private:
    Run* fRun;
    G4UIdirectory* fFileNameDir;
-   G4UIcmdWithAString* fSetRootFileNameCmd;
+   G4UIcmdWithAString* fSetFileNameCmd;
 };
 
 #endif

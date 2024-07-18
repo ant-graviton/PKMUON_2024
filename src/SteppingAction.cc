@@ -76,9 +76,7 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep)
   if(igem == -1) return;
 
   // Avoid duplicate hits of the same layer.
-  // [NOTE] This operation has no atomicity but is safe in ST mode.
-  if(Run::GetInstance()->GetRpcTrkStatus(igem)) return;
-  Run::GetInstance()->SetRpcTrkStatus(igem, true);
+  if(!Run::GetInstance()->TestAndSetRpcTrkStatus(igem)) return;
 
   // Get momentum of the track.
   G4ThreeVector curDirection = aStep->GetPreStepPoint()->GetMomentumDirection();
@@ -87,12 +85,5 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep)
   G4double pz = curDirection.z();
 
   // Record the hit info.
-  Run::GetInstance()->SetRpcTrkPx(igem, px);
-  Run::GetInstance()->SetRpcTrkPy(igem, py);
-  Run::GetInstance()->SetRpcTrkPz(igem, pz);
-  Run::GetInstance()->SetRpcTrkE(igem, totalenergy/MeV);
-  Run::GetInstance()->SetRpcTrkEdep(igem, energy/MeV);
-  Run::GetInstance()->SetRpcTrkX(igem, x/mm);
-  Run::GetInstance()->SetRpcTrkY(igem, y/mm);
-  Run::GetInstance()->SetRpcTrkZ(igem, z/mm);
+  Run::GetInstance()->SetRpcTrkInfo(igem, px, py, pz, totalenergy/MeV, energy/MeV, x/mm, y/mm, z/mm);
 }

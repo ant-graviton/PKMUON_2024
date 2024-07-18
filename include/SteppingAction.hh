@@ -41,7 +41,7 @@ class SteppingAction : public G4UserSteppingAction
   public:
     SteppingAction();
    ~SteppingAction();
-    void UserSteppingAction(const G4Step*);
+    virtual void UserSteppingAction(const G4Step*) override;
 
    private:
     G4LogicalVolume* fScoringVolume;
