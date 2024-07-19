@@ -46,7 +46,7 @@ class SteppingAction : public G4UserSteppingAction
    private:
     G4LogicalVolume* fScoringVolume;
     static inline constexpr int nlayer = 16;  // need C++17
-    static inline constexpr G4double Z[nlayer] = {
+    static inline constexpr G4double Z[nlayer] = {  // [XXX] Check twice.
       -459.5, -451.9, -445.8, -438.2, -259.5, -251.9, -245.8, -238.2,
       +240.5, +248.1, +254.2, +261.8, +440.5, +448.1, +454.2, +461.8
     };

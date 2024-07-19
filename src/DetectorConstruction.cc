@@ -206,10 +206,10 @@ void DetectorConstruction::DefineConstants()
   lsgap = 6.0 * mm;
   rpcgap1 = 200 * mm;
   rpcgap2 = 500 * mm;
-  h1 = rpcgap1 + rpcgap2 / 2;
-  h2 = rpcgap2 / 2;
-  h3 = -rpcgap2 / 2;
-  h4 = -rpcgap1 - rpcgap2 / 2;
+  h1 = -rpcgap2 / 2 - rpcgap1;
+  h2 = -rpcgap2 / 2;
+  h3 = +rpcgap2 / 2;
+  h4 = +rpcgap2 / 2 + rpcgap1;
 
   rpc_x = 300 * mm;
   rpc_y = 300 * mm;
@@ -344,6 +344,8 @@ G4VPhysicalVolume *DetectorConstruction::DefineVolumes()
   // mainbody -> gas
   z_center = -0.5 * al_z + al_edge + 0.5 * mainbody_z + lsgap;
   DECLARE_PHYSICAL_VOLUME(mainbody,, NULL, G4ThreeVector(0, 0, z_center), gas);
+
+  // ----- VALIDATED BELOW -----
 
   // gas -> al
   DECLARE_PHYSICAL_VOLUME(gas,, NULL, G4ThreeVector(), al);

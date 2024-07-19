@@ -41,8 +41,9 @@
 # Specify style (surface or wireframe):
 #/vis/viewer/set/style wireframe
 #
-# Draw coordinate axes:
-#/vis/scene/add/axes 0 0 0 1 m
+# Draw coordinate axes and scale:
+/vis/scene/add/axes
+/vis/scene/add/scale
 #
 # Draw smooth trajectories at end of event, showing trajectory points
 # as markers 2 pixels wide:
