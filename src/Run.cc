@@ -4,6 +4,9 @@
 #include <TFile.h>
 #include <TTree.h>
 #include "RunMessenger.hh"
+#include <stdlib.h>
+
+Run *Run::instance = Run::CreateInstance();
 
 Run::Run()
 {
@@ -21,8 +24,20 @@ Run::~Run()
 
 Run *Run::GetInstance()
 {
-  static Run *instance = new Run;
   return instance;
+}
+
+Run *Run::CreateInstance()
+{
+  instance = new Run;
+  atexit(DestroyInstance);
+  return instance;
+}
+
+void Run::DestroyInstance()
+{
+  delete instance;
+  instance = NULL;
 }
 
 void Run::InitTree()

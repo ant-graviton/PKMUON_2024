@@ -195,19 +195,6 @@ void DetectorConstruction::DefineConstants()
   gas_y = al_y - al_edge * 2;
   gas_z = al_z - al_edge * 2;
 
-  rpc_x = 300 * mm;
-  rpc_y = 300 * mm;
-  rpc_z = insulation_z * 2 + glass_z * 2 + graphite_z * 2 + readoutbar_z +
-          readoutplate_z + gasgap_z * 2 + cu2_z;
-
-  mainbody_x = 300 * mm;
-  mainbody_y = 300 * mm;
-  mainbody_z = 2 * rpc_z + timereadout_z + cu2_z;
-
-  world_x = 2.2 * box_x;
-  world_y = 2.2 * box_y;
-  world_z = 2.2 * (box_z + Gem_z * num_Gem);
-
   gap1 = 4.8 * mm;
   gap2 = 2 * mm;
   Gem_x = 1 * m;
@@ -223,6 +210,19 @@ void DetectorConstruction::DefineConstants()
   h2 = rpcgap2 / 2;
   h3 = -rpcgap2 / 2;
   h4 = -rpcgap1 - rpcgap2 / 2;
+
+  rpc_x = 300 * mm;
+  rpc_y = 300 * mm;
+  rpc_z = insulation_z * 2 + glass_z * 2 + graphite_z * 2 + readoutbar_z +
+          readoutplate_z + gasgap_z * 2 + cu2_z;
+
+  mainbody_x = 300 * mm;
+  mainbody_y = 300 * mm;
+  mainbody_z = 2 * rpc_z + timereadout_z + cu2_z;
+
+  world_x = 2.2 * box_x;
+  world_y = 2.2 * box_y;
+  world_z = 2.2 * (box_z + Gem_z * num_Gem);
 }
 
 

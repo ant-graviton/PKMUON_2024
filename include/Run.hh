@@ -29,6 +29,10 @@ public:
   bool TestAndSetRpcTrkStatus(int i);
 
 private:
+  static Run *instance;
+  static Run *CreateInstance();
+  static void DestroyInstance();
+
   RunMessenger *fRunMessenger;
   G4String rootName;
   TTree *_tree;

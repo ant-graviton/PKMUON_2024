@@ -91,13 +91,13 @@ private:
   DECLARE_XYZ(al);
   G4double al_edge;
   DECLARE_XYZ(gas);
-  DECLARE_XYZ(rpc);
-  DECLARE_XYZ(mainbody);
-  DECLARE_XYZ(world);
   G4double gap1, gap2;
   DECLARE_XYZ(Gem);
   G4double lsgap;
   G4double rpcgap1, rpcgap2, h1, h2, h3, h4;
+  DECLARE_XYZ(rpc);
+  DECLARE_XYZ(mainbody);
+  DECLARE_XYZ(world);
 #undef DECLARE_XYZ
 };
 
