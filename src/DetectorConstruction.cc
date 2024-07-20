@@ -122,33 +122,16 @@ void DetectorConstruction::DefineMaterials()
                           0.3);
 
   // 探测器材料
-  Drift_cathode_Mat = cu;  // not used temporarily
-  Gem_inner_Mat = kaptonLess;  // not used temporarily
-  Gem_outer_Mat = cuLess;  // not used temporarily
-  Shell_Mat = kapton;  // not used temporarily
-  Gem_Mat = gasMixture;  // not used temporarily
+  drift_cathode_mat = cu;  // not used temporarily
+  rpc_inner_mat = kaptonLess;  // not used temporarily
+  rpc_outer_mat = cuLess;  // not used temporarily
+  shell_mat = kapton;  // not used temporarily
+  rpc_mat = gasMixture;  // not used temporarily
 }
-
 
 void DetectorConstruction::DefineConstants()
 // [TODO] Consolidate the values.
 {
-  Gem_outer_x = 1 * m;
-  Gem_outer_y = 1 * m;
-  Gem_outer_z = 50 * um;  // [XXX] Original: 5 um.
-
-  Gem_inner_x = 1 * m;
-  Gem_inner_y = 1 * m;
-  Gem_inner_z = 50 * um;
-
-  drift_cathode_x = 1 * m;
-  drift_cathode_y = 1 * m;
-  drift_cathode_z = 0.1 * mm;
-
-  box_x = 1 * m;
-  box_y = 1 * m;
-  box_z = 1 * m;
-
   insulation_x = 300 * mm;
   insulation_y = 300 * mm;
   insulation_z = 0.1 * mm;
@@ -197,11 +180,6 @@ void DetectorConstruction::DefineConstants()
 
   gap1 = 4.8 * mm;
   gap2 = 2 * mm;
-  Gem_x = 1 * m;
-  Gem_y = 1 * m;
-  Gem_z = gap1 + num_Gem_inner * gap2
-          + (num_Gem_outer * Gem_outer_z + num_Gem_inner * Gem_inner_z)
-          + drift_cathode_z + readoutbar_z + readoutplate_z;
 
   lsgap = 6.0 * mm;
   rpcgap1 = 200 * mm;
@@ -213,18 +191,19 @@ void DetectorConstruction::DefineConstants()
 
   rpc_x = 300 * mm;
   rpc_y = 300 * mm;
-  rpc_z = insulation_z * 2 + glass_z * 2 + graphite_z * 2 + readoutbar_z +
-          readoutplate_z + gasgap_z * 2 + cu2_z;
+  rpc_z = insulation_z * 2 + graphite_z * 2 + glass_z * 2 + cu1_z +
+          gasgap_z * 2 + readoutplate_z + readoutbar_z;
 
   mainbody_x = 300 * mm;
   mainbody_y = 300 * mm;
   mainbody_z = 2 * rpc_z + timereadout_z + cu2_z;
 
-  world_x = 2.2 * box_x;
-  world_y = 2.2 * box_y;
-  world_z = 2.2 * (box_z + Gem_z * num_Gem);
-}
+  // ----- VALIDATED BELOW -----
 
+  world_x = 1 * m;
+  world_y = 1 * m;
+  world_z = 2 * m;
+}
 
 G4VPhysicalVolume *DetectorConstruction::DefineVolumes()
 {
@@ -238,20 +217,20 @@ G4VPhysicalVolume *DetectorConstruction::DefineVolumes()
   // ------------------------------------------------------------
   // Logical volumes.
   // ------------------------------------------------------------
-  DECLARE_BOX_LOGICAL_VOLUME(world,        air      );
   DECLARE_BOX_LOGICAL_VOLUME(insulation,   PET      );
   DECLARE_BOX_LOGICAL_VOLUME(graphite,     graphite );
   DECLARE_BOX_LOGICAL_VOLUME(glass,        glass    );
-  DECLARE_BOX_LOGICAL_VOLUME(gasgap,       F134a    );
-  DECLARE_BOX_LOGICAL_VOLUME(readoutbar,   cu       );
-  DECLARE_BOX_LOGICAL_VOLUME(readoutplate, FR4      );
   DECLARE_BOX_LOGICAL_VOLUME(cu1,          cu       );
+  DECLARE_BOX_LOGICAL_VOLUME(gasgap,       F134a    );
+  DECLARE_BOX_LOGICAL_VOLUME(readoutplate, FR4      );
+  DECLARE_BOX_LOGICAL_VOLUME(readoutbar,   cu       );
+  DECLARE_BOX_LOGICAL_VOLUME(timereadout,  FR4      );
   DECLARE_BOX_LOGICAL_VOLUME(cu2,          cu       );
-  DECLARE_BOX_LOGICAL_VOLUME(rpc,          vacuum   );
   DECLARE_BOX_LOGICAL_VOLUME(al,           al       );
   DECLARE_BOX_LOGICAL_VOLUME(gas,          F134a    );
-  DECLARE_BOX_LOGICAL_VOLUME(timereadout,  FR4      );
+  DECLARE_BOX_LOGICAL_VOLUME(rpc,          vacuum   );
   DECLARE_BOX_LOGICAL_VOLUME(mainbody,     vacuum   );
+  DECLARE_BOX_LOGICAL_VOLUME(world,        air      );
 
 #define DECLARE_PHYSICAL_VOLUME(name, pf, rot, pos, mom)  \
   G4VPhysicalVolume *name##pf##_phy = \

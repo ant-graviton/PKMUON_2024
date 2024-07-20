@@ -60,24 +60,15 @@ private:
   G4Material *gasMixture;
 
   // Detector-specific materials.
-  G4Material *Drift_cathode_Mat;
-  G4Material *Gem_inner_Mat;
-  G4Material *Gem_outer_Mat;
-  G4Material *Shell_Mat;
-  G4Material *Gem_Mat;
+  G4Material *drift_cathode_mat;
+  G4Material *rpc_inner_mat;
+  G4Material *rpc_outer_mat;
+  G4Material *shell_mat;
+  G4Material *rpc_mat;
 
-  const G4int num_Gem_outer = 4 * 2;
-  const G4int num_Gem_inner = 4;
-  const G4int num_Gem = 4;
   const G4int num_readoutbar = 80;
 
-  // [TODO] Use exclusively RPC or GEM.
-
 #define DECLARE_XYZ(name)  G4double name##_x, name##_y, name##_z
-  DECLARE_XYZ(Gem_outer);
-  DECLARE_XYZ(Gem_inner);
-  DECLARE_XYZ(drift_cathode);
-  DECLARE_XYZ(box);
   DECLARE_XYZ(insulation);
   DECLARE_XYZ(graphite);
   DECLARE_XYZ(glass);
@@ -92,7 +83,6 @@ private:
   G4double al_edge;
   DECLARE_XYZ(gas);
   G4double gap1, gap2;
-  DECLARE_XYZ(Gem);
   G4double lsgap;
   G4double rpcgap1, rpcgap2, h1, h2, h3, h4;
   DECLARE_XYZ(rpc);
