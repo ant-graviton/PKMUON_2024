@@ -43,6 +43,9 @@ public:
 
   virtual G4VPhysicalVolume *Construct();
   G4LogicalVolume *GetScoringVolume() const { return fScoringVolume; };
+  G4double GetDetectorMinZ() const;
+  G4double GetDetectorHalfX() const;
+  G4double GetDetectorHalfY() const;
 
 private:
   void DefineMaterials();

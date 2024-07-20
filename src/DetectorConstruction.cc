@@ -40,7 +40,10 @@
 #include "G4PhysicalVolumeStore.hh"
 #include "G4PhysicalConstants.hh"
 
-DetectorConstruction::DetectorConstruction() : fScoringVolume(nullptr) { }
+DetectorConstruction::DetectorConstruction() : fScoringVolume(nullptr)
+{
+  DefineConstants();
+}
 
 DetectorConstruction::~DetectorConstruction()
 {
@@ -200,9 +203,9 @@ void DetectorConstruction::DefineConstants()
 
   // ----- VALIDATED BELOW -----
 
-  world_x = 1 * m;
-  world_y = 1 * m;
-  world_z = 2 * m;
+  world_x = al_x * 1.2;
+  world_y = al_y * 1.2;
+  world_z = (h4 - h1 + al_z) * 1.2;
 }
 
 G4VPhysicalVolume *DetectorConstruction::DefineVolumes()
@@ -337,7 +340,6 @@ G4VPhysicalVolume *DetectorConstruction::DefineVolumes()
 
   // world
   DECLARE_PHYSICAL_VOLUME(world,, NULL, G4ThreeVector(), NULL);
-  world_log->SetVisAttributes(G4VisAttributes::GetInvisible());
 
   fScoringVolume = graphite_log;
   return world_phy;
@@ -351,6 +353,9 @@ G4VPhysicalVolume *DetectorConstruction::Construct()
   G4SolidStore::GetInstance()->Clean();
 
   DefineMaterials();
-  DefineConstants();
   return DefineVolumes();
 }
+
+G4double DetectorConstruction::GetDetectorMinZ() const { return h1 - al_z / 2; }
+G4double DetectorConstruction::GetDetectorHalfX() const { return al_x / 2; }
+G4double DetectorConstruction::GetDetectorHalfY() const { return al_y / 2; }

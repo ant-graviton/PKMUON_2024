@@ -29,11 +29,23 @@
 
 #include "GpsPrimaryGeneratorAction.hh"
 #include "G4GeneralParticleSource.hh"
+#include "G4SPSPosDistribution.hh"
+#include "G4RunManager.hh"
+#include "DetectorConstruction.hh"
 
 GpsPrimaryGeneratorAction::GpsPrimaryGeneratorAction()
   : G4VUserPrimaryGeneratorAction(), fGeneralParticleSource(nullptr)
 {
   fGeneralParticleSource = new G4GeneralParticleSource();
+  auto posDist = fGeneralParticleSource->GetCurrentSource()->GetPosDist();
+  posDist->SetPosDisType("Plane");
+  posDist->SetPosDisShape("Square");
+
+  auto detectorConstruction = (DetectorConstruction *)
+    G4RunManager::GetRunManager()->GetUserDetectorConstruction();
+  posDist->SetCentreCoords({0, 0, detectorConstruction->GetDetectorMinZ()});
+  posDist->SetHalfX(detectorConstruction->GetDetectorHalfX());
+  posDist->SetHalfY(detectorConstruction->GetDetectorHalfY());
 }
 
 GpsPrimaryGeneratorAction::~GpsPrimaryGeneratorAction()
