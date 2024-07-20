@@ -13,8 +13,6 @@ class RunMessenger;
 
 class Run {
 public:
-  Run();
-  virtual ~Run();
   static Run *GetInstance();
 
   void SetRootName(G4String name) { rootName = name; }
@@ -29,9 +27,8 @@ public:
   bool TestAndSetRpcTrkStatus(int i);
 
 private:
-  static Run *instance;
-  static Run *CreateInstance();
-  static void DestroyInstance();
+  Run();
+  ~Run();
 
   RunMessenger *fRunMessenger;
   G4String rootName;

@@ -1,12 +1,10 @@
 // 2020.5.8 by siguang wang (siguang@pku.edu.cn)
 
 #include "Run.hh"
+#include "RunMessenger.hh"
 #include <TFile.h>
 #include <TTree.h>
-#include "RunMessenger.hh"
-#include <stdlib.h>
-
-Run *Run::instance = Run::CreateInstance();
+#include <filesystem>
 
 Run::Run()
 {
@@ -24,24 +22,15 @@ Run::~Run()
 
 Run *Run::GetInstance()
 {
-  return instance;
-}
-
-Run *Run::CreateInstance()
-{
-  instance = new Run;
-  atexit(DestroyInstance);
-  return instance;
-}
-
-void Run::DestroyInstance()
-{
-  delete instance;
-  instance = NULL;
+  static Run run;
+  return &run;
 }
 
 void Run::InitTree()
 {
+  using namespace std::filesystem;
+  create_directories(path(rootName.c_str()).parent_path());
+
   _file = new TFile(rootName, "RECREATE");
   _tree = new TTree("T1", "Simple Out Tree");
 

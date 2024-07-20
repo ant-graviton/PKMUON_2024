@@ -19,5 +19,6 @@
 
 /run/initialize
 /rlt/SetFileName root_file/CryMu.root
-/run/printProgress 1000
-/run/beamOn 100000
+/camera/enable
+/run/printProgress 1
+/run/beamOn 1

@@ -9,10 +9,10 @@ RunMessenger::RunMessenger(Run* run)
   : G4UImessenger(), fRun(run)
 {
   fFileNameDir = new G4UIdirectory("/rlt/");
-  fFileNameDir->SetGuidance("provide the root file full name");
+  fFileNameDir->SetGuidance("Iterate with ROOT library.");
 
   fSetFileNameCmd = new G4UIcmdWithAString("/rlt/SetFileName", this);
-  fSetFileNameCmd->SetGuidance("save the results in the root file");
+  fSetFileNameCmd->SetGuidance("Set output pathname.");
   fSetFileNameCmd->SetParameterName("fileName", true);
   fSetFileNameCmd->SetDefaultValue("rlt.root");
   fSetFileNameCmd->AvailableForStates(G4State_PreInit, G4State_Idle);

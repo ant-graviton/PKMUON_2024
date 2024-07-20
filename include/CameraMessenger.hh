@@ -23,25 +23,30 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-// Previous authors: G. Guerrieri, S. Guatelli and M. G. Pia, INFN Genova, Italy
-// Authors (since 2007): S. Guatelli, University of Wollongong, Australia
-//
-#include "EventAction.hh"
-#include "G4Event.hh"
-#include "Run.hh"
-#include "Camera.hh"
 
-void EventAction::BeginOfEventAction(const G4Event *)
-{
-  Camera::GetInstance()->NewEvent();
-}
+#ifndef CameraMessenger_h
+#define CameraMessenger_h 1
 
-void EventAction::EndOfEventAction(const G4Event *evt)
-{
-  // Output the event as an TTree entry.
-  Run::GetInstance()->Fill();
+#include "G4UImessenger.hh"
 
-  // Save check-points.
-  G4int event_id = evt->GetEventID();
-  if((event_id + 1) % 10000 == 0) Run::GetInstance()->AutoSave();
-}
+class Camera;
+class G4UIdirectory;
+class G4UIcmdWithoutParameter;
+class G4UIcmdWithAString;
+
+class CameraMessenger: public G4UImessenger {
+public:
+  CameraMessenger(Camera *camera);
+  ~CameraMessenger();
+  virtual void SetNewValue(G4UIcommand *, G4String) override;
+
+private:
+  Camera *fCamera;
+  G4UIdirectory *fCameraDir;
+  G4UIcmdWithoutParameter *fEnableCmd;
+  G4UIcmdWithoutParameter *fDisableCmd;
+  G4UIcmdWithAString *fSetSaveDirCmd;
+  G4UIcmdWithAString *fSetSaveTypeCmd;
+};
+
+#endif
