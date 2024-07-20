@@ -4,15 +4,12 @@
  * Written by <lyazj@github.com>.
  * Support ST mode temporarily.
  */
-#ifndef _GNU_SOURCE
-#define _GNU_SOURCE
-#endif  /* _GNU_SOURCE */
 #include "Camera.hh"
 #include "CameraMessenger.hh"
+#include "Run.hh"
 #include "G4UImanager.hh"
 #include <string>
 #include <filesystem>
-#include <unistd.h>
 
 using namespace std;
 using namespace filesystem;
@@ -20,7 +17,7 @@ using namespace filesystem;
 namespace {
 
 bool enabled = false;
-string save_dir = "camera_" + to_string(gettid());
+string save_dir = "camera_" + to_string(Run::GetThreadId());
 string save_type = "png";
 G4UImanager *UImanager;
 long long run_i = -1, event_i, step_i;

@@ -5,6 +5,9 @@
 #include <TFile.h>
 #include <TTree.h>
 #include <filesystem>
+#include <syscall.h>
+#include <unistd.h>
+#include <pthread.h>
 
 Run::Run()
 {
@@ -108,4 +111,15 @@ void Run::ClearAll()
     RpcTrkStatus[i] = false;
   }
   RpcStatus = false;
+}
+
+int64_t Run::GetThreadId()
+{
+#ifdef __APPLE__
+  uint64_t tid;
+  pthread_threadid_np(NULL, &tid);
+  return tid;
+#else  /* __APPLE__ */
+  return syscall(SYS_gettid);
+#endif  /* __APPLE__ */
 }

@@ -14,6 +14,7 @@ class RunMessenger;
 class Run {
 public:
   static Run *GetInstance();
+  static int64_t GetThreadId();
 
   void SetRootName(G4String name) { rootName = name; }
 
