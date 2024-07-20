@@ -37,7 +37,7 @@
 #include "G4EmStandardPhysics_option4.hh"
 #include "G4StepLimiterPhysics.hh"
 
-int main(int argc,char** argv)
+int main(int argc, char** argv)
 {
   // Detect interactive mode (if no arguments) and define UI session.
   G4UIExecutive* ui = NULL;
