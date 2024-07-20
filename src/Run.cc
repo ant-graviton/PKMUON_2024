@@ -29,7 +29,8 @@ Run *Run::GetInstance()
 void Run::InitTree()
 {
   using namespace std::filesystem;
-  create_directories(path(rootName.c_str()).parent_path());
+  auto dirpath = path(rootName.c_str()).parent_path();
+  if(!dirpath.empty()) create_directories(dirpath);
 
   _file = new TFile(rootName, "RECREATE");
   _tree = new TTree("T1", "Simple Out Tree");
