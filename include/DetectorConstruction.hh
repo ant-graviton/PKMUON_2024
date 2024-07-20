@@ -36,6 +36,7 @@ class G4VPhysicalVolume;
 class G4LogicalVolume;
 
 #define DETECTOR_OPTION_SCORING_ONLY  0b00000001
+#define DETECTOR_OPTION_VACUUM_ENV    0b00000010
 
 class DetectorConstruction : public G4VUserDetectorConstruction {
 public:
