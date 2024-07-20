@@ -40,7 +40,8 @@
 #include "G4PhysicalVolumeStore.hh"
 #include "G4PhysicalConstants.hh"
 
-DetectorConstruction::DetectorConstruction() : fScoringVolume(nullptr)
+DetectorConstruction::DetectorConstruction(int o)
+  : options(o), num_readoutbar(80)
 {
   DefineConstants();
 }
@@ -220,20 +221,21 @@ G4VPhysicalVolume *DetectorConstruction::DefineVolumes()
   // ------------------------------------------------------------
   // Logical volumes.
   // ------------------------------------------------------------
-  DECLARE_BOX_LOGICAL_VOLUME(insulation,   PET      );
-  DECLARE_BOX_LOGICAL_VOLUME(graphite,     graphite );
-  DECLARE_BOX_LOGICAL_VOLUME(glass,        glass    );
-  DECLARE_BOX_LOGICAL_VOLUME(cu1,          cu       );
-  DECLARE_BOX_LOGICAL_VOLUME(gasgap,       F134a    );
-  DECLARE_BOX_LOGICAL_VOLUME(readoutplate, FR4      );
-  DECLARE_BOX_LOGICAL_VOLUME(readoutbar,   cu       );
-  DECLARE_BOX_LOGICAL_VOLUME(timereadout,  FR4      );
-  DECLARE_BOX_LOGICAL_VOLUME(cu2,          cu       );
-  DECLARE_BOX_LOGICAL_VOLUME(al,           al       );
-  DECLARE_BOX_LOGICAL_VOLUME(gas,          F134a    );
-  DECLARE_BOX_LOGICAL_VOLUME(rpc,          vacuum   );
-  DECLARE_BOX_LOGICAL_VOLUME(mainbody,     vacuum   );
-  DECLARE_BOX_LOGICAL_VOLUME(world,        air      );
+  int scoring_only = options & DETECTOR_OPTION_SCORING_ONLY;
+  DECLARE_BOX_LOGICAL_VOLUME(insulation,   scoring_only ? vacuum   : PET      );
+  DECLARE_BOX_LOGICAL_VOLUME(graphite,     scoring_only ? graphite : graphite );
+  DECLARE_BOX_LOGICAL_VOLUME(glass,        scoring_only ? vacuum   : glass    );
+  DECLARE_BOX_LOGICAL_VOLUME(cu1,          scoring_only ? vacuum   : cu       );
+  DECLARE_BOX_LOGICAL_VOLUME(gasgap,       scoring_only ? vacuum   : F134a    );
+  DECLARE_BOX_LOGICAL_VOLUME(readoutplate, scoring_only ? vacuum   : FR4      );
+  DECLARE_BOX_LOGICAL_VOLUME(readoutbar,   scoring_only ? vacuum   : cu       );
+  DECLARE_BOX_LOGICAL_VOLUME(timereadout,  scoring_only ? vacuum   : FR4      );
+  DECLARE_BOX_LOGICAL_VOLUME(cu2,          scoring_only ? vacuum   : cu       );
+  DECLARE_BOX_LOGICAL_VOLUME(al,           scoring_only ? vacuum   : al       );
+  DECLARE_BOX_LOGICAL_VOLUME(gas,          scoring_only ? vacuum   : F134a    );
+  DECLARE_BOX_LOGICAL_VOLUME(rpc,          scoring_only ? vacuum   : vacuum   );
+  DECLARE_BOX_LOGICAL_VOLUME(mainbody,     scoring_only ? vacuum   : vacuum   );
+  DECLARE_BOX_LOGICAL_VOLUME(world,        scoring_only ? vacuum   : air      );
 
 #define DECLARE_PHYSICAL_VOLUME(name, pf, rot, pos, mom)  \
   G4VPhysicalVolume *name##pf##_phy = \

@@ -35,10 +35,12 @@ class G4Material;
 class G4VPhysicalVolume;
 class G4LogicalVolume;
 
+#define DETECTOR_OPTION_SCORING_ONLY  0b00000001
+
 class DetectorConstruction : public G4VUserDetectorConstruction {
 public:
 
-  DetectorConstruction();
+  DetectorConstruction(int options = 0);
   ~DetectorConstruction();
 
   virtual G4VPhysicalVolume *Construct();
@@ -52,6 +54,9 @@ private:
   void DefineConstants();
   G4VPhysicalVolume *DefineVolumes();
   G4LogicalVolume *fScoringVolume;
+
+  const int options;
+  const int num_readoutbar;
 
   // Basic materials.
   G4Material *vacuum, *air;
@@ -68,8 +73,6 @@ private:
   G4Material *rpc_outer_mat;
   G4Material *shell_mat;
   G4Material *rpc_mat;
-
-  const G4int num_readoutbar = 80;
 
 #define DECLARE_XYZ(name)  G4double name##_x, name##_y, name##_z
   DECLARE_XYZ(insulation);
