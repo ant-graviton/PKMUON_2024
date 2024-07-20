@@ -26,13 +26,13 @@
 /// \file rdecay01.cc
 /// \brief Main program of the radioactivedecay/rdecay01 example
 
+#include "Run.hh"
 #include "G4RunManager.hh"
 #include "G4UImanager.hh"
 #include "DetectorConstruction.hh"
 #include "ActionInitialization.hh"
 #include "G4UIExecutive.hh"
 #include "G4VisExecutive.hh"
-#include "GetSeedFromTime.hh"
 #include "FTFP_BERT.hh"
 #include "G4EmStandardPhysics_option4.hh"
 #include "G4StepLimiterPhysics.hh"
@@ -46,7 +46,7 @@ int main(int argc, char** argv)
   // Choose the random engine.
   CLHEP::HepRandom::setTheEngine(new CLHEP::RanecuEngine);
   G4Random::setTheEngine(new CLHEP::RanecuEngine);
-  unsigned long seed = GetSeedFromTime();
+  uint64_t seed = Run::GetSeed();
   G4cout << "seed=" << seed << G4endl;
   CLHEP::HepRandom::setTheSeed(seed);
   G4Random::setTheSeed(seed);

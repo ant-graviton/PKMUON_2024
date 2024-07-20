@@ -8,6 +8,8 @@
 #include <syscall.h>
 #include <unistd.h>
 #include <pthread.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 Run::Run()
 {
@@ -113,13 +115,25 @@ void Run::ClearAll()
   RpcStatus = false;
 }
 
-int64_t Run::GetThreadId()
+uint64_t Run::GetThreadId()
 {
 #ifdef __APPLE__
   uint64_t tid;
   pthread_threadid_np(NULL, &tid);
   return tid;
 #else  /* __APPLE__ */
-  return syscall(SYS_gettid);
+  int64_t tid = syscall(SYS_gettid);
+  if(tid < 0) {  // probably ENOSYS
+    perror("gettid");
+    exit(EXIT_FAILURE);
+  }
+  return tid;
 #endif  /* __APPLE__ */
+}
+
+uint64_t Run::GetSeed()
+{
+  return std::chrono::duration_cast<std::chrono::nanoseconds>(
+      std::chrono::system_clock::now().time_since_epoch()
+  ).count() + GetThreadId();
 }

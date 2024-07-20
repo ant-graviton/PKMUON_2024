@@ -5,6 +5,7 @@
 
 #include "globals.hh"
 #include <Rtypes.h>
+#include <stdint.h>
 
 class TFile;
 class TTree;
@@ -14,7 +15,8 @@ class RunMessenger;
 class Run {
 public:
   static Run *GetInstance();
-  static int64_t GetThreadId();
+  static uint64_t GetThreadId();
+  static uint64_t GetSeed();
 
   void SetRootName(G4String name) { rootName = name; }
 
