@@ -29,11 +29,10 @@
 #include "EventAction.hh"
 #include "G4Event.hh"
 #include "Run.hh"
-#include "Camera.hh"
 
 void EventAction::BeginOfEventAction(const G4Event *)
 {
-  Camera::GetInstance()->NewEvent();
+  // empty
 }
 
 void EventAction::EndOfEventAction(const G4Event *evt)

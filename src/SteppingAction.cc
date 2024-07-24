@@ -29,7 +29,6 @@
 
 #include "SteppingAction.hh"
 #include "Run.hh"
-#include "Camera.hh"
 #include "G4SystemOfUnits.hh"
 #include "DetectorConstruction.hh"
 #include "G4RunManager.hh"
@@ -40,8 +39,6 @@ SteppingAction::~SteppingAction() { }
 
 void SteppingAction::UserSteppingAction(const G4Step* aStep)
 {
-  Camera::GetInstance()->NewStep();
-
   // Reject steps in non-scoring volumes.
   G4LogicalVolume* volume = aStep->GetPreStepPoint()->GetTouchableHandle()->GetVolume()->GetLogicalVolume();
   if(!fScoringVolume) {  // memoization (this term is not a typo)

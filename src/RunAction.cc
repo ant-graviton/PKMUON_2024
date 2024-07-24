@@ -29,7 +29,6 @@
 //
 #include "RunAction.hh"
 #include "Run.hh"
-#include "Camera.hh"
 
 RunAction::RunAction(GpsPrimaryGeneratorAction* kin)
   : G4UserRunAction(), fPrimary(kin)
@@ -42,7 +41,6 @@ RunAction::~RunAction() { }
 void RunAction::BeginOfRunAction(const G4Run*)
 {
   Run::GetInstance()->InitTree();
-  Camera::GetInstance()->NewRun();
 }
 
 void RunAction::EndOfRunAction(const G4Run*)

@@ -75,7 +75,7 @@ target_link_libraries(muPos ${Geant4_LIBRARIES} ${ROOT_LIBRARIES})
 # build muPos. This is so that we can run the executable directly because it
 # relies on these scripts being in the current working directory.
 #
-set(scripts vis.mac SingleEngMu.mac CryMu.mac CryMuGps.mac CryMuCamera.mac run_cry.sh run.sh)
+set(scripts vis.mac SingleEngMu.mac CryMu.mac CryMuGps.mac run_cry.sh run.sh)
 
 foreach(script ${scripts})
     configure_file(${PROJECT_SOURCE_DIR}/${script} ${PROJECT_BINARY_DIR}/${script} COPYONLY)
