@@ -18,6 +18,13 @@ using namespace std;
 
 namespace {
 
+G4LogicalVolume *CreateBoxVolume(const string &name, G4double hx, G4double hy, G4double hz, G4Material *material)
+{
+  G4cout << "* Box " << name << ": " << hx * 2 << ", " << hy * 2 << ", " << hz * 2 << " (mm)" << G4endl;
+  auto box = new G4Box(name, hx, hy, hz);
+  return new G4LogicalVolume(box, material, name);
+}
+
 G4double ParsePhysicsVariable(const string &variable)
 {
   G4double value;
@@ -32,14 +39,23 @@ G4double ParsePhysicsVariable(const string &variable)
   return value;
 }
 
+G4Material *ParseMaterial(const string &name)
+{
+  G4Material *material = G4Material::GetMaterial(name, false);
+  if(!material) {
+    G4cerr << "ERROR: unknown material: " << name << G4endl;
+    exit(EXIT_FAILURE);
+  }
+  return material;
+}
+
 void ProcessBox(const string &name, YAML::Node node)
 {
   G4double x = ParsePhysicsVariable(node["x"].as<string>());
   G4double y = ParsePhysicsVariable(node["y"].as<string>());
   G4double z = ParsePhysicsVariable(node["z"].as<string>());
-  G4Material *material = G4Material::GetMaterial(node["material"].as<string>());
-  auto solid = new G4Box(name, x / 2, y / 2, z / 2);
-  new G4LogicalVolume(solid, material, name);
+  G4Material *material = ParseMaterial(node["material"].as<string>());
+  CreateBoxVolume(name, x / 2, y / 2, z / 2, material);
 }
 
 vector<G4LogicalVolume *> ProcessStackComponents(YAML::Node node,
@@ -101,12 +117,12 @@ void ProcessBottomUp(const string &name, YAML::Node node)
   size_t duplicate = 1;
   if(node["duplicate"]) duplicate = node["duplicate"].as<size_t>();
   hz *= duplicate;
+  G4double hz_i = hz;
   ProcessStackSize(name, node, hx, hy, hz);
-  G4Material *material = G4Material::GetMaterial(node["material"].as<string>());
+  G4Material *material = ParseMaterial(node["material"].as<string>());
 
-  auto solid = new G4Box(name, hx, hy, hz);
-  auto logical = new G4LogicalVolume(solid, material, name);
-  G4double x = 0.0, y = 0.0, z = -hz;
+  auto logical = CreateBoxVolume(name, hx, hy, hz, material);
+  G4double x = 0.0, y = 0.0, z = -hz_i;
   size_t i = 0;
   for(size_t d = 0; d < duplicate; ++d) for(G4LogicalVolume *child : children) {
     G4double ht = ((G4Box *)child->GetSolid())->GetZHalfLength();
@@ -124,12 +140,12 @@ void ProcessLeftRight(const string &name, YAML::Node node)
   size_t duplicate = 1;
   if(node["duplicate"]) duplicate = node["duplicate"].as<size_t>();
   hx *= duplicate;
+  G4double hx_i = hx;
   ProcessStackSize(name, node, hx, hy, hz);
-  G4Material *material = G4Material::GetMaterial(node["material"].as<string>());
+  G4Material *material = ParseMaterial(node["material"].as<string>());
 
-  auto solid = new G4Box(name, hx, hy, hz);
-  auto logical = new G4LogicalVolume(solid, material, name);
-  G4double x = -hx, y = 0.0, z = 0.0;
+  auto logical = CreateBoxVolume(name, hx, hy, hz, material);
+  G4double x = -hx_i, y = 0.0, z = 0.0;
   size_t i = 0;
   for(size_t d = 0; d < duplicate; ++d) for(G4LogicalVolume *child : children) {
     G4double ht = ((G4Box *)child->GetSolid())->GetXHalfLength();
@@ -170,8 +186,7 @@ void ProcessRotation(const string &name, YAML::Node node)
   }
   G4ThreeVector v(box->GetXHalfLength(), box->GetYHalfLength(), box->GetZHalfLength());
   v = *rotation * v;
-  G4Box *solid = new G4Box(name, abs(v.x()), abs(v.y()), abs(v.z()));
-  G4LogicalVolume *logical = new G4LogicalVolume(solid, child->GetMaterial(), name);
+  auto logical = CreateBoxVolume(name, abs(v.x()), abs(v.y()), abs(v.z()), child->GetMaterial());
   new G4PVPlacement(rotation, {0, 0, 0}, child, name, logical, false, 0, true);
 }
 

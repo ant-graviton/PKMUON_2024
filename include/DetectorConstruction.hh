@@ -30,6 +30,7 @@
 #define DetectorConstruction_h 1
 
 #include "G4VUserDetectorConstruction.hh"
+#include <vector>
 
 class G4Material;
 class G4VPhysicalVolume;
@@ -52,50 +53,12 @@ public:
 
 private:
   void DefineMaterials();
-  void DefineConstants();
   G4VPhysicalVolume *DefineVolumes();
+
   G4LogicalVolume *fScoringVolume;
+  std::vector<G4VPhysicalVolume *> fScoringPVs;
 
   const int options;
-  const int num_readoutbar;
-
-  // Basic materials.
-  G4Material *vacuum, *air;
-  G4Material *pb, *fe, *w, *cu, *al;
-  G4Material *glass, *graphite;
-  G4Material *PET, *F134a, *FR4;
-  G4Material *cuLess;
-  G4Material *kapton, *kaptonLess;
-  G4Material *gasMixture;
-
-  // Detector-specific materials.
-  G4Material *drift_cathode_mat;
-  G4Material *rpc_inner_mat;
-  G4Material *rpc_outer_mat;
-  G4Material *shell_mat;
-  G4Material *rpc_mat;
-
-#define DECLARE_XYZ(name)  G4double name##_x, name##_y, name##_z
-  DECLARE_XYZ(insulation);
-  DECLARE_XYZ(graphite);
-  DECLARE_XYZ(glass);
-  DECLARE_XYZ(cu1);
-  DECLARE_XYZ(gasgap);
-  DECLARE_XYZ(readoutplate);
-  DECLARE_XYZ(readoutbar);
-  G4double readoutbar_gap;
-  DECLARE_XYZ(timereadout);
-  DECLARE_XYZ(cu2);
-  DECLARE_XYZ(al);
-  G4double al_edge;
-  DECLARE_XYZ(gas);
-  G4double gap1, gap2;
-  G4double lsgap;
-  G4double rpcgap1, rpcgap2, h1, h2, h3, h4;
-  DECLARE_XYZ(rpc);
-  DECLARE_XYZ(mainbody);
-  DECLARE_XYZ(world);
-#undef DECLARE_XYZ
 };
 
 #endif

@@ -8,7 +8,7 @@ rpc_readout_plate:
   x: &rpc_readout_board_x 300 mm
   y: &rpc_readout_board_y 300 mm
   z: 1.4 mm
-  material: rpc_fr4
+  material: rpc_gas
 
 rpc_readout_cu:
   solid: box

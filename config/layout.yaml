@@ -1,0 +1,41 @@
+# Schema
+schema: schema.yaml
+
+---
+
+world_major_gap:
+  solid: box
+  x: &rpc_x 430 mm
+  y: &rpc_y 430 mm
+  z: 500 mm
+  material: &world_material G4_AIR
+  
+world_minor_gap:
+  solid: box
+  x: *rpc_x
+  y: *rpc_y
+  z: 200 mm
+  material: *world_material
+
+world:
+  solid: bottom_up
+  components:
+    - rpc
+    - world_minor_gap
+    - rpc
+    - world_major_gap
+    - rpc
+    - world_minor_gap
+    - rpc
+  x: 516 mm
+  y: 516 mm
+  z: 1296 mm
+  material: *world_material
+
+---
+
+# Comments
+materials:
+  - G4_AIR
+external:
+  - rpc

@@ -22,7 +22,7 @@ rpc_glass:
   x: *rpc_mainbody_x
   y: *rpc_mainbody_y
   z: 2.7 mm
-  material: rpc_glass
+  material: G4_Pyrex_Glass
 
 rpc_gas:
   solid: box
@@ -79,6 +79,7 @@ rpc_content:
     - rpc_screw_gap
     - rpc_mainbody
     - rpc_gas
+  z: 35 mm
   material: rpc_gas
 
 rpc:
