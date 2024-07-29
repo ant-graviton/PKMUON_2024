@@ -1,0 +1,14 @@
+# Schema
+name:  # unique LV name to create
+  alternative: # optional, disabling override
+  solid: box  # G4Box
+  solid: bottom_up  # G4Box
+  solid: left_right  # G4Box
+  solid: rotation  # G4Box
+  components:  # significant when solid=bottom_up|left_right|rotation
+  duplicate:  # significant when solid=bottom_up|left_right, optional
+  padding:  # significant when solid=bottom_up|left_right, optional, excluding x, y, z
+  x:  # optional
+  y:  # optional
+  z:  # optional
+  material:  # argument for G4Material::GetMaterial

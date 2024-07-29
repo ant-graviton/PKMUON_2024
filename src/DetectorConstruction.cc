@@ -352,6 +352,7 @@ G4VPhysicalVolume *DetectorConstruction::DefineVolumes()
 
 G4VPhysicalVolume *DetectorConstruction::Construct()
 {
+  GeometryConfig::Load("../config/rpc_readout.yaml");
   GeometryConfig::Load("../config/rpc.yaml");
   G4GeometryManager::GetInstance()->OpenGeometry();
   G4PhysicalVolumeStore::GetInstance()->Clean();
