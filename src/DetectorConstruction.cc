@@ -27,6 +27,7 @@
 /// \brief Implementation of the DetectorConstruction class
 
 #include "DetectorConstruction.hh"
+#include "GeometryConfig.hh"
 #include "G4NistManager.hh"
 #include "G4Box.hh"
 #include "G4LogicalVolume.hh"
@@ -351,6 +352,7 @@ G4VPhysicalVolume *DetectorConstruction::DefineVolumes()
 
 G4VPhysicalVolume *DetectorConstruction::Construct()
 {
+  GeometryConfig::Load("../config/rpc.yaml");
   G4GeometryManager::GetInstance()->OpenGeometry();
   G4PhysicalVolumeStore::GetInstance()->Clean();
   G4LogicalVolumeStore::GetInstance()->Clean();
