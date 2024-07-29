@@ -1,0 +1,73 @@
+# Schemas
+name:  # unique LV name to create
+  solid: bottom_up  # G4Box, with material=G4_Galactic
+  components: # ordered list of components, bottom-up
+name:  # unique LV name to create
+  solid:  # solid class
+    - box  # G4Box
+  thickness: # z-span
+  material: # argument for G4Material::GetMaterial
+---
+rpc:
+  solid: "bottom_up"
+  components:
+    - rpc_board
+    - screw_gap
+    - x_readout_board
+    - rpc_board
+    - insulating_film
+    - electrode
+    - rpc_glass
+    - rpc_gas
+    - rpc_glass
+    - electrode
+    - insulating_film
+    - rpc_gas
+    - t_readout_board
+    - rpc_gas
+    - insulating_film
+    - electrode
+    - rpc_glass
+    - rpc_gas
+    - rpc_glass
+    - electrode
+    - insulating_film
+    - y_readout_board
+    - rpc_gas
+    - rpc_board
+rpc_board:
+  solid: "box"
+  thickness: 5 mm
+  material: "G4_Al"
+screw_gap:
+  solid: "box"
+  thickness: 6 mm
+  material: "rpc_gas"
+insulating_film:
+  solid: "box"
+  thickness: 0.1 mm
+  material: "rpc_PET"
+electrode:
+  solid: "box"
+  thickness: 0.2 mm
+  material: "G4_GRAPHITE"
+rpc_glass:
+  solid: "box"
+  thickness: 2.7 mm
+  material: "rpc_glass"
+rpc_gas:
+  solid: "box"
+  thickness: 2 mm
+  material: "rpc_gas"
+---
+# Comments
+materials:
+  - G4_Al
+  - G4_GRAPHITE
+  - rpc_gas
+  - rpc_glass
+  - rpc_PET
+external:
+  - x_readout_board
+  - t_readout_board
+  - y_readout_board
