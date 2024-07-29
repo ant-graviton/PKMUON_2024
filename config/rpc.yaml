@@ -4,6 +4,7 @@ name:  # unique LV name to create
   solid: box  # G4Box
   solid: bottom_up  # G4Box
   components:  # significant when solid=bottom_up
+  duplicate:  # significant when solid=bottom_up, optional
   padding:  # significant when solid=bottom_up, optional, excluding x, y, z
   x:  # optional
   y:  # optional
@@ -14,8 +15,8 @@ name:  # unique LV name to create
 
 rpc_insulating_film:
   solid: box
-  x: 300 mm
-  y: 300 mm
+  x: &rpc_mainbody_x 300 mm
+  y: &rpc_mainbody_y 300 mm
   z: 0.1 mm
   material: rpc_pet
 rpc_electrode:
@@ -26,43 +27,31 @@ rpc_electrode:
   material: G4_GRAPHITE
 rpc_glass:
   solid: box
-  x: 300 mm
-  y: 300 mm
+  x: *rpc_mainbody_x
+  y: *rpc_mainbody_y
   z: 2.7 mm
   material: rpc_glass
 rpc_gas:
   solid: box
-  x: 420 mm
-  y: 420 mm
+  x: &rpc_content_x 420 mm
+  y: &rpc_content_y 420 mm
   z: 2 mm
   material: rpc_gas
 rpc_screw_gap:
   solid: box
-  x: 420 mm
-  y: 420 mm
+  x: *rpc_content_x
+  y: *rpc_content_y
   z: 6 mm
   material: rpc_gas
-x_readout_board:
+rpc_x_readout_board: &rpc_readout_board
   alternative: alternative
   solid: box
-  x: 300 mm
-  y: 300 mm
+  x: *rpc_mainbody_x
+  y: *rpc_mainbody_y
   z: 1.6 mm
   material: G4_Cu
-t_readout_board:
-  alternative: alternative
-  solid: box
-  x: 300 mm
-  y: 300 mm
-  z: 1.6 mm
-  material: G4_Cu
-y_readout_board:
-  alternative: alternative
-  solid: box
-  x: 300 mm
-  y: 300 mm
-  z: 1.6 mm
-  material: G4_Cu
+rpc_t_readout_board: *rpc_readout_board
+rpc_y_readout_board: *rpc_readout_board
 
 rpc_electrode_pair:
   solid: bottom_up
@@ -79,13 +68,13 @@ rpc_electrode_pair:
 rpc_mainbody:
   solid: bottom_up
   components:
-    - x_readout_board  # external
+    - rpc_x_readout_board  # external
     - rpc_electrode_pair
     - rpc_gas
-    - t_readout_board  # external
+    - rpc_t_readout_board  # external
     - rpc_gas
     - rpc_electrode_pair
-    - y_readout_board  # external
+    - rpc_y_readout_board  # external
   material: rpc_gas
 
 rpc_content:
@@ -112,6 +101,6 @@ materials:
   - rpc_glass
   - rpc_pet
 external:
-  - x_readout_board
-  - t_readout_board
-  - y_readout_board
+  - rpc_x_readout_board
+  - rpc_t_readout_board
+  - rpc_y_readout_board

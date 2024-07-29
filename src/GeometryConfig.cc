@@ -62,6 +62,9 @@ void ProcessBottomUp(const string &name, YAML::Node node)
     hy = max(hy, box->GetXHalfLength());
     hz += box->GetZHalfLength();
   }
+  size_t duplicate = 1;
+  if(node["duplicate"]) duplicate = node["duplicate"].as<size_t>();
+  hz *= duplicate;
 
   if(node["padding"]) {
     G4double padding = ParsePhysicsVariable(node["padding"].as<string>());
@@ -79,7 +82,7 @@ void ProcessBottomUp(const string &name, YAML::Node node)
   auto logical = new G4LogicalVolume(solid, material, name);
   G4double x = 0.0, y = 0.0, z = -hz;
   size_t i = 0;
-  for(G4LogicalVolume *child : children) {
+  for(size_t d = 0; d < duplicate; ++d) for(G4LogicalVolume *child : children) {
     G4double ht = ((G4Box *)child->GetSolid())->GetZHalfLength();
     string child_name = name + "_" + to_string(i++) + ":" + child->GetName();
     new G4PVPlacement(0, {x, y, z + ht}, child, child_name, logical, false, 0, true);
