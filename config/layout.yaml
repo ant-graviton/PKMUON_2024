@@ -27,9 +27,7 @@ world:
     - rpc
     - world_minor_gap
     - rpc
-  x: 516 mm
-  y: 516 mm
-  z: 1296 mm
+  padding: 20%
   material: *world_material
 
 ---

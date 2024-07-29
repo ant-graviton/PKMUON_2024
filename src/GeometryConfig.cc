@@ -25,7 +25,7 @@ G4LogicalVolume *CreateBoxVolume(const string &name, G4double hx, G4double hy, G
   return new G4LogicalVolume(box, material, name);
 }
 
-G4double ParsePhysicsVariable(const string &variable)
+pair<bool, G4double> ParsePhysicsVariable(const string &variable)
 {
   G4double value;
   G4String unit;
@@ -35,7 +35,20 @@ G4double ParsePhysicsVariable(const string &variable)
     G4cerr << "ERROR: Failed to parse physics variable: " << variable << G4endl;
     exit(EXIT_FAILURE);
   }
-  if(iss >> unit) value *= G4UnitDefinition::GetValueOf(unit);
+  if(iss >> unit) {
+    if(unit == "%") return {true, value / 100};
+    value *= G4UnitDefinition::GetValueOf(unit);
+  }
+  return {false, value};
+}
+
+G4double ParseAbsolutePhysicsVariable(const string &variable)
+{
+  auto [relevant, value] = ParsePhysicsVariable(variable);
+  if(relevant) {
+    G4cerr << "ERROR: Expect absolute value: " << variable << G4endl;
+    exit(EXIT_FAILURE);
+  }
   return value;
 }
 
@@ -51,9 +64,9 @@ G4Material *ParseMaterial(const string &name)
 
 void ProcessBox(const string &name, YAML::Node node)
 {
-  G4double x = ParsePhysicsVariable(node["x"].as<string>());
-  G4double y = ParsePhysicsVariable(node["y"].as<string>());
-  G4double z = ParsePhysicsVariable(node["z"].as<string>());
+  G4double x = ParseAbsolutePhysicsVariable(node["x"].as<string>());
+  G4double y = ParseAbsolutePhysicsVariable(node["y"].as<string>());
+  G4double z = ParseAbsolutePhysicsVariable(node["z"].as<string>());
   G4Material *material = ParseMaterial(node["material"].as<string>());
   CreateBoxVolume(name, x / 2, y / 2, z / 2, material);
 }
@@ -98,14 +111,20 @@ void ProcessStackSize(const string &name, G4double &current, G4double target)
 void ProcessStackSize(const string &name, YAML::Node node, G4double &hx, G4double &hy, G4double &hz)
 {
   if(node["padding"]) {
-    G4double padding = ParsePhysicsVariable(node["padding"].as<string>());
-    hx += padding;
-    hy += padding;
-    hz += padding;
+    auto [relevant, padding] = ParsePhysicsVariable(node["padding"].as<string>());
+    if(relevant) {
+      hx *= 1 + padding;
+      hy *= 1 + padding;
+      hz *= 1 + padding;
+    } else {
+      hx += padding;
+      hy += padding;
+      hz += padding;
+    }
   } else {
-    if(node["x"]) ProcessStackSize(name + ":x", hx, ParsePhysicsVariable(node["x"].as<string>()) / 2);
-    if(node["y"]) ProcessStackSize(name + ":y", hy, ParsePhysicsVariable(node["y"].as<string>()) / 2);
-    if(node["z"]) ProcessStackSize(name + ":z", hz, ParsePhysicsVariable(node["z"].as<string>()) / 2);
+    if(node["x"]) ProcessStackSize(name + ":x", hx, ParseAbsolutePhysicsVariable(node["x"].as<string>()) / 2);
+    if(node["y"]) ProcessStackSize(name + ":y", hy, ParseAbsolutePhysicsVariable(node["y"].as<string>()) / 2);
+    if(node["z"]) ProcessStackSize(name + ":z", hz, ParseAbsolutePhysicsVariable(node["z"].as<string>()) / 2);
   }
 }
 
@@ -181,7 +200,7 @@ void ProcessRotation(const string &name, YAML::Node node)
   auto rotation = new G4RotationMatrix();
   for(size_t i = 1; i < node["components"].size(); ++i) {
     YAML::Node item = node["components"][i];
-    G4double degree = ParsePhysicsVariable(item[1].as<string>()) / CLHEP::deg;
+    G4double degree = ParseAbsolutePhysicsVariable(item[1].as<string>()) / CLHEP::deg;
     ProcessRotation(name, rotation, item[0].as<string>(), degree);
   }
   G4ThreeVector v(box->GetXHalfLength(), box->GetYHalfLength(), box->GetZHalfLength());
