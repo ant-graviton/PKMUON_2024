@@ -8,7 +8,7 @@ world_major_gap:
   solid: box
   x: &rpc_x 430 mm
   y: &rpc_y 430 mm
-  z: 500 mm
+  z: 455 mm
   material: &world_material rpc_air
   
 world_minor_gap:
@@ -16,7 +16,7 @@ world_minor_gap:
   solid: box
   x: *rpc_x
   y: *rpc_y
-  z: 200 mm
+  z: 155 mm
   material: *world_material
 
 world:
