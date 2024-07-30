@@ -1,6 +1,11 @@
 # Schema
 name:  # unique LV name to create
-  alternative: # optional, disabling override
+  alternative:  # optional, disabling override
+  hidden:  # optional, disabling visualization, excluding other visualization attributes
+  color:  # optional
+  alpha:  # optional, significant with color specified
+  line_style:  # optional, unsigned integer
+  line_width:  # optional
   solid: box  # G4Box
   solid: bottom_up  # G4Box
   solid: left_right  # G4Box
@@ -11,4 +16,4 @@ name:  # unique LV name to create
   x:  # optional
   y:  # optional
   z:  # optional
-  material:  # argument for G4Material::GetMaterial
+  material:  # optional for rotation

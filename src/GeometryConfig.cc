@@ -6,6 +6,12 @@
 #include "G4LogicalVolumeStore.hh"
 #include "G4UnitsTable.hh"
 #include "G4PVPlacement.hh"
+#include "G4VisAttributes.hh"
+#include "G4Color.hh"
+#include "G4Element.hh"
+#include "G4Material.hh"
+#include "G4NistManager.hh"
+#include "G4SystemOfUnits.hh"
 #include <fstream>
 #include <sstream>
 #include <vector>
@@ -32,7 +38,7 @@ pair<bool, G4double> ParsePhysicsVariable(const string &variable)
   istringstream iss(variable);
 
   if(!(iss >> value)) {
-    G4cerr << "ERROR: Failed to parse physics variable: " << variable << G4endl;
+    G4cerr << "ERROR: failed to parse physics variable: " << variable << G4endl;
     exit(EXIT_FAILURE);
   }
   if(iss >> unit) {
@@ -46,7 +52,7 @@ G4double ParseAbsolutePhysicsVariable(const string &variable)
 {
   auto [relevant, value] = ParsePhysicsVariable(variable);
   if(relevant) {
-    G4cerr << "ERROR: Expect absolute value: " << variable << G4endl;
+    G4cerr << "ERROR: expect absolute value: " << variable << G4endl;
     exit(EXIT_FAILURE);
   }
   return value;
@@ -62,13 +68,23 @@ G4Material *ParseMaterial(const string &name)
   return material;
 }
 
-void ProcessBox(const string &name, YAML::Node node)
+G4Element *ParseElement(const string &name)
+{
+  G4Element *element = G4Element::GetElement(name, false);
+  if(!element) {
+    G4cerr << "ERROR: unknown element: " << name << G4endl;
+    exit(EXIT_FAILURE);
+  }
+  return element;
+}
+
+G4LogicalVolume *ProcessBox(const string &name, YAML::Node node)
 {
   G4double x = ParseAbsolutePhysicsVariable(node["x"].as<string>());
   G4double y = ParseAbsolutePhysicsVariable(node["y"].as<string>());
   G4double z = ParseAbsolutePhysicsVariable(node["z"].as<string>());
   G4Material *material = ParseMaterial(node["material"].as<string>());
-  CreateBoxVolume(name, x / 2, y / 2, z / 2, material);
+  return CreateBoxVolume(name, x / 2, y / 2, z / 2, material);
 }
 
 vector<G4LogicalVolume *> ProcessStackComponents(YAML::Node node,
@@ -128,7 +144,7 @@ void ProcessStackSize(const string &name, YAML::Node node, G4double &hx, G4doubl
   }
 }
 
-void ProcessBottomUp(const string &name, YAML::Node node)
+G4LogicalVolume *ProcessBottomUp(const string &name, YAML::Node node)
 {
   G4double hx_s, hy_s, hz_s, hx_m, hy_m, hz_m;
   auto children = ProcessStackComponents(node, hx_s, hy_s, hz_s, hx_m, hy_m, hz_m);
@@ -149,9 +165,10 @@ void ProcessBottomUp(const string &name, YAML::Node node)
     new G4PVPlacement(0, {x, y, z + ht}, child, child_name, logical, false, 0, true);
     z += ht * 2;
   }
+  return logical;
 }
 
-void ProcessLeftRight(const string &name, YAML::Node node)
+G4LogicalVolume *ProcessLeftRight(const string &name, YAML::Node node)
 {
   G4double hx_s, hy_s, hz_s, hx_m, hy_m, hz_m;
   auto children = ProcessStackComponents(node, hx_s, hy_s, hz_s, hx_m, hy_m, hz_m);
@@ -172,6 +189,7 @@ void ProcessLeftRight(const string &name, YAML::Node node)
     new G4PVPlacement(0, {x + ht, y, z}, child, child_name, logical, false, 0, true);
     x += ht * 2;
   }
+  return logical;
 }
 
 void ProcessRotation(const string &name, G4RotationMatrix *rotation, const string &axis, G4double degree)
@@ -189,7 +207,7 @@ void ProcessRotation(const string &name, G4RotationMatrix *rotation, const strin
   }
 }
 
-void ProcessRotation(const string &name, YAML::Node node)
+G4LogicalVolume *ProcessRotation(const string &name, YAML::Node node)
 {
   G4LogicalVolume *child = G4LogicalVolumeStore::GetInstance()->GetVolume(node["components"][0].as<string>());
   G4Box *box = dynamic_cast<G4Box *>(child->GetSolid());
@@ -206,10 +224,120 @@ void ProcessRotation(const string &name, YAML::Node node)
   G4ThreeVector v(box->GetXHalfLength(), box->GetYHalfLength(), box->GetZHalfLength());
   v = *rotation * v;
   auto logical = CreateBoxVolume(name, abs(v.x()), abs(v.y()), abs(v.z()), child->GetMaterial());
+  node["material"] = (string)logical->GetMaterial()->GetName();
   new G4PVPlacement(rotation, {0, 0, 0}, child, name, logical, false, 0, true);
+  return logical;
+}
+
+void ProcessVisAttributes(YAML::Node node, G4VisAttributes &attr)
+{
+  if(node["hidden"]) {
+    attr.SetVisibility(false);
+    return;
+  }
+  if(node["color"]) {
+    G4Color color;
+    if(!G4Color::GetColour(node["color"].as<string>(), color)) {
+      G4cerr << "ERROR: unknown color: " << node["color"].as<string>() << G4endl;
+      exit(EXIT_FAILURE);
+    }
+    if(node["alpha"]) color.SetAlpha(node["alpha"].as<G4double>());
+    attr.SetColor(color);
+  }
+  if(node["line_style"]) {
+    attr.SetLineStyle((G4VisAttributes::LineStyle)node["line_style"].as<size_t>());
+  }
+  if(node["line_width"]) {
+    attr.SetLineWidth(ParseAbsolutePhysicsVariable(node["line_width"].as<string>()));
+  }
+  if(node["color"] && !node["line_style"] && !node["line_width"]) {
+    attr.SetLineWidth(0);
+    attr.SetForceSolid();
+  }
+}
+
+void ProcessNist(const string &name, YAML::Node node)
+{
+  G4NistManager *manager = G4NistManager::Instance();
+  if(node["type"] && node["type"].as<string>() == "element") {
+    if(!manager->FindOrBuildElement(name)) {
+      G4cerr << "ERROR: unknown NIST element: " << name << G4endl;
+      exit(EXIT_FAILURE);
+    }
+  } else {
+    if(!manager->FindOrBuildMaterial(name)) {
+      G4cerr << "ERROR: unknown NIST material: " << name << G4endl;
+      exit(EXIT_FAILURE);
+    }
+  }
+}
+
+void AddElement(G4Material *material, G4Element *child, YAML::Node node)
+{
+  G4cout << " *" << material->GetName() << " <- element "
+         << child->GetName() << ", " << node.as<string>()  << G4endl;
+  try {
+    material->AddElement(child, node.as<G4int>());
+  } catch(const YAML::BadConversion &) {
+    material->AddElement(child, node.as<G4double>());
+  }
+}
+
+void AddMaterial(G4Material *material, G4Material *child, YAML::Node node)
+{
+  G4cout << " *" << material->GetName() << " <- material "
+         << child->GetName() << ", " << node.as<string>()  << G4endl;
+  material->AddMaterial(child, node.as<G4double>());
+}
+
+void AddComponent(G4Material *material, YAML::Node node)
+{
+  auto it = node.begin();
+  string type = "material";
+  if(node.size() == 3) type = it++->as<string>();
+  else if(node.size() != 2) {
+    G4cerr << "ERROR: expect material component of size 2: " << node << G4endl;
+    exit(EXIT_FAILURE);
+  }
+  if(type != "material" && type != "element") {
+    G4cerr << "ERROR: unknown material type: " << type << G4endl;
+    exit(EXIT_FAILURE);
+  }
+  string name = it++->as<string>();
+  if(type == "material") {
+    G4Material *child = ParseMaterial(name);
+    AddMaterial(material, child, *it);
+  } else {
+    G4Element *child = ParseElement(name);
+    AddElement(material, child, *it);
+  }
+}
+
+G4Material *ProcessMaterial(const string &name, YAML::Node node)
+{
+  if(node["alias"]) {
+    G4cout << " *" << node["alias"].as<string>() << " -> " << name << G4endl;
+    G4Material *child = ParseMaterial(node["alias"].as<string>());
+    G4Material *material = new G4Material(name, child->GetDensity(), 1);
+    material->AddMaterial(child, 1.0);
+    return material;
+  }
+  G4double density = ParseAbsolutePhysicsVariable(node["density"].as<string>());
+  G4cout << " *" << name << " <- density " << density / (g/cm3) << " g/cm3" << G4endl;
+  G4Material *material = new G4Material(name, density, node["components"].size());
+  for(YAML::Node component : node["components"]) AddComponent(material, component);
+  return material;
+}
+
+G4Element *ProcessElement(const string &name, YAML::Node)
+{
+  G4cerr << "ERROR: element mixture unimplemented: " << name << G4endl;
+  exit(EXIT_FAILURE);
 }
 
 }
+
+std::unordered_map<std::string, G4VisAttributes> GeometryConfig::fMaterialVisAttributes;
 
 GeometryConfig::GeometryConfig(const char *path)
 {
@@ -217,28 +345,74 @@ GeometryConfig::GeometryConfig(const char *path)
   node_ = YAML::LoadAll(file);
 }
 
-void GeometryConfig::Load(const char *path)
+void GeometryConfig::LoadVolumes(const char *path)
 {
-  GeometryConfig(path).Process();
+  G4cout << "Loading volumes from " << path << G4endl;
+  GeometryConfig(path).ProcessVolumes();
 }
 
-void GeometryConfig::Process()
+void GeometryConfig::LoadMaterials(const char *path)
+{
+  G4cout << "Loading materials from " << path << G4endl;
+  GeometryConfig(path).ProcessMaterials();
+}
+
+void GeometryConfig::ProcessVolumes()
 {
   for(const pair<YAML::Node, YAML::Node> &pair : node_[1]) {
     auto &[name, node] = pair;
     if(node["alternative"]) {
       if(G4LogicalVolumeStore::GetInstance()->GetVolume(name.as<string>(), false)) continue;
     }
+    G4cout << "Building volume " << name << G4endl;
+    G4LogicalVolume *logical;
     if(node["solid"].as<string>() == "box") {
-      ProcessBox(name.as<string>(), node);
+      logical = ProcessBox(name.as<string>(), node);
     } else if(node["solid"].as<string>() == "bottom_up") {
-      ProcessBottomUp(name.as<string>(), node);
+      logical = ProcessBottomUp(name.as<string>(), node);
     } else if(node["solid"].as<string>() == "left_right") {
-      ProcessLeftRight(name.as<string>(), node);
+      logical = ProcessLeftRight(name.as<string>(), node);
     } else if(node["solid"].as<string>() == "rotation") {
-      ProcessRotation(name.as<string>(), node);
+      logical = ProcessRotation(name.as<string>(), node);
     } else {
-      G4cerr << "ERROR: Unknown solid type: " << node["solid"].as<string>() << G4endl;
+      G4cerr << "ERROR: unknown solid type: " << node["solid"].as<string>() << G4endl;
+      exit(EXIT_FAILURE);
     }
+    G4VisAttributes attr = fMaterialVisAttributes[node["material"].as<string>()];
+    ProcessVisAttributes(node, attr);
+    logical->SetVisAttributes(attr);
+  }
+}
+
+void GeometryConfig::ProcessMaterials()
+{
+  for(const pair<YAML::Node, YAML::Node> &pair : node_[1]) {
+    auto &[name, node] = pair;
+    string type = "material";
+    if(node["type"]) type = node["type"].as<string>();
+    if(type != "material" && type != "element") {
+      G4cerr << "ERROR: unknown material type: " << type << G4endl;
+      exit(EXIT_FAILURE);
+    }
+    if(node["alternative"]) {
+      if(type == "material") { if(G4Material::GetMaterial(name.as<string>(), false)) continue; }
+      else { if(G4Element::GetElement(name.as<string>(), false)) continue; }
+    }
+    G4cout << "Building " << type << " " << name << G4endl;
+    if(node["from"]) {
+      if(node["from"].as<string>() == "nist") {
+        ProcessNist(name.as<string>(), node);
+      } else {
+        G4cerr << "ERROR: unknown material source: " << node["from"].as<string>() << G4endl;
+        exit(EXIT_FAILURE);
+      }
+    } else if(type == "material") {
+      ProcessMaterial(name.as<string>(), node);
+    } else {
+      ProcessElement(name.as<string>(), node);
+    }
+    G4VisAttributes attr;
+    ProcessVisAttributes(node, attr);
+    if(type == "material") fMaterialVisAttributes.insert_or_assign(name.as<string>(), attr);
   }
 }

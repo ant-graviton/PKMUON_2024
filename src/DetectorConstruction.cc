@@ -28,7 +28,6 @@
 
 #include "DetectorConstruction.hh"
 #include "GeometryConfig.hh"
-#include "G4NistManager.hh"
 #include "G4PVPlacement.hh"
 #include "G4GeometryManager.hh"
 #include "G4PhysicalVolumeStore.hh"
@@ -49,38 +48,15 @@ DetectorConstruction::~DetectorConstruction()
 
 void DetectorConstruction::DefineMaterials()
 {
-  G4NistManager *nistManager = G4NistManager::Instance();
-
-  nistManager->FindOrBuildMaterial("G4_Galactic");
-  nistManager->FindOrBuildMaterial("G4_AIR");
-  nistManager->FindOrBuildMaterial("G4_Pb");
-  nistManager->FindOrBuildMaterial("G4_Fe");
-  nistManager->FindOrBuildMaterial("G4_W");
-  nistManager->FindOrBuildMaterial("G4_Cu");
-  nistManager->FindOrBuildMaterial("G4_Al");
-  nistManager->FindOrBuildMaterial("G4_GRAPHITE");
-  nistManager->FindOrBuildMaterial("G4_Pyrex_Glass");
-
-  // PET 塑料
-  auto rpc_pet = new G4Material("rpc_pet", 1.38 * g / cm3, 3);
-  rpc_pet->AddElement(nistManager->FindOrBuildElement("C"), 10);
-  rpc_pet->AddElement(nistManager->FindOrBuildElement("H"),  8);
-  rpc_pet->AddElement(nistManager->FindOrBuildElement("O"),  4);
-
-  // FR-4  [XXX] 检查定义 https://www.ebi.ac.uk/pdbe-srv/pdbechem/chemicalCompound/complete/FR4
-  G4Material *epoxy = nistManager->FindOrBuildMaterial("G4_POLYETHYLENE");
-  G4Material *glassFiber = nistManager->FindOrBuildMaterial("G4_SILICON_DIOXIDE");
-  G4Material *rpc_gas = new G4Material("rpc_gas", 1.9 * g / cm3, 2);
-  rpc_gas->AddMaterial(epoxy, 0.125);
-  rpc_gas->AddMaterial(glassFiber, 0.875);
+  GeometryConfig::LoadMaterials("../config/rpc_material.yaml");
 }
 
 G4VPhysicalVolume *DetectorConstruction::DefineVolumes()
 {
   G4LogicalVolumeStore *store = G4LogicalVolumeStore::GetInstance();
-  GeometryConfig::Load("../config/rpc_readout.yaml");
-  GeometryConfig::Load("../config/rpc.yaml");
-  GeometryConfig::Load("../config/layout.yaml");
+  GeometryConfig::LoadVolumes("../config/rpc_readout.yaml");
+  GeometryConfig::LoadVolumes("../config/rpc.yaml");
+  GeometryConfig::LoadVolumes("../config/layout.yaml");
   new G4PVPlacement(0, {0, 0, 0}, store->GetVolume("world"), "world", 0, false, 0, true);
 
   G4VPhysicalVolume *pworld = G4PhysicalVolumeStore::GetInstance()->GetVolume("world");

@@ -1,5 +1,5 @@
 # Schema
-schema: schema.yaml
+schema: volume_schema.yaml
 
 ---
 
@@ -8,21 +8,21 @@ rpc_insulating_film:
   x: &rpc_mainbody_x 300 mm
   y: &rpc_mainbody_y 300 mm
   z: 0.1 mm
-  material: rpc_pet
+  material: rpc_insulating_film
 
 rpc_electrode:
   solid: box
   x: 203 mm
   y: 203 mm
   z: 0.2 mm
-  material: G4_GRAPHITE
+  material: rpc_electrode
 
 rpc_glass:
   solid: box
   x: *rpc_mainbody_x
   y: *rpc_mainbody_y
   z: 2.7 mm
-  material: G4_Pyrex_Glass
+  material: rpc_glass
 
 rpc_gas:
   solid: box
@@ -44,7 +44,7 @@ rpc_x_readout_board: &rpc_readout_board
   x: *rpc_mainbody_x
   y: *rpc_mainbody_y
   z: 1.6 mm
-  material: G4_Cu
+  material: rpc_fr4
 
 rpc_t_readout_board: *rpc_readout_board
 rpc_y_readout_board: *rpc_readout_board
@@ -86,17 +86,18 @@ rpc:
   solid: bottom_up
   components: [rpc_content]
   padding: 5 mm
-  material: G4_Al
+  material: rpc_shell
 
 ---
 
 # Comments
 materials:
-  - G4_Al
-  - G4_GRAPHITE
+  - rpc_electrode
+  - rpc_fr4
   - rpc_gas
   - rpc_glass
-  - rpc_pet
+  - rpc_insulating_film
+  - rpc_shell
 external:
   - rpc_x_readout_board
   - rpc_t_readout_board

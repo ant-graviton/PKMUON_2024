@@ -1,13 +1,19 @@
 #pragma once
 #include <yaml-cpp/yaml.h>
+#include <unordered_map>
+#include <string>
+#include "G4VisAttributes.hh"
 
 class GeometryConfig {
 public:
-  static void Load(const char *path);
+  static void LoadMaterials(const char *path);
+  static void LoadVolumes(const char *path);
 
 private:
   YAML::Node node_;
+  static std::unordered_map<std::string, G4VisAttributes> fMaterialVisAttributes;
 
   explicit GeometryConfig(const char *path);
-  void Process();
+  void ProcessMaterials();
+  void ProcessVolumes();
 };

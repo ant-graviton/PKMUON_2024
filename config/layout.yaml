@@ -1,16 +1,18 @@
 # Schema
-schema: schema.yaml
+schema: volume_schema.yaml
 
 ---
 
 world_major_gap:
+  hidden: hidden
   solid: box
   x: &rpc_x 430 mm
   y: &rpc_y 430 mm
   z: 500 mm
-  material: &world_material G4_AIR
+  material: &world_material rpc_air
   
 world_minor_gap:
+  hidden: hidden
   solid: box
   x: *rpc_x
   y: *rpc_y
@@ -18,6 +20,7 @@ world_minor_gap:
   material: *world_material
 
 world:
+  hidden: hidden
   solid: bottom_up
   components:
     - rpc
@@ -34,6 +37,6 @@ world:
 
 # Comments
 materials:
-  - G4_AIR
+  - rpc_air
 external:
   - rpc
