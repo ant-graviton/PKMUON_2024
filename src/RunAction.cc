@@ -30,8 +30,7 @@
 #include "RunAction.hh"
 #include "Run.hh"
 
-RunAction::RunAction(GpsPrimaryGeneratorAction* kin)
-  : G4UserRunAction(), fPrimary(kin)
+RunAction::RunAction()
 {
   Run::GetInstance();
 }

@@ -39,15 +39,12 @@ class GpsPrimaryGeneratorAction;
 class RunAction : public G4UserRunAction
 {
   public:
-    RunAction(GpsPrimaryGeneratorAction *frunAction);
+    RunAction();
    ~RunAction();
 
   public:
     virtual void BeginOfRunAction(const G4Run*) override;
     virtual void EndOfRunAction(const G4Run*) override;
-
-private:
-  GpsPrimaryGeneratorAction *fPrimary;
 };
 
 #endif

@@ -38,6 +38,7 @@
 DetectorConstruction::DetectorConstruction(int o)
   : options(o)
 {
+  if(options) throw std::invalid_argument("options unimplemented");
   // empty
 }
 
@@ -61,7 +62,6 @@ G4VPhysicalVolume *DetectorConstruction::DefineVolumes()
 
   G4VPhysicalVolume *pworld = G4PhysicalVolumeStore::GetInstance()->GetVolume("world");
   fScoringVolume = store->GetVolume("rpc_electrode");
-  // [TODO] Compute fScoringPVs.
   return pworld;
 }
 

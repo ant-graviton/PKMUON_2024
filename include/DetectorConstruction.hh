@@ -56,8 +56,6 @@ private:
   G4VPhysicalVolume *DefineVolumes();
 
   G4LogicalVolume *fScoringVolume;
-  std::vector<G4VPhysicalVolume *> fScoringPVs;
-
   const int options;
 };
 

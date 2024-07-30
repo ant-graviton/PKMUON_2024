@@ -35,15 +35,15 @@
 
 void ActionInitialization::Build() const
 {
-  GpsPrimaryGeneratorAction* primary = new GpsPrimaryGeneratorAction();
+  GpsPrimaryGeneratorAction* primary = new GpsPrimaryGeneratorAction;
   SetUserAction(primary);
 
-  RunAction* runAction = new RunAction(primary);
+  RunAction* runAction = new RunAction;
   SetUserAction(runAction);
 
-  EventAction* eventAction = new EventAction();
+  EventAction* eventAction = new EventAction;
   SetUserAction(eventAction);
 
-  SteppingAction* stepAction = new SteppingAction();
+  SteppingAction* stepAction = new SteppingAction;
   SetUserAction(stepAction);
 }
