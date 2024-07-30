@@ -39,7 +39,10 @@
 #include "G4Box.hh"
 #include "G4FieldManager.hh"
 #include "G4UniformElectricField.hh"
-#include "G4UniformMagField.hh"
+#include "G4EqMagElectricField.hh"
+#include "G4ClassicalRK4.hh"
+#include "G4ChordFinder.hh"
+#include "G4MagIntegratorDriver.hh"
 #include "G4UserLimits.hh"
 
 DetectorConstruction::DetectorConstruction(int o)
@@ -81,14 +84,17 @@ void DetectorConstruction::DefineFields()
   if(!rpc_electrode_pair) return;
   auto box = dynamic_cast<G4Box *>(rpc_electrode_pair->GetSolid());
   if(!box) return;
-  G4double z = 2 * box->GetZHalfLength();
+  G4double z = 2 * box->GetZHalfLength(), step = z * 0.01;
   G4double U = 10100 * volt, E = U / z;
   auto field = new G4UniformElectricField(G4ThreeVector{0, 0, E});
-  auto manager = new G4FieldManager(field);
-  manager->CreateChordFinder(new G4UniformMagField(G4ThreeVector{0, 0, 0}));  // [XXX]
+  auto equation_of_motion = new G4EqMagElectricField(field);
+  auto stepper = new G4ClassicalRK4(equation_of_motion);
+  auto int_driver = new G4MagInt_Driver(step, stepper, stepper->GetNumberOfVariables());
+  auto chord_finder = new G4ChordFinder(int_driver);
+  auto manager = new G4FieldManager(field, chord_finder);
   rpc_electrode_pair->SetFieldManager(manager, true);
 
-  auto limits = new G4UserLimits(z * 0.01);
+  auto limits = new G4UserLimits(step);
   bool inside = false;
   SearchVolume(NULL, name, [](G4VPhysicalVolume *) {
     // do nothing
