@@ -56,12 +56,15 @@ public:
   G4double GetDetectorHalfY() const;
   void SetGpsPrimaryGeneratorAction(GpsPrimaryGeneratorAction *a) { fGpsPrimaryGeneratorAction = a; }
 
-  static void SearchForVolume(const G4String &name,
-      std::function<void(G4VPhysicalVolume *)> enter,
-      std::function<void(G4VPhysicalVolume *)> leave,
-      std::function<void(G4VPhysicalVolume *)> found);
+  static void WalkVolume(G4VPhysicalVolume *volume,
+      const std::function<void(G4VPhysicalVolume *)> &enter,
+      const std::function<void(G4VPhysicalVolume *)> &leave);
+  static void SearchVolume(G4VPhysicalVolume *volume, const G4String &name,
+      const std::function<void(G4VPhysicalVolume *)> &enter,
+      const std::function<void(G4VPhysicalVolume *)> &leave,
+      const std::function<void(G4VPhysicalVolume *)> &found);
   static void ViewVolumePositions(const G4String &name,
-      std::function<void(G4VPhysicalVolume *, const G4ThreeVector &)> view);
+      const std::function<void(G4VPhysicalVolume *, const G4ThreeVector &)> &view);
 
 private:
   void DefineMaterials();

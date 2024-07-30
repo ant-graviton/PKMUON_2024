@@ -40,6 +40,7 @@
 #include "G4FieldManager.hh"
 #include "G4UniformElectricField.hh"
 #include "G4UniformMagField.hh"
+#include "G4UserLimits.hh"
 
 DetectorConstruction::DetectorConstruction(int o)
   : options(o)
@@ -75,7 +76,8 @@ G4VPhysicalVolume *DetectorConstruction::DefineVolumes()
 
 void DetectorConstruction::DefineFields()
 {
-  G4LogicalVolume *rpc_electrode_pair = G4LogicalVolumeStore::GetInstance()->GetVolume("rpc_electrode_pair");
+  G4String name = "rpc_electrode_pair";
+  G4LogicalVolume *rpc_electrode_pair = G4LogicalVolumeStore::GetInstance()->GetVolume(name);
   if(!rpc_electrode_pair) return;
   auto box = dynamic_cast<G4Box *>(rpc_electrode_pair->GetSolid());
   if(!box) return;
@@ -85,6 +87,20 @@ void DetectorConstruction::DefineFields()
   auto manager = new G4FieldManager(field);
   manager->CreateChordFinder(new G4UniformMagField(G4ThreeVector{0, 0, 0}));  // [XXX]
   rpc_electrode_pair->SetFieldManager(manager, true);
+
+  auto limits = new G4UserLimits(z * 0.01);
+  bool inside = false;
+  SearchVolume(NULL, name, [](G4VPhysicalVolume *) {
+    // do nothing
+  }, [&name, limits, &inside](G4VPhysicalVolume *volume) {
+    if(!inside) return;
+    G4LogicalVolume *logical = volume->GetLogicalVolume();
+    G4cout << "Setting step limit for " << logical->GetName() << G4endl;
+    volume->GetLogicalVolume()->SetUserLimits(limits);
+    if(volume->GetLogicalVolume()->GetName() == name) inside = false;
+  }, [&inside](G4VPhysicalVolume *) {
+    inside = true;
+  });
 }
 
 G4VPhysicalVolume *DetectorConstruction::Construct()
@@ -100,35 +116,45 @@ G4VPhysicalVolume *DetectorConstruction::Construct()
   return world;
 }
 
-static void SearchForVolume(G4VPhysicalVolume *volume, const G4String &name,
+static void WalkVolume(G4VPhysicalVolume *volume,
     std::function<void(G4VPhysicalVolume *)> enter,
-    std::function<void(G4VPhysicalVolume *)> leave,
-    std::function<void(G4VPhysicalVolume *)> found)
+    std::function<void(G4VPhysicalVolume *)> leave)
 {
   enter(volume);
   G4LogicalVolume *logical = volume->GetLogicalVolume();
-  if(logical->GetName() == name) found(volume);
   for(size_t i = 0; i < logical->GetNoDaughters(); ++i) {
-    SearchForVolume(logical->GetDaughter(i), name, enter, leave, found);
+    WalkVolume(logical->GetDaughter(i), enter, leave);
   }
   leave(volume);
 }
 
-void DetectorConstruction::SearchForVolume(const G4String &name,
-    std::function<void(G4VPhysicalVolume *)> enter,
-    std::function<void(G4VPhysicalVolume *)> leave,
-    std::function<void(G4VPhysicalVolume *)> found)
+void DetectorConstruction::WalkVolume(G4VPhysicalVolume *volume,
+    const std::function<void(G4VPhysicalVolume *)> &enter,
+    const std::function<void(G4VPhysicalVolume *)> &leave)
 {
-  G4VPhysicalVolume *volume = G4PhysicalVolumeStore::GetInstance()->GetVolume("world");
+  if(volume == NULL) volume = G4PhysicalVolumeStore::GetInstance()->GetVolume("world");
   if(volume == NULL) return;
-  ::SearchForVolume(volume, name, enter, leave, found);
+  ::WalkVolume(volume, enter, leave);
+}
+
+void DetectorConstruction::SearchVolume(G4VPhysicalVolume *volume, const G4String &name,
+    const std::function<void(G4VPhysicalVolume *)> &enter,
+    const std::function<void(G4VPhysicalVolume *)> &leave,
+    const std::function<void(G4VPhysicalVolume *)> &found)
+{
+  WalkVolume(volume, [&enter, &found, &name](G4VPhysicalVolume *v) {
+    enter(v);
+    if(v->GetLogicalVolume()->GetName() == name) found(v);
+  }, [&leave](G4VPhysicalVolume *v) {
+    leave(v);
+  });
 }
 
 void DetectorConstruction::ViewVolumePositions(const G4String &name,
-    std::function<void(G4VPhysicalVolume *, const G4ThreeVector &)> view)
+    const std::function<void(G4VPhysicalVolume *, const G4ThreeVector &)> &view)
 {
   G4ThreeVector r = {0, 0, 0};
-  SearchForVolume(name, [&r](G4VPhysicalVolume *volume) {
+  SearchVolume(NULL, name, [&r](G4VPhysicalVolume *volume) {
     r += volume->GetObjectTranslation();
   }, [&r](G4VPhysicalVolume *volume) {
     r -= volume->GetObjectTranslation();

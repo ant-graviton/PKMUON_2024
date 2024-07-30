@@ -68,7 +68,6 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep)
   if(!(iTrkID==1 && iTrkparentID==0)) return;
 
   // Compute the hit point of this step.
-  // [TODO] Check the step limit configured elsewhere.
   G4StepPoint* prePoint  = aStep->GetPreStepPoint();
   G4StepPoint* postPoint = aStep->GetPostStepPoint();
   G4double x = (prePoint->GetPosition().x() + postPoint->GetPosition().x()) / 2.;

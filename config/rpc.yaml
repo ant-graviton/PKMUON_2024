@@ -52,13 +52,11 @@ rpc_y_readout_board: *rpc_readout_board
 rpc_electrode_pair:
   solid: bottom_up
   components:
-    - rpc_insulating_film
     - rpc_electrode
     - rpc_glass
     - rpc_gas
     - rpc_glass
     - rpc_electrode
-    - rpc_insulating_film
   material: rpc_gas
 
 rpc_electrode_pair_0:
@@ -73,11 +71,15 @@ rpc_mainbody:
   solid: bottom_up
   components:
     - rpc_x_readout_board  # external
+    - rpc_insulating_film
     - rpc_electrode_pair_0
+    - rpc_insulating_film
     - rpc_gas
     - rpc_t_readout_board  # external
     - rpc_gas
+    - rpc_insulating_film
     - rpc_electrode_pair_1
+    - rpc_insulating_film
     - rpc_y_readout_board  # external
   material: rpc_gas
 
