@@ -37,6 +37,9 @@
 #include "G4SolidStore.hh"
 #include "G4SystemOfUnits.hh"
 #include "G4Box.hh"
+#include "G4FieldManager.hh"
+#include "G4UniformElectricField.hh"
+#include "G4UniformMagField.hh"
 
 DetectorConstruction::DetectorConstruction(int o)
   : options(o)
@@ -64,10 +67,24 @@ G4VPhysicalVolume *DetectorConstruction::DefineVolumes()
 
   G4LogicalVolumeStore *store = G4LogicalVolumeStore::GetInstance();
   fScoringVolume = store->GetVolume("rpc_electrode");
-  auto pworld = new G4PVPlacement(0, {0, 0, 0},
+  auto world = new G4PVPlacement(0, {0, 0, 0},
       store->GetVolume("world"), "world", 0, false, 0, true);
   if(fGpsPrimaryGeneratorAction) fGpsPrimaryGeneratorAction->Initialize(this);
-  return pworld;
+  return world;
+}
+
+void DetectorConstruction::DefineFields()
+{
+  G4LogicalVolume *rpc_electrode_pair = G4LogicalVolumeStore::GetInstance()->GetVolume("rpc_electrode_pair");
+  if(!rpc_electrode_pair) return;
+  auto box = dynamic_cast<G4Box *>(rpc_electrode_pair->GetSolid());
+  if(!box) return;
+  G4double z = 2 * box->GetZHalfLength();
+  G4double U = 10100 * volt, E = U / z;
+  auto field = new G4UniformElectricField(G4ThreeVector{0, 0, E});
+  auto manager = new G4FieldManager(field);
+  manager->CreateChordFinder(new G4UniformMagField(G4ThreeVector{0, 0, 0}));  // [XXX]
+  rpc_electrode_pair->SetFieldManager(manager, true);
 }
 
 G4VPhysicalVolume *DetectorConstruction::Construct()
@@ -78,7 +95,9 @@ G4VPhysicalVolume *DetectorConstruction::Construct()
   G4SolidStore::GetInstance()->Clean();
 
   DefineMaterials();
-  return DefineVolumes();
+  G4VPhysicalVolume *world = DefineVolumes();
+  DefineFields();
+  return world;
 }
 
 static void SearchForVolume(G4VPhysicalVolume *volume, const G4String &name,

@@ -66,6 +66,7 @@ public:
 private:
   void DefineMaterials();
   G4VPhysicalVolume *DefineVolumes();
+  void DefineFields();
 
   G4LogicalVolume *fScoringVolume;
   GpsPrimaryGeneratorAction *fGpsPrimaryGeneratorAction;

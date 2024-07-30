@@ -61,15 +61,23 @@ rpc_electrode_pair:
     - rpc_insulating_film
   material: rpc_gas
 
+rpc_electrode_pair_0:
+  solid: rotation
+  components: [rpc_electrode_pair]
+
+rpc_electrode_pair_1:
+  solid: rotation
+  components: [rpc_electrode_pair, [x, 180 deg]]
+
 rpc_mainbody:
   solid: bottom_up
   components:
     - rpc_x_readout_board  # external
-    - rpc_electrode_pair
+    - rpc_electrode_pair_0
     - rpc_gas
     - rpc_t_readout_board  # external
     - rpc_gas
-    - rpc_electrode_pair
+    - rpc_electrode_pair_1
     - rpc_y_readout_board  # external
   material: rpc_gas
 
