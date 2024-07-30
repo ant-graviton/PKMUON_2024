@@ -30,22 +30,16 @@
 #include "GpsPrimaryGeneratorAction.hh"
 #include "G4GeneralParticleSource.hh"
 #include "G4SPSPosDistribution.hh"
-#include "G4RunManager.hh"
 #include "DetectorConstruction.hh"
+#include "G4RunManager.hh"
 
 GpsPrimaryGeneratorAction::GpsPrimaryGeneratorAction()
   : G4VUserPrimaryGeneratorAction(), fGeneralParticleSource(nullptr)
 {
   fGeneralParticleSource = new G4GeneralParticleSource();
-  auto posDist = fGeneralParticleSource->GetCurrentSource()->GetPosDist();
-  posDist->SetPosDisType("Plane");
-  posDist->SetPosDisShape("Square");
-
-  auto detectorConstruction = (DetectorConstruction *)
-    G4RunManager::GetRunManager()->GetUserDetectorConstruction();
-  posDist->SetCentreCoords({0, 0, detectorConstruction->GetDetectorMinZ()});
-  posDist->SetHalfX(detectorConstruction->GetDetectorHalfX());
-  posDist->SetHalfY(detectorConstruction->GetDetectorHalfY());
+  auto c = dynamic_cast<const DetectorConstruction *>(
+      G4RunManager::GetRunManager()->GetUserDetectorConstruction());
+  if(c) ((DetectorConstruction *)c)->SetGpsPrimaryGeneratorAction(this);
 }
 
 GpsPrimaryGeneratorAction::~GpsPrimaryGeneratorAction()
@@ -56,4 +50,14 @@ GpsPrimaryGeneratorAction::~GpsPrimaryGeneratorAction()
 void GpsPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 {
   fGeneralParticleSource->GeneratePrimaryVertex(anEvent);
+}
+
+void GpsPrimaryGeneratorAction::Initialize(DetectorConstruction *detectorConstruction)
+{
+  auto posDist = fGeneralParticleSource->GetCurrentSource()->GetPosDist();
+  posDist->SetPosDisType("Plane");
+  posDist->SetPosDisShape("Square");
+  posDist->SetCentreCoords({0, 0, detectorConstruction->GetDetectorMinZ()});
+  posDist->SetHalfX(detectorConstruction->GetDetectorHalfX());
+  posDist->SetHalfY(detectorConstruction->GetDetectorHalfY());
 }

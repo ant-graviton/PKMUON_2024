@@ -82,6 +82,7 @@ void Run::AutoSave()
 void Run::SetRpcTrkInfo(int i, double Px, double Py, double Pz,
     double E, double Edep, double X, double Y, double Z)
 {
+  if(i < 0 || i >= 16) return;
   RpcTrkPx[i] = Px;
   RpcTrkPy[i] = Py;
   RpcTrkPz[i] = Pz;
@@ -94,6 +95,7 @@ void Run::SetRpcTrkInfo(int i, double Px, double Py, double Pz,
 
 bool Run::TestAndSetRpcTrkStatus(int i)
 {
+  if(i < 0 || i >= 16) return false;
   if(RpcTrkStatus[i]) return false;
   RpcTrkStatus[i] = true;
   return true;

@@ -32,6 +32,7 @@
 #include "G4SystemOfUnits.hh"
 #include "DetectorConstruction.hh"
 #include "G4RunManager.hh"
+#include "G4ios.hh"
 #include <cmath>
 
 SteppingAction::SteppingAction() : fScoringVolume(nullptr) { }
@@ -45,6 +46,14 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep)
     fScoringVolume = (
         (const DetectorConstruction *)G4RunManager::GetRunManager()->GetUserDetectorConstruction()
     )->GetScoringVolume();
+    fScoringZRanges = (
+        (const DetectorConstruction *)G4RunManager::GetRunManager()->GetUserDetectorConstruction()
+    )->GetScoringZRanges();
+    G4cout << "Scoring volume: " << fScoringVolume->GetName() << G4endl;
+    G4cout << "Scoring ZRanges:" << G4endl;
+    for(auto [zm, dz] : fScoringZRanges) {
+      G4cout << " * " << zm << " +/- " << dz << " mm" << G4endl;
+    }
   }
   if(volume != fScoringVolume) return;
 
@@ -68,8 +77,8 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep)
 
   // Compute the detector layer (if any) hit by this step.
   int igem = -1;
-  for(int i = 0; i < nlayer; ++i) {
-    if(std::fabs(z/mm - Z[i]) <= deltaZ) {
+  for(int i = 0; i < (int)fScoringZRanges.size(); ++i) {
+    if(std::fabs(z/mm - fScoringZRanges[i].first) <= fScoringZRanges[i].second) {
       igem = i; break;
     }
   }

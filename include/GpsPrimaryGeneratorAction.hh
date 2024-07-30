@@ -35,6 +35,7 @@
 
 class G4GeneralParticleSource;
 class G4Event;
+class DetectorConstruction;
 
 /// \ingroup primary_generator
 /// \brief The primary generator class with general particle source
@@ -48,6 +49,7 @@ class GpsPrimaryGeneratorAction: public G4VUserPrimaryGeneratorAction
     ~GpsPrimaryGeneratorAction();
 
     virtual void GeneratePrimaries(G4Event*) override;
+    void Initialize(DetectorConstruction *);
 
   private:
     G4GeneralParticleSource* fGeneralParticleSource;
