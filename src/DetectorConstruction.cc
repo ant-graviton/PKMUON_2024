@@ -46,6 +46,8 @@
 #include "G4UserLimits.hh"
 #include "G4SubtractionSolid.hh"
 #include "G4IntersectionSolid.hh"
+#include "G4VisAttributes.hh"
+#include "G4Color.hh"
 
 DetectorConstruction::DetectorConstruction(int o)
   : options(o)
@@ -141,6 +143,14 @@ void DetectorConstruction::DefineFields()
     PrintVolumes(rpc_electrode_pair);
     G4VPhysicalVolume *electric_volume = rpc_electrode_pair->GetLogicalVolume()->GetDaughter(0);
     electric_volume->GetLogicalVolume()->SetFieldManager(manager, true);
+    electric_volume->GetLogicalVolume()->SetFieldManager(manager, true);
+    {
+      G4VisAttributes attr;
+      G4Color color; G4Color::GetColour("green", color); color.SetAlpha(0.2);
+      attr.SetColor(color);
+      attr.SetForceSolid();
+      electric_volume->GetLogicalVolume()->SetVisAttributes(attr);
+    }
 
     // Force step limit in field areas.
     auto limits = new G4UserLimits(step);
