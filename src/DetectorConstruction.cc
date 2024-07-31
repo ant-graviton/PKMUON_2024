@@ -143,12 +143,11 @@ void DetectorConstruction::DefineFields()
     PrintVolumes(rpc_electrode_pair);
     G4VPhysicalVolume *electric_volume = rpc_electrode_pair->GetLogicalVolume()->GetDaughter(0);
     electric_volume->GetLogicalVolume()->SetFieldManager(manager, true);
-    electric_volume->GetLogicalVolume()->SetFieldManager(manager, true);
     {
       G4VisAttributes attr;
-      G4Color color; G4Color::GetColour("green", color); color.SetAlpha(0.2);
-      attr.SetColor(color);
-      attr.SetForceSolid();
+      G4Color color;
+      G4Color::GetColour("green", color), color.SetAlpha(0.2);
+      attr.SetColor(color), attr.SetForceSolid();
       electric_volume->GetLogicalVolume()->SetVisAttributes(attr);
     }
 
