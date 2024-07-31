@@ -39,6 +39,7 @@
 #include "G4Box.hh"
 #include "G4FieldManager.hh"
 #include "G4UniformElectricField.hh"
+#include "G4UniformMagField.hh"
 #include "G4EqMagElectricField.hh"
 #include "G4ClassicalRK4.hh"
 #include "G4ChordFinder.hh"
@@ -116,11 +117,12 @@ void DetectorConstruction::DefineFields()
   G4double step = z * 0.01;
   G4double U = 10100 * volt, E = U / z;
   auto field = new G4UniformElectricField(G4ThreeVector{0, 0, E});
-  auto equation_of_motion = new G4EqMagElectricField(field);
-  auto stepper = new G4ClassicalRK4(equation_of_motion);
-  auto int_driver = new G4MagInt_Driver(step, stepper, stepper->GetNumberOfVariables());
-  auto chord_finder = new G4ChordFinder(int_driver);
-  auto manager = new G4FieldManager(field, chord_finder);
+  //auto equation_of_motion = new G4EqMagElectricField(field);
+  //auto stepper = new G4ClassicalRK4(equation_of_motion);
+  //auto int_driver = new G4MagInt_Driver(step, stepper, stepper->GetNumberOfVariables());
+  //auto chord_finder = new G4ChordFinder(int_driver);
+  auto manager = new G4FieldManager(field);
+  manager->CreateChordFinder(new G4UniformMagField(G4ThreeVector{0, 0, 0}));
 
   for(G4VPhysicalVolume *rpc_electrode_pair : rpc_electrode_pairs) {
     // Split rpc_electrode_pair into two parts, w/ and w/o electric field.
@@ -353,18 +355,20 @@ G4double DetectorConstruction::GetDetectorMinZ() const
 
 G4double DetectorConstruction::GetDetectorHalfX() const
 {
-  G4LogicalVolume *rpc = G4LogicalVolumeStore::GetInstance()->GetVolume("rpc");
-  if(!rpc) return 0;
-  auto box = dynamic_cast<G4Box *>(rpc->GetSolid());
-  if(!box) return 0;
-  return box->GetXHalfLength();
+  //G4LogicalVolume *rpc = G4LogicalVolumeStore::GetInstance()->GetVolume("rpc");
+  //if(!rpc) return 0;
+  //auto box = dynamic_cast<G4Box *>(rpc->GetSolid());
+  //if(!box) return 0;
+  //return box->GetXHalfLength();
+  return ((G4Box *)fScoringVolume->GetSolid())->GetXHalfLength();  // faster
 }
 
 G4double DetectorConstruction::GetDetectorHalfY() const
 {
-  G4LogicalVolume *rpc = G4LogicalVolumeStore::GetInstance()->GetVolume("rpc");
-  if(!rpc) return 0;
-  auto box = dynamic_cast<G4Box *>(rpc->GetSolid());
-  if(!box) return 0;
-  return box->GetYHalfLength();
+  //G4LogicalVolume *rpc = G4LogicalVolumeStore::GetInstance()->GetVolume("rpc");
+  //if(!rpc) return 0;
+  //auto box = dynamic_cast<G4Box *>(rpc->GetSolid());
+  //if(!box) return 0;
+  //return box->GetYHalfLength();
+  return ((G4Box *)fScoringVolume->GetSolid())->GetYHalfLength();  // faster
 }
