@@ -59,13 +59,19 @@ rpc_electrode_pair:
     - rpc_electrode
   material: rpc_gas
 
+# This box makes rpc_electrode_pair physically unique.
+rpc_electrode_pair_box:
+  solid: bottom_up
+  components: [rpc_electrode_pair]
+  material: rpc_gas
+
 rpc_electrode_pair_0:
   solid: rotation
-  components: [rpc_electrode_pair]
+  components: [rpc_electrode_pair_box]
 
 rpc_electrode_pair_1:
   solid: rotation
-  components: [rpc_electrode_pair, [x, 180 deg]]
+  components: [rpc_electrode_pair_box, [x, 180 deg]]
 
 rpc_mainbody:
   solid: bottom_up
