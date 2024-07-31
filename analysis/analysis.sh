@@ -1,6 +1,6 @@
 #!/bin/bash
 
-NPROC=8
+NPROC=$(nproc || sysctl -n hw.logicalcpu || getconf _NPROCESSORS_ONLN)
 N=0
 PIDS=()
 

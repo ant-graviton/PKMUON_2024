@@ -1,7 +1,7 @@
 #!/bin/bash
 
 N=500
-NPROC=8
+NPROC=$(nproc || sysctl -n hw.logicalcpu || getconf _NPROCESSORS_ONLN)
 IPROC=0
 PIDS=()
 mkdir -p root_file
