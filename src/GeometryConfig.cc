@@ -225,7 +225,8 @@ G4LogicalVolume *ProcessRotation(const string &name, YAML::Node node)
   v = *rotation * v;
   auto logical = CreateBoxVolume(name, abs(v.x()), abs(v.y()), abs(v.z()), child->GetMaterial());
   node["material"] = (string)logical->GetMaterial()->GetName();
-  new G4PVPlacement(rotation, {0, 0, 0}, child, name, logical, false, 0, true);
+  string child_name = name + "_0:" + child->GetName();
+  new G4PVPlacement(rotation, {0, 0, 0}, child, child_name, logical, false, 0, true);
   return logical;
 }
 

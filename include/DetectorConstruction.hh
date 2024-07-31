@@ -58,6 +58,7 @@ public:
   G4double GetDetectorHalfY() const;
   void SetGpsPrimaryGeneratorAction(GpsPrimaryGeneratorAction *a) { fGpsPrimaryGeneratorAction = a; }
 
+  static void PrintVolumes(G4VPhysicalVolume *);
   static void WalkVolume(G4LogicalVolume *volume,
       const std::function<void(G4LogicalVolume *)> &enter,
       const std::function<void(G4LogicalVolume *)> &leave = nullptr);
@@ -77,6 +78,7 @@ private:
 
   G4LogicalVolume *fScoringVolume;
   GpsPrimaryGeneratorAction *fGpsPrimaryGeneratorAction;
+  mutable std::vector<std::pair<G4double, G4double>> fScoringZRanges;
   const int options;
 };
 

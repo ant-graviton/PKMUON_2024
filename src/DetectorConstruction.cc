@@ -44,6 +44,8 @@
 #include "G4ChordFinder.hh"
 #include "G4MagIntegratorDriver.hh"
 #include "G4UserLimits.hh"
+#include "G4SubtractionSolid.hh"
+#include "G4IntersectionSolid.hh"
 
 DetectorConstruction::DetectorConstruction(int o)
   : options(o)
@@ -79,12 +81,37 @@ G4VPhysicalVolume *DetectorConstruction::DefineVolumes()
 
 void DetectorConstruction::DefineFields()
 {
+  // Find all physical occurrences of rpc_electrode_pair.
   G4String name = "rpc_electrode_pair";
-  G4LogicalVolume *rpc_electrode_pair = G4LogicalVolumeStore::GetInstance()->GetVolume(name);
-  if(!rpc_electrode_pair) return;
-  auto box = dynamic_cast<G4Box *>(rpc_electrode_pair->GetSolid());
-  if(!box) return;
-  G4double z = 2 * box->GetZHalfLength(), step = z * 0.01;
+  std::vector<G4VPhysicalVolume *> rpc_electrode_pairs;
+  WalkVolume(NULL, [&name, &rpc_electrode_pairs](G4VPhysicalVolume *v) {
+    if(v->GetLogicalVolume()->GetName() == name) rpc_electrode_pairs.push_back(v);
+  });
+  std::sort(rpc_electrode_pairs.begin(), rpc_electrode_pairs.end());
+  rpc_electrode_pairs.erase(
+      std::unique(rpc_electrode_pairs.begin(), rpc_electrode_pairs.end()),
+      rpc_electrode_pairs.end()
+  );
+
+  // Determine volume with electric field.
+  name = "rpc_electrode";
+  G4double x, y, z;
+  {
+    G4LogicalVolume *rpc_electrode = G4LogicalVolumeStore::GetInstance()->GetVolume(name);
+    if(rpc_electrode == NULL) return;
+    auto box = dynamic_cast<G4Box *>(rpc_electrode->GetSolid());
+    if(box == NULL) return;
+    x = 2 * box->GetXHalfLength(), y = 2 * box->GetYHalfLength();
+  }
+  {
+    std::vector<std::pair<G4double, G4double>> zranges = GetScoringZRanges();
+    if(zranges.size() < 2) return;
+    z = (zranges[1].first - zranges[0].first) - (zranges[0].second + zranges[1].second);
+  }
+  G4Box *electric = new G4Box("electric", x / 2, y / 2, z / 2);
+
+  // Turn on electric field.
+  G4double step = z * 0.01;
   G4double U = 10100 * volt, E = U / z;
   auto field = new G4UniformElectricField(G4ThreeVector{0, 0, E});
   auto equation_of_motion = new G4EqMagElectricField(field);
@@ -92,19 +119,36 @@ void DetectorConstruction::DefineFields()
   auto int_driver = new G4MagInt_Driver(step, stepper, stepper->GetNumberOfVariables());
   auto chord_finder = new G4ChordFinder(int_driver);
   auto manager = new G4FieldManager(field, chord_finder);
-  rpc_electrode_pair->SetFieldManager(manager, true);
 
-  auto limits = new G4UserLimits(step);
-  bool inside = false;
-  WalkVolume(NULL, [&name, &inside](G4VPhysicalVolume *volume) {
-    if(volume->GetLogicalVolume()->GetName() == name) inside = true;
-  }, [&name, limits, &inside](G4VPhysicalVolume *volume) {
-    if(!inside) return;
-    G4LogicalVolume *logical = volume->GetLogicalVolume();
-    G4cout << "Setting step limit for " << logical->GetName() << G4endl;
-    volume->GetLogicalVolume()->SetUserLimits(limits);
-    if(volume->GetLogicalVolume()->GetName() == name) inside = false;
-  });
+  for(G4VPhysicalVolume *rpc_electrode_pair : rpc_electrode_pairs) {
+    // Split rpc_electrode_pair into two parts, w/ and w/o electric field.
+    PrintVolumes(rpc_electrode_pair);
+    rpc_electrode_pair = PartitionVolume(rpc_electrode_pair,
+        [&electric, &name](G4VSolid *solid, const G4ThreeVector &r, const G4RotationMatrix &rm) {
+          // r_s = r + rm * r'_s  <=>  r'_s = - (rm^-1 * r) + rm^-1 * r_s
+          static size_t g_id;
+          size_t id = g_id++;
+          std::vector<G4VSolid *> parts;
+          parts.reserve(2);
+          auto rps = -(rm.inverse() * r);
+          auto rotation = new G4RotationMatrix(rm);
+          name = "part_" + std::to_string(id) + "_0_" + solid->GetName();
+          parts.push_back(new G4IntersectionSolid(name, solid, electric, rotation, rps));
+          name = "part_" + std::to_string(id) + "_1_" + solid->GetName();
+          parts.push_back(new G4SubtractionSolid (name, solid, electric, rotation, rps));
+          return parts;
+        });
+    PrintVolumes(rpc_electrode_pair);
+    G4VPhysicalVolume *electric_volume = rpc_electrode_pair->GetLogicalVolume()->GetDaughter(0);
+    electric_volume->GetLogicalVolume()->SetFieldManager(manager, true);
+
+    // Force step limit in field areas.
+    auto limits = new G4UserLimits(step);
+    WalkVolume(electric_volume->GetLogicalVolume(), [limits](G4LogicalVolume *volume) {
+      G4cout << "Setting step limit for " << volume->GetName() << G4endl;
+      volume->SetUserLimits(limits);
+    });
+  }
 }
 
 G4VPhysicalVolume *DetectorConstruction::Construct()
@@ -117,7 +161,20 @@ G4VPhysicalVolume *DetectorConstruction::Construct()
   DefineMaterials();
   G4VPhysicalVolume *world = DefineVolumes();
   DefineFields();
+  PrintVolumes(NULL);
   return world;
+}
+
+void DetectorConstruction::PrintVolumes(G4VPhysicalVolume *volume)
+{
+  size_t depth = 0;
+  WalkVolume(volume, [&depth](G4VPhysicalVolume *v) {
+    G4cout << std::string(2 * depth++, ' ');
+    G4cout << v->GetName()
+           << " - " << v->GetLogicalVolume()->GetName()
+           << " - " << v->GetLogicalVolume()->GetSolid()->GetName()
+           << G4endl;
+  }, [&depth](G4VPhysicalVolume *) { --depth; });
 }
 
 static void WalkVolume(G4LogicalVolume *volume,
@@ -182,7 +239,9 @@ void DetectorConstruction::WalkVolume(G4VPhysicalVolume *volume,
 
 std::vector<std::pair<G4double, G4double>> DetectorConstruction::GetScoringZRanges() const
 {
-  std::vector<std::pair<G4double, G4double>> z;
+  // [NOTE] Call this function once before eliminating rpc_electrode.
+  if(!fScoringZRanges.empty()) return fScoringZRanges;
+  std::vector<std::pair<G4double, G4double>> &z = fScoringZRanges;
   WalkVolume(NULL, [&z](G4VPhysicalVolume *volume, const G4ThreeVector &r, const G4RotationMatrix &) {
     if(volume->GetLogicalVolume()->GetName() != "rpc_electrode") return;
     G4double zm = r.z(), dz = -1.0 /* error */;
@@ -203,6 +262,9 @@ G4VPhysicalVolume *DetectorConstruction::PartitionVolume(G4VPhysicalVolume *volu
   WalkVolume(volume, [&stack](G4VPhysicalVolume *, const G4ThreeVector &, const G4RotationMatrix &) {
     stack.emplace_back();
   }, [&stack, &partition](G4VPhysicalVolume *v, const G4ThreeVector &r, const G4RotationMatrix &rm) {
+    static size_t g_id;
+    size_t id = g_id++;
+
     // Pop children from stack.
     auto children = std::move(stack.back());  // [nchild, npart]
     stack.pop_back();
@@ -230,13 +292,14 @@ G4VPhysicalVolume *DetectorConstruction::PartitionVolume(G4VPhysicalVolume *volu
         continue;
       }
       // Create logical volume.
-      G4String name = "part_" + std::to_string(ipart) + "_" + v->GetName();
+      G4String name = "part_" + std::to_string(id) + "_" + std::to_string(ipart) + "_" + v->GetLogicalVolume()->GetName();
       result.push_back(new G4LogicalVolume(solids[ipart], v->GetLogicalVolume()->GetMaterial(), name));
+      result.back()->SetVisAttributes(v->GetLogicalVolume()->GetVisAttributes());
       // Add children.
       for(size_t ichild = 0; ichild < nchild; ++ichild) {
         if(children[ichild][ipart] == NULL) continue;
         G4VPhysicalVolume *dau = v->GetLogicalVolume()->GetDaughter(ichild);
-        name = "part_" + std::to_string(ipart) + "_" + dau->GetName();
+        name = "part_" + std::to_string(id) + "_" + std::to_string(ipart) + "_" + dau->GetName();
         new G4PVPlacement(dau->GetRotation(), dau->GetTranslation(),
             children[ichild][ipart], name, result.back(), false, 0, true);
       }
@@ -244,16 +307,24 @@ G4VPhysicalVolume *DetectorConstruction::PartitionVolume(G4VPhysicalVolume *volu
   });
 
   // Create group.
-  G4String name = "group_" + volume->GetLogicalVolume()->GetName();
+  static size_t g_id;
+  size_t id = g_id++;
+  G4String name = "group_" + std::to_string(id) + "_" + volume->GetLogicalVolume()->GetName();
   auto solid = volume->GetLogicalVolume()->GetSolid();
   auto material = volume->GetLogicalVolume()->GetMaterial();
   auto logical = new G4LogicalVolume(solid, material, name);
+  size_t i = 0;
+  for(G4LogicalVolume *child : stack[0][0]) {
+    name = "group_" + std::to_string(id) + "_" + std::to_string(i++) + "_" + volume->GetName();
+    new G4PVPlacement(0, {0, 0, 0}, child, name, logical, false, 0, true);
+  }
 
   // Replace physical volume.
-  name = "group_" + volume->GetName();
+  name = "group_" + std::to_string(id) + "_" + volume->GetName();
   auto rotation = volume->GetObjectRotation();
   auto translation = volume->GetObjectTranslation();
   auto mother = volume->GetMotherLogical();
+  mother->RemoveDaughter(volume);
   delete volume;
   return new G4PVPlacement(rotation, translation, logical, name, mother, false, 0, true);
 }
