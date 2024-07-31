@@ -123,8 +123,8 @@ G4VPhysicalVolume *DetectorConstruction::Construct()
 }
 
 static void WalkVolume(G4VPhysicalVolume *volume,
-    std::function<void(G4VPhysicalVolume *)> enter,
-    std::function<void(G4VPhysicalVolume *)> leave)
+    const std::function<void(G4VPhysicalVolume *)> &enter,
+    const std::function<void(G4VPhysicalVolume *)> &leave)
 {
   enter(volume);
   G4LogicalVolume *logical = volume->GetLogicalVolume();
@@ -164,7 +164,7 @@ void DetectorConstruction::ViewVolumePositions(const G4String &name,
     r += volume->GetObjectTranslation();
   }, [&r](G4VPhysicalVolume *volume) {
     r -= volume->GetObjectTranslation();
-  }, [&r, view](G4VPhysicalVolume *volume) {
+  }, [&r, &view](G4VPhysicalVolume *volume) {
     view(volume, r);
   });
 }
