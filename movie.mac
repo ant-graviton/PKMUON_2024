@@ -1,0 +1,37 @@
+#Timeslicing for movie
+/vis/scene/add/trajectories rich
+/vis/modeling/trajectories/drawByParticleID-0/default/setTimeSliceInterval 0.005 ns
+
+#Point source particle
+#/control/verbose 2
+#/run/initialize
+#/run/verbose 2
+#/gps/particle mu-
+#/gps/energy 1 GeV
+
+# /gps/pos/type Point
+#/gps/position 0 0 -527  mm
+#/gps/direction 0.0  0.0  1.
+#/rlt/SetFileName root_file/CryMu.root
+
+#/run/printProgress 1000
+#/run/beamOn 50
+
+/control/execute CryMu.mac 
+
+#Change the viewpoint or zoom in/out
+/vis/viewer/set/timeWindow/startTime 0 ns .1 ns
+/vis/viewer/save
+/vis/viewer/set/timeWindow/startTime 1 ns .1 ns
+/vis/viewer/save
+/vis/viewer/set/timeWindow/startTime 2 ns .1 ns
+/vis/viewer/save
+/vis/viewer/set/timeWindow/startTime 3 ns .1 ns
+/vis/viewer/save
+/vis/viewer/set/timeWindow/startTime 4 ns .1 ns
+/vis/viewer/save
+#/vis/viewer/set/timeWindow/startTime 5 ns .1 ns
+#/vis/viewer/save
+
+#export as jpgs
+#/vis/viewer/interpolate ! ! ! ! export
