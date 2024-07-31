@@ -96,16 +96,14 @@ void DetectorConstruction::DefineFields()
 
   auto limits = new G4UserLimits(step);
   bool inside = false;
-  SearchVolume(NULL, name, [](G4VPhysicalVolume *) {
-    // do nothing
+  WalkVolume(NULL, [&name, &inside](G4VPhysicalVolume *volume) {
+    if(volume->GetLogicalVolume()->GetName() == name) inside = true;
   }, [&name, limits, &inside](G4VPhysicalVolume *volume) {
     if(!inside) return;
     G4LogicalVolume *logical = volume->GetLogicalVolume();
     G4cout << "Setting step limit for " << logical->GetName() << G4endl;
     volume->GetLogicalVolume()->SetUserLimits(limits);
     if(volume->GetLogicalVolume()->GetName() == name) inside = false;
-  }, [&inside](G4VPhysicalVolume *) {
-    inside = true;
   });
 }
 
@@ -122,16 +120,36 @@ G4VPhysicalVolume *DetectorConstruction::Construct()
   return world;
 }
 
+static void WalkVolume(G4LogicalVolume *volume,
+    const std::function<void(G4LogicalVolume *)> &enter,
+    const std::function<void(G4LogicalVolume *)> &leave)
+{
+  if(enter) enter(volume);
+  for(size_t i = 0; i < volume->GetNoDaughters(); ++i) {
+    WalkVolume(volume->GetDaughter(i)->GetLogicalVolume(), enter, leave);
+  }
+  if(leave) leave(volume);
+}
+
+void DetectorConstruction::WalkVolume(G4LogicalVolume *volume,
+    const std::function<void(G4LogicalVolume *)> &enter,
+    const std::function<void(G4LogicalVolume *)> &leave)
+{
+  if(volume == NULL) volume = G4LogicalVolumeStore::GetInstance()->GetVolume("world");
+  if(volume == NULL) return;
+  ::WalkVolume(volume, enter, leave);
+}
+
 static void WalkVolume(G4VPhysicalVolume *volume,
     const std::function<void(G4VPhysicalVolume *)> &enter,
     const std::function<void(G4VPhysicalVolume *)> &leave)
 {
-  enter(volume);
+  if(enter) enter(volume);
   G4LogicalVolume *logical = volume->GetLogicalVolume();
   for(size_t i = 0; i < logical->GetNoDaughters(); ++i) {
     WalkVolume(logical->GetDaughter(i), enter, leave);
   }
-  leave(volume);
+  if(leave) leave(volume);
 }
 
 void DetectorConstruction::WalkVolume(G4VPhysicalVolume *volume,
@@ -143,50 +161,109 @@ void DetectorConstruction::WalkVolume(G4VPhysicalVolume *volume,
   ::WalkVolume(volume, enter, leave);
 }
 
-void DetectorConstruction::SearchVolume(G4VPhysicalVolume *volume, const G4String &name,
-    const std::function<void(G4VPhysicalVolume *)> &enter,
-    const std::function<void(G4VPhysicalVolume *)> &leave,
-    const std::function<void(G4VPhysicalVolume *)> &found)
-{
-  WalkVolume(volume, [&enter, &found, &name](G4VPhysicalVolume *v) {
-    enter(v);
-    if(v->GetLogicalVolume()->GetName() == name) found(v);
-  }, [&leave](G4VPhysicalVolume *v) {
-    leave(v);
-  });
-}
-
-void DetectorConstruction::ViewVolumePositions(const G4String &name,
-    const std::function<void(G4VPhysicalVolume *, const G4ThreeVector &)> &view)
+void DetectorConstruction::WalkVolume(G4VPhysicalVolume *volume,
+    const std::function<void(G4VPhysicalVolume *, const G4ThreeVector &, const G4RotationMatrix &)> &enter,
+    const std::function<void(G4VPhysicalVolume *, const G4ThreeVector &, const G4RotationMatrix &)> &leave)
 {
   G4ThreeVector r = {0, 0, 0};
-  SearchVolume(NULL, name, [&r](G4VPhysicalVolume *volume) {
-    r += volume->GetObjectTranslation();
-  }, [&r](G4VPhysicalVolume *volume) {
-    r -= volume->GetObjectTranslation();
-  }, [&r, &view](G4VPhysicalVolume *volume) {
-    view(volume, r);
+  G4RotationMatrix rm = {0, 0, 0};
+  WalkVolume(volume, [&r, &rm, &enter](G4VPhysicalVolume *v) {
+    r += rm * v->GetObjectTranslation();
+    G4RotationMatrix *rotation = v->GetObjectRotation();
+    if(rotation) rm = rm * rotation->inverse();
+    if(enter) enter(v, r, rm);
+  }, [&r, &rm, &leave](G4VPhysicalVolume *v) {
+    if(leave) leave(v, r, rm);
+    G4RotationMatrix *rotation = v->GetObjectRotation();
+    if(rotation) rm = rm * *rotation;
+    r -= rm * v->GetObjectTranslation();
   });
 }
 
 std::vector<std::pair<G4double, G4double>> DetectorConstruction::GetScoringZRanges() const
 {
   std::vector<std::pair<G4double, G4double>> z;
-  ViewVolumePositions("rpc_electrode", [&z](G4VPhysicalVolume *rpc_electrode, const G4ThreeVector &r) {
+  WalkVolume(NULL, [&z](G4VPhysicalVolume *volume, const G4ThreeVector &r, const G4RotationMatrix &) {
+    if(volume->GetLogicalVolume()->GetName() != "rpc_electrode") return;
     G4double zm = r.z(), dz = -1.0 /* error */;
-    auto box = dynamic_cast<G4Box *>(rpc_electrode->GetLogicalVolume()->GetSolid());
+    auto box = dynamic_cast<G4Box *>(volume->GetLogicalVolume()->GetSolid());
     if(box) dz = box->GetZHalfLength();
     z.emplace_back(zm, dz);
   });
+  G4cout << "Scoring z ranges before sorting:" << G4endl;
+  for(auto &p : z) G4cout << " * " << p.first << ", " << p.second << G4endl;
   std::sort(z.begin(), z.end());
   return z;
+}
+
+G4VPhysicalVolume *DetectorConstruction::PartitionVolume(G4VPhysicalVolume *volume,
+    const std::function<std::vector<G4VSolid *>(G4VSolid *, const G4ThreeVector &, const G4RotationMatrix &)> &partition)
+{
+  std::vector<std::vector<std::vector<G4LogicalVolume *>>> stack(1);
+  WalkVolume(volume, [&stack](G4VPhysicalVolume *, const G4ThreeVector &, const G4RotationMatrix &) {
+    stack.emplace_back();
+  }, [&stack, &partition](G4VPhysicalVolume *v, const G4ThreeVector &r, const G4RotationMatrix &rm) {
+    // Pop children from stack.
+    auto children = std::move(stack.back());  // [nchild, npart]
+    stack.pop_back();
+    size_t nchild = children.size();
+
+    // Add self as a child of parent.
+    stack.back().emplace_back();
+    auto &result = stack.back().back();  // self, [npart]
+
+    // Partition solid.
+    auto solids = partition(v->GetLogicalVolume()->GetSolid(), r, rm);
+    size_t npart = solids.size();
+    for(auto &child : children) {
+      if(child.size() != npart) throw std::logic_error("inconsistent number of partitions");
+    }
+
+    // Create npart volumes as result.
+    result.reserve(npart);
+    for(size_t ipart = 0; ipart < npart; ++ipart) {
+      if(solids[ipart] == NULL) {
+        for(size_t ichild = 0; ichild < nchild; ++ichild) {
+          if(children[ichild][ipart]) throw std::logic_error("null volume contains non-null child");
+        }
+        result.push_back(NULL);
+        continue;
+      }
+      // Create logical volume.
+      G4String name = "part_" + std::to_string(ipart) + "_" + v->GetName();
+      result.push_back(new G4LogicalVolume(solids[ipart], v->GetLogicalVolume()->GetMaterial(), name));
+      // Add children.
+      for(size_t ichild = 0; ichild < nchild; ++ichild) {
+        if(children[ichild][ipart] == NULL) continue;
+        G4VPhysicalVolume *dau = v->GetLogicalVolume()->GetDaughter(ichild);
+        name = "part_" + std::to_string(ipart) + "_" + dau->GetName();
+        new G4PVPlacement(dau->GetRotation(), dau->GetTranslation(),
+            children[ichild][ipart], name, result.back(), false, 0, true);
+      }
+    }
+  });
+
+  // Create group.
+  G4String name = "group_" + volume->GetLogicalVolume()->GetName();
+  auto solid = volume->GetLogicalVolume()->GetSolid();
+  auto material = volume->GetLogicalVolume()->GetMaterial();
+  auto logical = new G4LogicalVolume(solid, material, name);
+
+  // Replace physical volume.
+  name = "group_" + volume->GetName();
+  auto rotation = volume->GetObjectRotation();
+  auto translation = volume->GetObjectTranslation();
+  auto mother = volume->GetMotherLogical();
+  delete volume;
+  return new G4PVPlacement(rotation, translation, logical, name, mother, false, 0, true);
 }
 
 G4double DetectorConstruction::GetDetectorMinZ() const
 {
   G4double z = 1.0 / 0.0;
-  ViewVolumePositions("rpc", [&z](G4VPhysicalVolume *rpc, const G4ThreeVector &r) {
-    auto box = dynamic_cast<G4Box *>(rpc->GetLogicalVolume()->GetSolid());
+  WalkVolume(NULL, [&z](G4VPhysicalVolume *volume, const G4ThreeVector &r, const G4RotationMatrix &) {
+    if(volume->GetLogicalVolume()->GetName() != "rpc") return;
+    auto box = dynamic_cast<G4Box *>(volume->GetLogicalVolume()->GetSolid());
     if(box == NULL) z = -1.0 / 0.0;  // error
     z = std::min(z, r.z() - box->GetZHalfLength());
   });

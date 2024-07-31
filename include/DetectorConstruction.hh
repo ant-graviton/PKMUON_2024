@@ -31,12 +31,14 @@
 
 #include "G4VUserDetectorConstruction.hh"
 #include "G4ThreeVector.hh"
+#include "G4RotationMatrix.hh"
 #include <vector>
 #include <functional>
 
 class G4Material;
-class G4VPhysicalVolume;
+class G4VSolid;
 class G4LogicalVolume;
+class G4VPhysicalVolume;
 class GpsPrimaryGeneratorAction;
 
 #define DETECTOR_OPTION_SCORING_ONLY  0b00000001
@@ -56,15 +58,17 @@ public:
   G4double GetDetectorHalfY() const;
   void SetGpsPrimaryGeneratorAction(GpsPrimaryGeneratorAction *a) { fGpsPrimaryGeneratorAction = a; }
 
+  static void WalkVolume(G4LogicalVolume *volume,
+      const std::function<void(G4LogicalVolume *)> &enter,
+      const std::function<void(G4LogicalVolume *)> &leave = nullptr);
   static void WalkVolume(G4VPhysicalVolume *volume,
       const std::function<void(G4VPhysicalVolume *)> &enter,
-      const std::function<void(G4VPhysicalVolume *)> &leave);
-  static void SearchVolume(G4VPhysicalVolume *volume, const G4String &name,
-      const std::function<void(G4VPhysicalVolume *)> &enter,
-      const std::function<void(G4VPhysicalVolume *)> &leave,
-      const std::function<void(G4VPhysicalVolume *)> &found);
-  static void ViewVolumePositions(const G4String &name,
-      const std::function<void(G4VPhysicalVolume *, const G4ThreeVector &)> &view);
+      const std::function<void(G4VPhysicalVolume *)> &leave = nullptr);
+  static void WalkVolume(G4VPhysicalVolume *volume,
+      const std::function<void(G4VPhysicalVolume *, const G4ThreeVector &, const G4RotationMatrix &)> &enter,
+      const std::function<void(G4VPhysicalVolume *, const G4ThreeVector &, const G4RotationMatrix &)> &leave = nullptr);
+  static G4VPhysicalVolume *PartitionVolume(G4VPhysicalVolume *volume,
+      const std::function<std::vector<G4VSolid *>(G4VSolid *, const G4ThreeVector &, const G4RotationMatrix &)> &partition);
 
 private:
   void DefineMaterials();
