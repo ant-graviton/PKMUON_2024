@@ -323,6 +323,7 @@ G4VPhysicalVolume *DetectorConstruction::PartitionVolume(G4VPhysicalVolume *volu
   auto solid = volume->GetLogicalVolume()->GetSolid();
   auto material = volume->GetLogicalVolume()->GetMaterial();
   auto logical = new G4LogicalVolume(solid, material, name);
+  logical->SetVisAttributes(volume->GetLogicalVolume()->GetVisAttributes());
   size_t i = 0;
   for(G4LogicalVolume *child : stack[0][0]) {
     name = "group_" + std::to_string(id) + "_" + std::to_string(i++) + "_" + volume->GetName();
