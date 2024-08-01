@@ -29,33 +29,40 @@
 #include "DetectorConstruction.hh"
 #include "GpsPrimaryGeneratorAction.hh"
 #include "GeometryConfig.hh"
+
+// geometry
+#include "G4SystemOfUnits.hh"
+#include "G4Box.hh"
+#include "G4SubtractionSolid.hh"
+#include "G4IntersectionSolid.hh"
 #include "G4LogicalVolume.hh"
 #include "G4PVPlacement.hh"
 #include "G4GeometryManager.hh"
-#include "G4PhysicalVolumeStore.hh"
-#include "G4LogicalVolumeStore.hh"
 #include "G4SolidStore.hh"
-#include "G4SystemOfUnits.hh"
-#include "G4Box.hh"
+#include "G4LogicalVolumeStore.hh"
+#include "G4PhysicalVolumeStore.hh"
+
+// visualization
+#include "G4VisAttributes.hh"
+#include "G4Color.hh"
+
+// EM field
 #include "G4FieldManager.hh"
 #include "G4UniformElectricField.hh"
 #include "G4UniformMagField.hh"
 #include "G4EqMagElectricField.hh"
 #include "G4ClassicalRK4.hh"
-#include "G4ChordFinder.hh"
 #include "G4MagIntegratorDriver.hh"
+#include "G4ChordFinder.hh"
 #include "G4UserLimits.hh"
-#include "G4SubtractionSolid.hh"
-#include "G4IntersectionSolid.hh"
-#include "G4VisAttributes.hh"
-#include "G4Color.hh"
 
 DetectorConstruction::DetectorConstruction(int o)
-  : options(o)
+  : fOptions(o), fGpsPrimaryGeneratorAction(NULL),
+  fWorld(NULL), fScoringVolume(NULL), fElectrodeVolume(NULL)
 {
-  if(options) throw std::invalid_argument("options unimplemented");
-  fScoringVolume = NULL;
-  fGpsPrimaryGeneratorAction = NULL;
+  if(fOptions) throw std::invalid_argument("options unimplemented");
+  fLogicalVolumeStore = G4LogicalVolumeStore::GetInstance();
+  fPhysicalVolumeStore = G4PhysicalVolumeStore::GetInstance();
 }
 
 DetectorConstruction::~DetectorConstruction()
@@ -68,23 +75,21 @@ void DetectorConstruction::DefineMaterials()
   GeometryConfig::LoadMaterials("../config/rpc_material.yaml");
 }
 
-G4VPhysicalVolume *DetectorConstruction::DefineVolumes()
+void DetectorConstruction::DefineVolumes()
 {
   GeometryConfig::LoadVolumes("../config/rpc_readout.yaml");
   GeometryConfig::LoadVolumes("../config/rpc.yaml");
   GeometryConfig::LoadVolumes("../config/layout.yaml");
 
-  G4LogicalVolumeStore *store = G4LogicalVolumeStore::GetInstance();
-  fScoringVolume = store->GetVolume("rpc_electrode");
-  auto world = new G4PVPlacement(0, {0, 0, 0},
-      store->GetVolume("world"), "world", 0, false, 0, true);
+  fElectrodeVolume = fLogicalVolumeStore->GetVolume("rpc_electrode");
+  fScoringVolume = fElectrodeVolume;
+  fWorld = new G4PVPlacement(0, {0, 0, 0}, fLogicalVolumeStore->GetVolume("world"), "world", 0, false, 0, true);
   if(fGpsPrimaryGeneratorAction) fGpsPrimaryGeneratorAction->Initialize(this);
-  return world;
 }
 
 void DetectorConstruction::DefineFields()
 {
-  // Find all physical occurrences of rpc_electrode_pair.
+  // Find all unique physical occurrences of rpc_electrode_pair.
   G4String name = "rpc_electrode_pair";
   std::vector<G4VPhysicalVolume *> rpc_electrode_pairs;
   WalkVolume(NULL, [&name, &rpc_electrode_pairs](G4VPhysicalVolume *v) {
@@ -96,14 +101,10 @@ void DetectorConstruction::DefineFields()
       rpc_electrode_pairs.end()
   );
 
-  // Determine volume with electric field.
-  name = "rpc_electrode";
+  // Determine electric field volume.
   G4double x, y, z;
   {
-    G4LogicalVolume *rpc_electrode = G4LogicalVolumeStore::GetInstance()->GetVolume(name);
-    if(rpc_electrode == NULL) return;
-    auto box = dynamic_cast<G4Box *>(rpc_electrode->GetSolid());
-    if(box == NULL) return;
+    auto box = dynamic_cast<G4Box *>(fElectrodeVolume->GetSolid());
     x = 2 * box->GetXHalfLength(), y = 2 * box->GetYHalfLength();
   }
   {
@@ -111,7 +112,7 @@ void DetectorConstruction::DefineFields()
     if(zranges.size() < 2) return;
     z = (zranges[1].first - zranges[0].first) - (zranges[0].second + zranges[1].second);
   }
-  G4Box *electric = new G4Box("electric", x / 2, y / 2, z / 2);
+  auto electric = new G4Box("electric", x / 2, y / 2, z / 2);
 
   // Turn on electric field.
   G4double step = z * 0.01;
@@ -121,6 +122,7 @@ void DetectorConstruction::DefineFields()
   //auto stepper = new G4ClassicalRK4(equation_of_motion);
   //auto int_driver = new G4MagInt_Driver(step, stepper, stepper->GetNumberOfVariables());
   //auto chord_finder = new G4ChordFinder(int_driver);
+  //auto manager = new G4FieldManager(field, chord_finder);
   auto manager = new G4FieldManager(field);
   manager->CreateChordFinder(new G4UniformMagField(G4ThreeVector{0, 0, 0}));
 
@@ -165,18 +167,18 @@ void DetectorConstruction::DefineFields()
 G4VPhysicalVolume *DetectorConstruction::Construct()
 {
   G4GeometryManager::GetInstance()->OpenGeometry();
-  G4PhysicalVolumeStore::GetInstance()->Clean();
-  G4LogicalVolumeStore::GetInstance()->Clean();
   G4SolidStore::GetInstance()->Clean();
+  fLogicalVolumeStore->Clean();
+  fPhysicalVolumeStore->Clean();
 
   DefineMaterials();
-  G4VPhysicalVolume *world = DefineVolumes();
+  DefineVolumes();
   DefineFields();
   PrintVolumes(NULL);
-  return world;
+  return fWorld;
 }
 
-void DetectorConstruction::PrintVolumes(G4VPhysicalVolume *volume)
+void DetectorConstruction::PrintVolumes(G4VPhysicalVolume *volume) const
 {
   size_t depth = 0;
   WalkVolume(volume, [&depth](G4VPhysicalVolume *v) {
@@ -201,9 +203,9 @@ static void WalkVolume(G4LogicalVolume *volume,
 
 void DetectorConstruction::WalkVolume(G4LogicalVolume *volume,
     const std::function<void(G4LogicalVolume *)> &enter,
-    const std::function<void(G4LogicalVolume *)> &leave)
+    const std::function<void(G4LogicalVolume *)> &leave) const
 {
-  if(volume == NULL) volume = G4LogicalVolumeStore::GetInstance()->GetVolume("world");
+  if(volume == NULL) volume = fWorld->GetLogicalVolume();
   if(volume == NULL) return;
   ::WalkVolume(volume, enter, leave);
 }
@@ -222,16 +224,16 @@ static void WalkVolume(G4VPhysicalVolume *volume,
 
 void DetectorConstruction::WalkVolume(G4VPhysicalVolume *volume,
     const std::function<void(G4VPhysicalVolume *)> &enter,
-    const std::function<void(G4VPhysicalVolume *)> &leave)
+    const std::function<void(G4VPhysicalVolume *)> &leave) const
 {
-  if(volume == NULL) volume = G4PhysicalVolumeStore::GetInstance()->GetVolume("world");
+  if(volume == NULL) volume = fWorld;
   if(volume == NULL) return;
   ::WalkVolume(volume, enter, leave);
 }
 
 void DetectorConstruction::WalkVolume(G4VPhysicalVolume *volume,
     const std::function<void(G4VPhysicalVolume *, const G4ThreeVector &, const G4RotationMatrix &)> &enter,
-    const std::function<void(G4VPhysicalVolume *, const G4ThreeVector &, const G4RotationMatrix &)> &leave)
+    const std::function<void(G4VPhysicalVolume *, const G4ThreeVector &, const G4RotationMatrix &)> &leave) const
 {
   G4ThreeVector r = {0, 0, 0};
   G4RotationMatrix rm = {0, 0, 0};
@@ -250,15 +252,13 @@ void DetectorConstruction::WalkVolume(G4VPhysicalVolume *volume,
 
 std::vector<std::pair<G4double, G4double>> DetectorConstruction::GetScoringZRanges() const
 {
-  // [NOTE] Call this function once before eliminating rpc_electrode.
+  // [NOTE] Call this method once before eliminating rpc_electrode.
   if(!fScoringZRanges.empty()) return fScoringZRanges;
   std::vector<std::pair<G4double, G4double>> &z = fScoringZRanges;
   WalkVolume(NULL, [&z](G4VPhysicalVolume *volume, const G4ThreeVector &r, const G4RotationMatrix &) {
     if(volume->GetLogicalVolume()->GetName() != "rpc_electrode") return;
-    G4double zm = r.z(), dz = -1.0 /* error */;
     auto box = dynamic_cast<G4Box *>(volume->GetLogicalVolume()->GetSolid());
-    if(box) dz = box->GetZHalfLength();
-    z.emplace_back(zm, dz);
+    z.emplace_back(r.z(), box->GetZHalfLength());
   });
   G4cout << "Scoring z ranges before sorting:" << G4endl;
   for(auto &p : z) G4cout << " * " << p.first << ", " << p.second << G4endl;
@@ -267,7 +267,7 @@ std::vector<std::pair<G4double, G4double>> DetectorConstruction::GetScoringZRang
 }
 
 G4VPhysicalVolume *DetectorConstruction::PartitionVolume(G4VPhysicalVolume *volume,
-    const std::function<std::vector<G4VSolid *>(G4VSolid *, const G4ThreeVector &, const G4RotationMatrix &)> &partition)
+    const std::function<std::vector<G4VSolid *>(G4VSolid *, const G4ThreeVector &, const G4RotationMatrix &)> &partition) const
 {
   std::vector<std::vector<std::vector<G4LogicalVolume *>>> stack(1);
   WalkVolume(volume, [&stack](G4VPhysicalVolume *, const G4ThreeVector &, const G4RotationMatrix &) {
@@ -325,10 +325,10 @@ G4VPhysicalVolume *DetectorConstruction::PartitionVolume(G4VPhysicalVolume *volu
   auto material = volume->GetLogicalVolume()->GetMaterial();
   auto logical = new G4LogicalVolume(solid, material, name);
   logical->SetVisAttributes(volume->GetLogicalVolume()->GetVisAttributes());
-  size_t i = 0;
-  for(G4LogicalVolume *child : stack[0][0]) {
-    name = "group_" + std::to_string(id) + "_" + std::to_string(i++) + "_" + volume->GetName();
-    new G4PVPlacement(0, {0, 0, 0}, child, name, logical, false, 0, true);
+  for(size_t ichild = 0; ichild < stack[0][0].size(); ++ichild) {
+    if(stack[0][0][ichild] == NULL) continue;
+    name = "group_" + std::to_string(id) + "_" + std::to_string(ichild) + "_" + volume->GetName();
+    new G4PVPlacement(0, {0, 0, 0}, stack[0][0][ichild], name, logical, false, 0, true);
   }
 
   // Replace physical volume.
@@ -347,7 +347,6 @@ G4double DetectorConstruction::GetDetectorMinZ() const
   WalkVolume(NULL, [&z](G4VPhysicalVolume *volume, const G4ThreeVector &r, const G4RotationMatrix &) {
     if(volume->GetLogicalVolume()->GetName() != "rpc") return;
     auto box = dynamic_cast<G4Box *>(volume->GetLogicalVolume()->GetSolid());
-    if(box == NULL) z = -1.0 / 0.0;  // error
     z = std::min(z, r.z() - box->GetZHalfLength());
   });
   return z;
@@ -355,20 +354,12 @@ G4double DetectorConstruction::GetDetectorMinZ() const
 
 G4double DetectorConstruction::GetDetectorHalfX() const
 {
-  //G4LogicalVolume *rpc = G4LogicalVolumeStore::GetInstance()->GetVolume("rpc");
-  //if(!rpc) return 0;
-  //auto box = dynamic_cast<G4Box *>(rpc->GetSolid());
-  //if(!box) return 0;
-  //return box->GetXHalfLength();
-  return ((G4Box *)fScoringVolume->GetSolid())->GetXHalfLength();  // faster
+  //return dynamic_cast<G4Box *>(fLogicalVolumeStore->GetVolume("rpc")->GetSolid())->GetXHalfLength();  // more precise
+  return dynamic_cast<G4Box *>(fElectrodeVolume->GetSolid())->GetXHalfLength();  // faster
 }
 
 G4double DetectorConstruction::GetDetectorHalfY() const
 {
-  //G4LogicalVolume *rpc = G4LogicalVolumeStore::GetInstance()->GetVolume("rpc");
-  //if(!rpc) return 0;
-  //auto box = dynamic_cast<G4Box *>(rpc->GetSolid());
-  //if(!box) return 0;
-  //return box->GetYHalfLength();
-  return ((G4Box *)fScoringVolume->GetSolid())->GetYHalfLength();  // faster
+  //return dynamic_cast<G4Box *>(fLogicalVolumeStore->GetVolume("rpc")->GetSolid())->GetYHalfLength();  // more precise
+  return dynamic_cast<G4Box *>(fElectrodeVolume->GetSolid())->GetYHalfLength();  // faster
 }

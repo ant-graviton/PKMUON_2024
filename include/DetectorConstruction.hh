@@ -35,11 +35,12 @@
 #include <vector>
 #include <functional>
 
-class G4Material;
+class GpsPrimaryGeneratorAction;
 class G4VSolid;
 class G4LogicalVolume;
 class G4VPhysicalVolume;
-class GpsPrimaryGeneratorAction;
+class G4LogicalVolumeStore;
+class G4PhysicalVolumeStore;
 
 #define DETECTOR_OPTION_SCORING_ONLY  0b00000001
 #define DETECTOR_OPTION_VACUUM_ENV    0b00000010
@@ -50,36 +51,45 @@ public:
   DetectorConstruction(int options = 0);
   ~DetectorConstruction();
 
+  // Call this method before Construct().
+  void SetGpsPrimaryGeneratorAction(GpsPrimaryGeneratorAction *a) { fGpsPrimaryGeneratorAction = a; }
+
   virtual G4VPhysicalVolume *Construct();
+
+  // Call these methods after Construct().
   G4LogicalVolume *GetScoringVolume() const { return fScoringVolume; };
   std::vector<std::pair<G4double, G4double>> GetScoringZRanges() const;
   G4double GetDetectorMinZ() const;
   G4double GetDetectorHalfX() const;
   G4double GetDetectorHalfY() const;
-  void SetGpsPrimaryGeneratorAction(GpsPrimaryGeneratorAction *a) { fGpsPrimaryGeneratorAction = a; }
 
-  static void PrintVolumes(G4VPhysicalVolume *);
-  static void WalkVolume(G4LogicalVolume *volume,
+  // Hierarchic options.
+  void PrintVolumes(G4VPhysicalVolume *) const;
+  void WalkVolume(G4LogicalVolume *volume,
       const std::function<void(G4LogicalVolume *)> &enter,
-      const std::function<void(G4LogicalVolume *)> &leave = nullptr);
-  static void WalkVolume(G4VPhysicalVolume *volume,
+      const std::function<void(G4LogicalVolume *)> &leave = nullptr) const;
+  void WalkVolume(G4VPhysicalVolume *volume,
       const std::function<void(G4VPhysicalVolume *)> &enter,
-      const std::function<void(G4VPhysicalVolume *)> &leave = nullptr);
-  static void WalkVolume(G4VPhysicalVolume *volume,
+      const std::function<void(G4VPhysicalVolume *)> &leave = nullptr) const;
+  void WalkVolume(G4VPhysicalVolume *volume,
       const std::function<void(G4VPhysicalVolume *, const G4ThreeVector &, const G4RotationMatrix &)> &enter,
-      const std::function<void(G4VPhysicalVolume *, const G4ThreeVector &, const G4RotationMatrix &)> &leave = nullptr);
-  static G4VPhysicalVolume *PartitionVolume(G4VPhysicalVolume *volume,
-      const std::function<std::vector<G4VSolid *>(G4VSolid *, const G4ThreeVector &, const G4RotationMatrix &)> &partition);
+      const std::function<void(G4VPhysicalVolume *, const G4ThreeVector &, const G4RotationMatrix &)> &leave = nullptr) const;
+  G4VPhysicalVolume *PartitionVolume(G4VPhysicalVolume *volume,
+      const std::function<std::vector<G4VSolid *>(G4VSolid *, const G4ThreeVector &, const G4RotationMatrix &)> &partition) const;
 
 private:
   void DefineMaterials();
-  G4VPhysicalVolume *DefineVolumes();
+  void DefineVolumes();
   void DefineFields();
 
-  G4LogicalVolume *fScoringVolume;
+  const int fOptions;
   GpsPrimaryGeneratorAction *fGpsPrimaryGeneratorAction;
+  G4LogicalVolumeStore *fLogicalVolumeStore;
+  G4PhysicalVolumeStore *fPhysicalVolumeStore;
+  G4VPhysicalVolume *fWorld;
+  G4LogicalVolume *fScoringVolume;
+  G4LogicalVolume *fElectrodeVolume;
   mutable std::vector<std::pair<G4double, G4double>> fScoringZRanges;
-  const int options;
 };
 
 #endif
