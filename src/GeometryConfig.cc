@@ -1,24 +1,16 @@
 #include "GeometryConfig.hh"
 #include "G4ios.hh"
-#include "G4Box.hh"
-#include "G4Material.hh"
-#include "G4LogicalVolume.hh"
-#include "G4LogicalVolumeStore.hh"
-#include "G4UnitsTable.hh"
-#include "G4PVPlacement.hh"
-#include "G4VisAttributes.hh"
-#include "G4Color.hh"
 #include "G4Element.hh"
 #include "G4Material.hh"
 #include "G4NistManager.hh"
+#include "G4Box.hh"
+#include "G4LogicalVolume.hh"
+#include "G4LogicalVolumeStore.hh"
+#include "G4PVPlacement.hh"
+#include "G4UnitsTable.hh"
 #include "G4SystemOfUnits.hh"
-#include <fstream>
-#include <sstream>
-#include <vector>
-#include <string>
-#include <algorithm>
-#include <stdlib.h>
-#include <math.h>
+#include "G4VisAttributes.hh"
+#include "G4Color.hh"
 
 using namespace std;
 
@@ -26,7 +18,7 @@ namespace {
 
 G4LogicalVolume *CreateBoxVolume(const string &name, G4double hx, G4double hy, G4double hz, G4Material *material)
 {
-  G4cout << "* Box " << name << ": " << hx * 2 << ", " << hy * 2 << ", " << hz * 2 << " (mm)" << G4endl;
+  G4cout << " * Box " << name << ": " << hx * 2 << ", " << hy * 2 << ", " << hz * 2 << " (mm)" << G4endl;
   auto box = new G4Box(name, hx, hy, hz);
   return new G4LogicalVolume(box, material, name);
 }
@@ -223,7 +215,7 @@ G4LogicalVolume *ProcessRotation(const string &name, YAML::Node node)
   }
   G4ThreeVector v(box->GetXHalfLength(), box->GetYHalfLength(), box->GetZHalfLength());
   v = *rotation * v;
-  auto logical = CreateBoxVolume(name, abs(v.x()), abs(v.y()), abs(v.z()), child->GetMaterial());
+  auto logical = CreateBoxVolume(name, fabs(v.x()), fabs(v.y()), fabs(v.z()), child->GetMaterial());
   node["material"] = (string)logical->GetMaterial()->GetName();
   string child_name = name + "_0:" + child->GetName();
   new G4PVPlacement(rotation, {0, 0, 0}, child, child_name, logical, false, 0, true);
@@ -275,7 +267,7 @@ void ProcessNist(const string &name, YAML::Node node)
 
 void AddElement(G4Material *material, G4Element *child, YAML::Node node)
 {
-  G4cout << " *" << material->GetName() << " <- element "
+  G4cout << " * " << material->GetName() << " <- element "
          << child->GetName() << ", " << node.as<string>()  << G4endl;
   try {
     material->AddElement(child, node.as<G4int>());
@@ -286,7 +278,7 @@ void AddElement(G4Material *material, G4Element *child, YAML::Node node)
 
 void AddMaterial(G4Material *material, G4Material *child, YAML::Node node)
 {
-  G4cout << " *" << material->GetName() << " <- material "
+  G4cout << " * " << material->GetName() << " <- material "
          << child->GetName() << ", " << node.as<string>()  << G4endl;
   material->AddMaterial(child, node.as<G4double>());
 }
@@ -317,14 +309,14 @@ void AddComponent(G4Material *material, YAML::Node node)
 G4Material *ProcessMaterial(const string &name, YAML::Node node)
 {
   if(node["alias"]) {
-    G4cout << " *" << node["alias"].as<string>() << " -> " << name << G4endl;
+    G4cout << " * " << node["alias"].as<string>() << " -> " << name << G4endl;
     G4Material *child = ParseMaterial(node["alias"].as<string>());
     G4Material *material = new G4Material(name, child->GetDensity(), 1);
     material->AddMaterial(child, 1.0);
     return material;
   }
   G4double density = ParseAbsolutePhysicsVariable(node["density"].as<string>());
-  G4cout << " *" << name << " <- density " << density / (g/cm3) << " g/cm3" << G4endl;
+  G4cout << " * " << name << " <- density " << density / (g/cm3) << " g/cm3" << G4endl;
   G4Material *material = new G4Material(name, density, node["components"].size());
   for(YAML::Node component : node["components"]) AddComponent(material, component);
   return material;
@@ -338,7 +330,7 @@ G4Element *ProcessElement(const string &name, YAML::Node)
 
 }
 
-std::unordered_map<std::string, G4VisAttributes> GeometryConfig::fMaterialVisAttributes;
+unordered_map<string, G4VisAttributes> GeometryConfig::fMaterialVisAttributes;
 
 GeometryConfig::GeometryConfig(const char *path)
 {

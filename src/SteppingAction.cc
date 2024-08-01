@@ -33,7 +33,6 @@
 #include "DetectorConstruction.hh"
 #include "G4RunManager.hh"
 #include "G4ios.hh"
-#include <cmath>
 
 SteppingAction::SteppingAction() : fScoringVolume(nullptr) { }
 SteppingAction::~SteppingAction() { }
