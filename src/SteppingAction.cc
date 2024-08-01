@@ -34,27 +34,28 @@
 #include "G4RunManager.hh"
 #include "G4ios.hh"
 
-SteppingAction::SteppingAction() : fScoringVolume(nullptr) { }
+SteppingAction::SteppingAction()
+  : fScoringHalfX(0), fScoringHalfY(0)
+{
+  // empty
+}
+
 SteppingAction::~SteppingAction() { }
 
 void SteppingAction::UserSteppingAction(const G4Step* aStep)
 {
-  // Reject steps in non-scoring volumes.
-  G4LogicalVolume* volume = aStep->GetPreStepPoint()->GetTouchableHandle()->GetVolume()->GetLogicalVolume();
-  if(!fScoringVolume) {  // memoization (this term is not a typo)
-    fScoringVolume = (
-        (const DetectorConstruction *)G4RunManager::GetRunManager()->GetUserDetectorConstruction()
-    )->GetScoringVolume();
-    fScoringZRanges = (
-        (const DetectorConstruction *)G4RunManager::GetRunManager()->GetUserDetectorConstruction()
-    )->GetScoringZRanges();
-    G4cout << "Scoring volume: " << fScoringVolume->GetName() << G4endl;
+  if(!fScoringHalfX) {  // memoization (this term is not a typo)
+    auto d = (const DetectorConstruction *)G4RunManager::GetRunManager()->GetUserDetectorConstruction();
+    fScoringZRanges = d->GetScoringZRanges();
+    fScoringHalfX = d->GetScoringHalfX();
+    fScoringHalfY = d->GetScoringHalfY();
     G4cout << "Scoring ZRanges:" << G4endl;
     for(auto [zm, dz] : fScoringZRanges) {
       G4cout << " * " << zm << " +/- " << dz << " mm" << G4endl;
     }
+    G4cout << "Scoring HalfX: " << fScoringHalfX << " mm" << G4endl;
+    G4cout << "Scoring HalfY: " << fScoringHalfY << " mm" << G4endl;
   }
-  if(volume != fScoringVolume) return;
 
   // Reject steps without energy deposition.
   G4double energy = aStep->GetTotalEnergyDeposit();
@@ -66,12 +67,13 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep)
   G4int iTrkparentID = aStep->GetTrack()->GetParentID();
   if(!(iTrkID==1 && iTrkparentID==0)) return;
 
-  // Compute the hit point of this step.
+  // Reject hits outside scoring volumes.
   G4StepPoint* prePoint  = aStep->GetPreStepPoint();
   G4StepPoint* postPoint = aStep->GetPostStepPoint();
   G4double x = (prePoint->GetPosition().x() + postPoint->GetPosition().x()) / 2.;
   G4double y = (prePoint->GetPosition().y() + postPoint->GetPosition().y()) / 2.;
   G4double z = (prePoint->GetPosition().z() + postPoint->GetPosition().z()) / 2.;
+  if(std::fabs(x) > fScoringHalfX || std::fabs(y) > fScoringHalfY) return;
 
   // Compute the detector layer (if any) hit by this step.
   int igem = -1;

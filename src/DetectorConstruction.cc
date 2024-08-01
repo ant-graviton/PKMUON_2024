@@ -57,8 +57,7 @@
 #include "G4UserLimits.hh"
 
 DetectorConstruction::DetectorConstruction(int o)
-  : fOptions(o), fGpsPrimaryGeneratorAction(NULL),
-  fWorld(NULL), fScoringVolume(NULL), fElectrodeVolume(NULL)
+  : fOptions(o), fGpsPrimaryGeneratorAction(NULL), fWorld(NULL), fElectrodeVolume(NULL)
 {
   if(fOptions) throw std::invalid_argument("options unimplemented");
   fLogicalVolumeStore = G4LogicalVolumeStore::GetInstance();
@@ -104,7 +103,6 @@ void DetectorConstruction::DefineVolumes()
   for(const std::string &path : paths) GeometryConfig::LoadVolumes(path.c_str());
 
   fElectrodeVolume = fLogicalVolumeStore->GetVolume("rpc_electrode");
-  fScoringVolume = fElectrodeVolume;
   fWorld = new G4PVPlacement(0, {0, 0, 0}, fLogicalVolumeStore->GetVolume("world"), "world", 0, false, 0, true);
   if(fGpsPrimaryGeneratorAction) fGpsPrimaryGeneratorAction->Initialize(this);
 }
@@ -374,14 +372,24 @@ G4double DetectorConstruction::GetDetectorMinZ() const
   return z;
 }
 
+G4double DetectorConstruction::GetScoringHalfX() const
+{
+  return dynamic_cast<G4Box *>(fElectrodeVolume->GetSolid())->GetXHalfLength();
+}
+
+G4double DetectorConstruction::GetScoringHalfY() const
+{
+  return dynamic_cast<G4Box *>(fElectrodeVolume->GetSolid())->GetYHalfLength();
+}
+
 G4double DetectorConstruction::GetDetectorHalfX() const
 {
   //return dynamic_cast<G4Box *>(fLogicalVolumeStore->GetVolume("rpc")->GetSolid())->GetXHalfLength();  // more precise
-  return dynamic_cast<G4Box *>(fElectrodeVolume->GetSolid())->GetXHalfLength();  // faster
+  return GetScoringHalfX();  // faster
 }
 
 G4double DetectorConstruction::GetDetectorHalfY() const
 {
   //return dynamic_cast<G4Box *>(fLogicalVolumeStore->GetVolume("rpc")->GetSolid())->GetYHalfLength();  // more precise
-  return dynamic_cast<G4Box *>(fElectrodeVolume->GetSolid())->GetYHalfLength();  // faster
+  return GetScoringHalfY();  // faster
 }
