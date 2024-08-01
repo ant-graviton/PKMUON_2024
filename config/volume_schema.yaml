@@ -16,4 +16,5 @@ name:  # unique LV name to create
   x:  # optional
   y:  # optional
   z:  # optional
+  offset:  # optional, significant for bottom_up and left_right
   material:  # optional for rotation

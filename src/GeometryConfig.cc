@@ -136,6 +136,22 @@ void ProcessStackSize(const string &name, YAML::Node node, G4double &hx, G4doubl
   }
 }
 
+void ProcessOffset(const string &name, YAML::Node node,
+    G4double hx, G4double hy, G4double hz, G4double &x, G4double &y, G4double &z)
+{
+  if(!node["offset"]) return;
+  if(node["offset"].size() != 3) {
+    G4cerr << "ERROR: " << name << ": offset not of length 3" << G4endl;
+    exit(EXIT_FAILURE);
+  }
+  G4double *h[3] = {&hx, &hy, &hz};
+  G4double *p[3] = {&x, &y, &z};
+  for(size_t i = 0; i < 3; ++i) {
+    auto [relevant, offset] = ParsePhysicsVariable(node["offset"][i].as<string>());
+    *p[i] += relevant ? *h[i] * offset : offset;
+  }
+}
+
 G4LogicalVolume *ProcessBottomUp(const string &name, YAML::Node node)
 {
   G4double hx_s, hy_s, hz_s, hx_m, hy_m, hz_m;
@@ -144,12 +160,12 @@ G4LogicalVolume *ProcessBottomUp(const string &name, YAML::Node node)
   size_t duplicate = 1;
   if(node["duplicate"]) duplicate = node["duplicate"].as<size_t>();
   hz *= duplicate;
-  G4double hz_i = hz;
+  G4double x = 0.0, y = 0.0, z = -hz;
   ProcessStackSize(name, node, hx, hy, hz);
+  ProcessOffset(name, node, hx, hy, hz, x, y, z);
   G4Material *material = ParseMaterial(node["material"].as<string>());
 
   auto logical = CreateBoxVolume(name, hx, hy, hz, material);
-  G4double x = 0.0, y = 0.0, z = -hz_i;
   size_t i = 0;
   for(size_t d = 0; d < duplicate; ++d) for(G4LogicalVolume *child : children) {
     G4double ht = ((G4Box *)child->GetSolid())->GetZHalfLength();
@@ -168,12 +184,12 @@ G4LogicalVolume *ProcessLeftRight(const string &name, YAML::Node node)
   size_t duplicate = 1;
   if(node["duplicate"]) duplicate = node["duplicate"].as<size_t>();
   hx *= duplicate;
-  G4double hx_i = hx;
+  G4double x = -hx, y = 0.0, z = 0.0;
   ProcessStackSize(name, node, hx, hy, hz);
+  ProcessOffset(name, node, hx, hy, hz, x, y, z);
   G4Material *material = ParseMaterial(node["material"].as<string>());
 
   auto logical = CreateBoxVolume(name, hx, hy, hz, material);
-  G4double x = -hx_i, y = 0.0, z = 0.0;
   size_t i = 0;
   for(size_t d = 0; d < duplicate; ++d) for(G4LogicalVolume *child : children) {
     G4double ht = ((G4Box *)child->GetSolid())->GetXHalfLength();

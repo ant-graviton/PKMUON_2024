@@ -40,7 +40,7 @@ rpc_electrode:
 rpc_gas:  # R-134a, https://en.wikipedia.org/wiki/1,1,1,2-Tetrafluoroethane
   color: blue
   alpha: 0.01
-  density: 0.00425 g/cm3  # [TODO] check it
+  density: 0.00425 g/cm3
   components:
     - [element, C, 2]
     - [element, H, 2]
@@ -84,9 +84,9 @@ rpc_fr4:  # https://en.wikipedia.org/wiki/FR-4
   alpha: 0.2
   density: 1.85 g/cm3
   components:
-    - [G4_SILICON_DIOXIDE, 0.35]
-    - [G4_Cu,              0.22]
-    - [rpc_mfcd03703563,   0.50]
+    - [G4_SILICON_DIOXIDE, 0.350]
+    - [G4_Cu,              0.225]
+    - [rpc_mfcd03703563,   0.500]
 
 rpc_readout_bar:
   color: yellow
