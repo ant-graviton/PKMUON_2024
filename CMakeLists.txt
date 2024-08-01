@@ -76,6 +76,7 @@ target_link_libraries(muPos ${Geant4_LIBRARIES} ${ROOT_LIBRARIES} yaml-cpp)
 # relies on these scripts being in the current working directory.
 #
 set(scripts vis.mac movie.mac SingleEngMu.mac CryMu.mac CryMuGps.mac run_cry.sh run.sh)
+set(scripts ${scripts} layout_default.sh layout_pb.sh)
 
 foreach(script ${scripts})
     configure_file(${PROJECT_SOURCE_DIR}/${script} ${PROJECT_BINARY_DIR}/${script} COPYONLY)

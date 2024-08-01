@@ -4,6 +4,7 @@ schema: volume_schema.yaml
 ---
 
 world_major_gap:
+  alternative: alternative
   hidden: hidden
   solid: box
   x: &rpc_x 430 mm
@@ -40,3 +41,4 @@ materials:
   - rpc_air
 external:
   - rpc
+  - world_major_gap

@@ -70,16 +70,38 @@ DetectorConstruction::~DetectorConstruction()
   // empty
 }
 
+static std::vector<std::string> split(const std::string &str, char c)
+{
+  std::vector<std::string> v;
+  size_t p = 0, q = 0;
+  while((q = str.find(c, p)) != str.npos) {
+    v.push_back(str.substr(p, q - p));
+    p = q + 1;
+  }
+  v.push_back(str.substr(p));
+  return v;
+}
+
 void DetectorConstruction::DefineMaterials()
 {
-  GeometryConfig::LoadMaterials("../config/rpc_material.yaml");
+  std::vector<std::string> paths = {
+    "../config/rpc_material.yaml",
+  };
+  char *p = getenv("MUPOS_MATERIAL_CONFIG");
+  if(p) paths = split(p, ':');
+  for(const std::string &path : paths) GeometryConfig::LoadMaterials(path.c_str());
 }
 
 void DetectorConstruction::DefineVolumes()
 {
-  GeometryConfig::LoadVolumes("../config/rpc_readout.yaml");
-  GeometryConfig::LoadVolumes("../config/rpc.yaml");
-  GeometryConfig::LoadVolumes("../config/layout.yaml");
+  std::vector<std::string> paths = {
+    "../config/rpc_readout.yaml",
+    "../config/rpc.yaml",
+    "../config/layout.yaml",
+  };
+  char *p = getenv("MUPOS_VOLUME_CONFIG");
+  if(p) paths = split(p, ':');
+  for(const std::string &path : paths) GeometryConfig::LoadVolumes(path.c_str());
 
   fElectrodeVolume = fLogicalVolumeStore->GetVolume("rpc_electrode");
   fScoringVolume = fElectrodeVolume;
