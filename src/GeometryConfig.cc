@@ -18,7 +18,7 @@ namespace {
 
 G4LogicalVolume *CreateBoxVolume(const string &name, G4double hx, G4double hy, G4double hz, G4Material *material)
 {
-  G4cout << " * Box " << name << ": " << hx * 2 << ", " << hy * 2 << ", " << hz * 2 << " (mm)" << G4endl;
+  G4cout << " * Box " << name << ": " << hx*2/mm << ", " << hy*2/mm << ", " << hz*2/mm << " (mm)" << G4endl;
   auto box = new G4Box(name, hx, hy, hz);
   return new G4LogicalVolume(box, material, name);
 }

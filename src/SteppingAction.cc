@@ -51,10 +51,10 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep)
     fScoringHalfY = d->GetScoringHalfY();
     G4cout << "Scoring ZRanges:" << G4endl;
     for(auto [zm, dz] : fScoringZRanges) {
-      G4cout << " * " << zm << " +/- " << dz << " mm" << G4endl;
+      G4cout << " * " << zm/mm << " +/- " << dz/mm << " mm" << G4endl;
     }
-    G4cout << "Scoring HalfX: " << fScoringHalfX << " mm" << G4endl;
-    G4cout << "Scoring HalfY: " << fScoringHalfY << " mm" << G4endl;
+    G4cout << "Scoring HalfX: " << fScoringHalfX/mm << " mm" << G4endl;
+    G4cout << "Scoring HalfY: " << fScoringHalfY/mm << " mm" << G4endl;
   }
 
   // Reject steps without energy deposition.
@@ -78,7 +78,7 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep)
   // Compute the detector layer (if any) hit by this step.
   int igem = -1;
   for(int i = 0; i < (int)fScoringZRanges.size(); ++i) {
-    if(std::fabs(z/mm - fScoringZRanges[i].first) <= fScoringZRanges[i].second) {
+    if(std::fabs(z - fScoringZRanges[i].first) <= fScoringZRanges[i].second) {
       igem = i; break;
     }
   }
@@ -94,5 +94,5 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep)
   G4double pz = curDirection.z();
 
   // Record the hit info.
-  Run::GetInstance()->SetRpcTrkInfo(igem, px, py, pz, totalenergy/MeV, energy/MeV, x/mm, y/mm, z/mm);
+  Run::GetInstance()->SetRpcTrkInfo(igem, px/MeV, py/MeV, pz/MeV, totalenergy/MeV, energy/MeV, x/mm, y/mm, z/mm);
 }
