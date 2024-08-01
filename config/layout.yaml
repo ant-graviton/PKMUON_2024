@@ -11,8 +11,9 @@ world_major_gap:
   y: &rpc_y 430 mm
   z: 455 mm
   material: &world_material rpc_air
-  
+
 world_minor_gap:
+  alternative: alternative
   hidden: hidden
   solid: box
   x: *rpc_x
