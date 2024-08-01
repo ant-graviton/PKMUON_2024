@@ -3,28 +3,37 @@ schema: volume_schema.yaml
 
 ---
 
-rpc_readout_plate_raw:
+rpc_xy_readout_plate:
   solid: box
   x: &rpc_readout_plate_x 300 mm
-  y: 325 mm
-  z: &rpc_readout_plate_z 1.4 mm
+  y: &rpc_readout_plate_y 325 mm
+  z: &rpc_xy_readout_plate_z 1.5 mm
   material: rpc_fr4
 
-rpc_readout_plate:  # This centers the plate.
+rpc_xy_readout_plate_box:  # This centers the plate.
   solid: bottom_up
-  components: [rpc_readout_plate_raw]
+  components: [rpc_xy_readout_plate]
   x: *rpc_readout_plate_x
-  y: 350 mm
-  z: *rpc_readout_plate_z
+  y: &rpc_readout_plate_box_y 350 mm
+  z: *rpc_xy_readout_plate_z
   offset: [0, -12.5 mm, 0]
   material: rpc_gas
 
-rpc_readout_cu:
+rpc_t_readout_plate:
   solid: box
-  x: 203 mm
-  y: 203 mm
-  z: 0.1 mm
-  material: rpc_readout_cu
+  x: *rpc_readout_plate_x
+  y: *rpc_readout_plate_y
+  z: &rpc_t_readout_plate_z 1.565 mm
+  material: rpc_fr4
+
+rpc_t_readout_plate_box:  # This centers the plate.
+  solid: bottom_up
+  components: [rpc_t_readout_plate]
+  x: *rpc_readout_plate_x
+  y: *rpc_readout_plate_box_y
+  z: *rpc_t_readout_plate_z
+  offset: [0, -12.5 mm, 0]
+  material: rpc_gas
 
 rpc_readout_bar:
   solid: box
@@ -60,25 +69,29 @@ rpc_y_readout_bars:
 rpc_x_readout_board:
   solid: bottom_up
   components:
-    - rpc_readout_plate
-    - rpc_readout_cu
+    - rpc_xy_readout_plate
     - rpc_x_readout_bars
   material: rpc_gas
 
 rpc_y_readout_board:
   solid: bottom_up
   components:
-    - rpc_readout_plate
-    - rpc_readout_cu
+    - rpc_xy_readout_plate
     - rpc_y_readout_bars
   material: rpc_gas
+
+rpc_t_readout_cu:
+  solid: box
+  x: 203 mm
+  y: 203 mm
+  z: 35 um
+  material: rpc_readout_cu
 
 rpc_t_readout_board:
   solid: bottom_up
   components:
-    - rpc_readout_plate
-    - rpc_readout_cu
-    - rpc_readout_cu
+    - rpc_t_readout_plate
+    - rpc_t_readout_cu
   material: rpc_gas
 
 ---
