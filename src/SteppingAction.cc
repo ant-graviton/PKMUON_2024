@@ -84,9 +84,6 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep)
   }
   if(igem == -1) return;
 
-  // Avoid duplicate hits of the same layer.
-  if(!Run::GetInstance()->TestAndSetRpcTrkStatus(igem)) return;
-
   // Get momentum of the track.
   G4ThreeVector curDirection = aStep->GetPreStepPoint()->GetMomentumDirection();
   G4double px = curDirection.x();

@@ -68,7 +68,17 @@ void Run::Fill()
 {
   RpcStatus = true;
   for(int i = 0; i < 16; ++i) {
-    if(!RpcTrkStatus[i]) { RpcStatus = false; break; }
+    double Edep = RpcTrkEdep[i];
+    if(Edep) {
+      RpcTrkPx  [i] /= Edep;
+      RpcTrkPy  [i] /= Edep;
+      RpcTrkPz  [i] /= Edep;
+      RpcTrkE   [i] /= Edep;
+      RpcTrkX   [i] /= Edep;
+      RpcTrkY   [i] /= Edep;
+      RpcTrkZ   [i] /= Edep;
+    }
+    if(!RpcTrkStatus[i]) RpcStatus = false;
   }
   _tree->Fill();
   ClearAll();
@@ -83,35 +93,28 @@ void Run::SetRpcTrkInfo(int i, double Px, double Py, double Pz,
     double E, double Edep, double X, double Y, double Z)
 {
   if(i < 0 || i >= 16) return;
-  RpcTrkPx[i] = Px;
-  RpcTrkPy[i] = Py;
-  RpcTrkPz[i] = Pz;
-  RpcTrkE[i] = E;
-  RpcTrkEdep[i] = Edep;
-  RpcTrkX[i] = X;
-  RpcTrkY[i] = Y;
-  RpcTrkZ[i] = Z;
-}
-
-bool Run::TestAndSetRpcTrkStatus(int i)
-{
-  if(i < 0 || i >= 16) return false;
-  if(RpcTrkStatus[i]) return false;
-  RpcTrkStatus[i] = true;
-  return true;
+  RpcTrkPx    [i] += Px * Edep;
+  RpcTrkPy    [i] += Py * Edep;
+  RpcTrkPz    [i] += Pz * Edep;
+  RpcTrkE     [i] += E  * Edep;
+  RpcTrkEdep  [i] +=      Edep;
+  RpcTrkX     [i] += X  * Edep;
+  RpcTrkY     [i] += Y  * Edep;
+  RpcTrkZ     [i] += Z  * Edep;
+  RpcTrkStatus[i]  = true;
 }
 
 void Run::ClearAll()
 {
   for(int i = 0; i < 16; i++) {
-    RpcTrkPx[i] = 0;
-    RpcTrkPy[i] = 0;
-    RpcTrkPz[i] = 0;
-    RpcTrkE[i] = 0;
-    RpcTrkEdep[i] = 0;
-    RpcTrkX[i] = 0;
-    RpcTrkY[i] = 0;
-    RpcTrkZ[i] = 0;
+    RpcTrkPx    [i] = 0;
+    RpcTrkPy    [i] = 0;
+    RpcTrkPz    [i] = 0;
+    RpcTrkE     [i] = 0;
+    RpcTrkEdep  [i] = 0;
+    RpcTrkX     [i] = 0;
+    RpcTrkY     [i] = 0;
+    RpcTrkZ     [i] = 0;
     RpcTrkStatus[i] = false;
   }
   RpcStatus = false;

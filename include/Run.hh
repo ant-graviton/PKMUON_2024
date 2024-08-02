@@ -27,7 +27,6 @@ public:
 
   void SetRpcTrkInfo(int i, double Px, double Py, double Pz,
       double E, double Edep, double X, double Y, double Z);
-  bool TestAndSetRpcTrkStatus(int i);
 
 private:
   Run();
