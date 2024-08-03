@@ -54,7 +54,7 @@ void Run::InitTree()
   _tree->Branch("RpcAllX",        &RpcAllX,        "RpcAllX[16]/D"     );
   _tree->Branch("RpcAllY",        &RpcAllY,        "RpcAllY[16]/D"     );
   _tree->Branch("RpcAllZ",        &RpcAllZ,        "RpcAllZ[16]/D"     );
-  _tree->Branch("RpcAllStatus",   &RpcAllStatus,   "RpcAllStatus[16]/O");
+  _tree->Branch("RpcAllN",        &RpcAllN,        "RpcAllN[16]/i"     );
   _tree->Branch("RpcAllComplete", &RpcAllComplete, "RpcAllComplete/O"  );
 
   Clear();
@@ -94,7 +94,7 @@ void Run::Fill()
       RpcAllY   [i] /= Edep;
       RpcAllZ   [i] /= Edep;
     }
-    if(!RpcAllStatus[i]) RpcAllComplete = false;
+    if(!RpcAllN[i]) RpcAllComplete = false;
   }
   _tree->Fill();
   Clear();
@@ -127,7 +127,7 @@ void Run::SetRpcAllInfo(int i, double Edep, double X, double Y, double Z)
   RpcAllX     [i] += X  * Edep;
   RpcAllY     [i] += Y  * Edep;
   RpcAllZ     [i] += Z  * Edep;
-  RpcAllStatus[i]  = true;
+  RpcAllN     [i] += 1;
 }
 
 void Run::Clear()
@@ -149,7 +149,7 @@ void Run::Clear()
     RpcAllX     [i] = 0;
     RpcAllY     [i] = 0;
     RpcAllZ     [i] = 0;
-    RpcAllStatus[i] = false;
+    RpcAllN     [i] = 0;
   }
   RpcAllComplete = false;
 }

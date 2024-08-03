@@ -52,7 +52,7 @@ private:
   Double_t RpcAllX[16] = {0};
   Double_t RpcAllY[16] = {0};
   Double_t RpcAllZ[16] = {0};
-  bool RpcAllStatus[16] = {false};
+  UInt_t RpcAllN[16] = {0};
 
   // Mantained by us.
   Bool_t RpcTrkComplete;
