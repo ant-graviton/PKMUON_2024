@@ -40,24 +40,24 @@ private:
   TFile *_file;
 
   // Altered by other routines.
-  Double_t RpcTrkPx[16] = {0};
-  Double_t RpcTrkPy[16] = {0};
-  Double_t RpcTrkPz[16] = {0};
-  Double_t RpcTrkE[16] = {0};
-  Double_t RpcTrkEdep[16] = {0};
-  Double_t RpcTrkX[16] = {0};
-  Double_t RpcTrkY[16] = {0};
-  Double_t RpcTrkZ[16] = {0};
-  bool RpcTrkStatus[16] = {false};
+  Double_t RpcTrkPx[16];
+  Double_t RpcTrkPy[16];
+  Double_t RpcTrkPz[16];
+  Double_t RpcTrkE[16];
+  Double_t RpcTrkEdep[16];
+  Double_t RpcTrkX[16];
+  Double_t RpcTrkY[16];
+  Double_t RpcTrkZ[16];
+  bool RpcTrkStatus[16];
   std::unordered_set<int> RpcAllIds[16];
-  Double_t RpcAllEdep[16] = {0};
-  Double_t RpcAllX[16] = {0};
-  Double_t RpcAllY[16] = {0};
-  Double_t RpcAllZ[16] = {0};
+  Double_t RpcAllEdep[16];
+  Double_t RpcAllX[16];
+  Double_t RpcAllY[16];
+  Double_t RpcAllZ[16];
 
   // Mantained by us.
   Bool_t RpcTrkComplete;
-  UInt_t RpcAllN[16] = {0};
+  UInt_t RpcAllN[16];
   Bool_t RpcAllComplete;
 
   void Clear();
