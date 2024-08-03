@@ -40,18 +40,24 @@ void Run::InitTree()
   _file = new TFile(rootName, "RECREATE");
   _tree = new TTree("T1", "Simple Out Tree");
 
-  _tree->Branch("RpcTrkPx",     &RpcTrkPx,     "RpcTrkPx[16]/D"    );
-  _tree->Branch("RpcTrkPy",     &RpcTrkPy,     "RpcTrkPy[16]/D"    );
-  _tree->Branch("RpcTrkPz",     &RpcTrkPz,     "RpcTrkPz[16]/D"    );
-  _tree->Branch("RpcTrkE",      &RpcTrkE,      "RpcTrkE[16]/D"     );
-  _tree->Branch("RpcTrkEdep",   &RpcTrkEdep,   "RpcTrkEdep[16]/D"  );
-  _tree->Branch("RpcTrkX",      &RpcTrkX,      "RpcTrkX[16]/D"     );
-  _tree->Branch("RpcTrkY",      &RpcTrkY,      "RpcTrkY[16]/D"     );
-  _tree->Branch("RpcTrkZ",      &RpcTrkZ,      "RpcTrkZ[16]/D"     );
-  _tree->Branch("RpcTrkStatus", &RpcTrkStatus, "RpcTrkStatus[16]/O");
-  _tree->Branch("RpcStatus",    &RpcStatus,    "RpcStatus/O"       );
+  _tree->Branch("RpcTrkPx",       &RpcTrkPx,       "RpcTrkPx[16]/D"    );
+  _tree->Branch("RpcTrkPy",       &RpcTrkPy,       "RpcTrkPy[16]/D"    );
+  _tree->Branch("RpcTrkPz",       &RpcTrkPz,       "RpcTrkPz[16]/D"    );
+  _tree->Branch("RpcTrkE",        &RpcTrkE,        "RpcTrkE[16]/D"     );
+  _tree->Branch("RpcTrkEdep",     &RpcTrkEdep,     "RpcTrkEdep[16]/D"  );
+  _tree->Branch("RpcTrkX",        &RpcTrkX,        "RpcTrkX[16]/D"     );
+  _tree->Branch("RpcTrkY",        &RpcTrkY,        "RpcTrkY[16]/D"     );
+  _tree->Branch("RpcTrkZ",        &RpcTrkZ,        "RpcTrkZ[16]/D"     );
+  _tree->Branch("RpcTrkStatus",   &RpcTrkStatus,   "RpcTrkStatus[16]/O");
+  _tree->Branch("RpcTrkComplete", &RpcTrkComplete, "RpcTrkComplete/O"  );
+  _tree->Branch("RpcAllEdep",     &RpcAllEdep,     "RpcAllEdep[16]/D"  );
+  _tree->Branch("RpcAllX",        &RpcAllX,        "RpcAllX[16]/D"     );
+  _tree->Branch("RpcAllY",        &RpcAllY,        "RpcAllY[16]/D"     );
+  _tree->Branch("RpcAllZ",        &RpcAllZ,        "RpcAllZ[16]/D"     );
+  _tree->Branch("RpcAllStatus",   &RpcAllStatus,   "RpcAllStatus[16]/O");
+  _tree->Branch("RpcAllComplete", &RpcAllComplete, "RpcAllComplete/O"  );
 
-  ClearAll();
+  Clear();
 }
 
 void Run::SaveTree()
@@ -66,7 +72,7 @@ void Run::SaveTree()
 
 void Run::Fill()
 {
-  RpcStatus = true;
+  RpcTrkComplete = true;
   for(int i = 0; i < 16; ++i) {
     double Edep = RpcTrkEdep[i];
     if(Edep) {
@@ -78,10 +84,20 @@ void Run::Fill()
       RpcTrkY   [i] /= Edep;
       RpcTrkZ   [i] /= Edep;
     }
-    if(!RpcTrkStatus[i]) RpcStatus = false;
+    if(!RpcTrkStatus[i]) RpcTrkComplete = false;
+  }
+  RpcAllComplete = true;
+  for(int i = 0; i < 16; ++i) {
+    double Edep = RpcAllEdep[i];
+    if(Edep) {
+      RpcAllX   [i] /= Edep;
+      RpcAllY   [i] /= Edep;
+      RpcAllZ   [i] /= Edep;
+    }
+    if(!RpcAllStatus[i]) RpcAllComplete = false;
   }
   _tree->Fill();
-  ClearAll();
+  Clear();
 }
 
 void Run::AutoSave()
@@ -104,7 +120,17 @@ void Run::SetRpcTrkInfo(int i, double Px, double Py, double Pz,
   RpcTrkStatus[i]  = true;
 }
 
-void Run::ClearAll()
+void Run::SetRpcAllInfo(int i, double Edep, double X, double Y, double Z)
+{
+  if(i < 0 || i >= 16) return;
+  RpcAllEdep  [i] +=      Edep;
+  RpcAllX     [i] += X  * Edep;
+  RpcAllY     [i] += Y  * Edep;
+  RpcAllZ     [i] += Z  * Edep;
+  RpcAllStatus[i]  = true;
+}
+
+void Run::Clear()
 {
   for(int i = 0; i < 16; i++) {
     RpcTrkPx    [i] = 0;
@@ -117,7 +143,15 @@ void Run::ClearAll()
     RpcTrkZ     [i] = 0;
     RpcTrkStatus[i] = false;
   }
-  RpcStatus = false;
+  RpcTrkComplete = false;
+  for(int i = 0; i < 16; i++) {
+    RpcAllEdep  [i] = 0;
+    RpcAllX     [i] = 0;
+    RpcAllY     [i] = 0;
+    RpcAllZ     [i] = 0;
+    RpcAllStatus[i] = false;
+  }
+  RpcAllComplete = false;
 }
 
 uint64_t Run::GetThreadId()

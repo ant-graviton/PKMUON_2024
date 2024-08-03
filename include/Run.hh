@@ -25,8 +25,9 @@ public:
   void Fill();
   void AutoSave();
 
-  void SetRpcTrkInfo(int i, double Px, double Py, double Pz,
-      double E, double Edep, double X, double Y, double Z);
+  void SetRpcTrkInfo(int i, double Px, double Py, double Pz, double E,
+      double Edep, double X, double Y, double Z);
+  void SetRpcAllInfo(int i, double Edep, double X, double Y, double Z);
 
 private:
   Run();
@@ -47,11 +48,17 @@ private:
   Double_t RpcTrkY[16] = {0};
   Double_t RpcTrkZ[16] = {0};
   bool RpcTrkStatus[16] = {false};
+  Double_t RpcAllEdep[16] = {0};
+  Double_t RpcAllX[16] = {0};
+  Double_t RpcAllY[16] = {0};
+  Double_t RpcAllZ[16] = {0};
+  bool RpcAllStatus[16] = {false};
 
   // Mantained by us.
-  Bool_t RpcStatus;
+  Bool_t RpcTrkComplete;
+  Bool_t RpcAllComplete;
 
-  void ClearAll();
+  void Clear();
 };
 
 #endif  // GEANT4_INTRODUCTION_RUN_H

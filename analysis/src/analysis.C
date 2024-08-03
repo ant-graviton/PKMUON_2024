@@ -23,16 +23,16 @@ void analysis(const char *infile = "../../build/root_file/CryMu_1.root",
   double RpcTrkPx[16], RpcTrkPy[16], RpcTrkPz[16], RpcTrkE[16];
   double RpcTrkEdep[16];
   double RpcTrkX[16], RpcTrkY[16], RpcTrkZ[16];
-  bool RpcStatus;
-  tree_in->SetBranchAddress("RpcTrkPx",   &RpcTrkPx);
-  tree_in->SetBranchAddress("RpcTrkPy",   &RpcTrkPy);
-  tree_in->SetBranchAddress("RpcTrkPz",   &RpcTrkPz);
-  tree_in->SetBranchAddress("RpcTrkE",    &RpcTrkE);
-  tree_in->SetBranchAddress("RpcTrkEdep", &RpcTrkEdep);
-  tree_in->SetBranchAddress("RpcTrkX",    &RpcTrkX);
-  tree_in->SetBranchAddress("RpcTrkY",    &RpcTrkY);
-  tree_in->SetBranchAddress("RpcTrkZ",    &RpcTrkZ);
-  tree_in->SetBranchAddress("RpcStatus",  &RpcStatus);
+  bool RpcTrkComplete;
+  tree_in->SetBranchAddress("RpcTrkPx",       &RpcTrkPx);
+  tree_in->SetBranchAddress("RpcTrkPy",       &RpcTrkPy);
+  tree_in->SetBranchAddress("RpcTrkPz",       &RpcTrkPz);
+  tree_in->SetBranchAddress("RpcTrkE",        &RpcTrkE);
+  tree_in->SetBranchAddress("RpcTrkEdep",     &RpcTrkEdep);
+  tree_in->SetBranchAddress("RpcTrkX",        &RpcTrkX);
+  tree_in->SetBranchAddress("RpcTrkY",        &RpcTrkY);
+  tree_in->SetBranchAddress("RpcTrkZ",        &RpcTrkZ);
+  tree_in->SetBranchAddress("RpcTrkComplete", &RpcTrkComplete);
 
   // Output file and tree.
   TFile *file_out = new TFile(outfile, "RECREATE");
@@ -60,7 +60,7 @@ void analysis(const char *infile = "../../build/root_file/CryMu_1.root",
            << (ientry / (double)nentry) * 100 << "%" << endl;
     }
     tree_in->GetEntry(ientry);
-    if(!RpcStatus) continue;
+    if(!RpcTrkComplete) continue;
     nvalid++;
 
     double validRpcTrkX[8], validRpcTrkY[8], validRpcTrkZ[8];

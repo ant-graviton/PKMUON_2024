@@ -63,11 +63,6 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep)
   G4double totalenergy = aStep->GetTrack()->GetTotalEnergy();
   if(!(energy > 0)) return;
 
-  // Reject secondary tracks.
-  G4int iTrkID = aStep->GetTrack()->GetTrackID();
-  G4int iTrkparentID = aStep->GetTrack()->GetParentID();
-  if(!(iTrkID==1 && iTrkparentID==0)) return;
-
   // Reject hits outside scoring volumes.
   G4StepPoint* prePoint  = aStep->GetPreStepPoint();
   G4StepPoint* postPoint = aStep->GetPostStepPoint();
@@ -78,12 +73,15 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep)
   int igem = lower_bound(fScoringMinZs.begin(), fScoringMinZs.end(), z) - fScoringMinZs.begin();
   if(igem == (int)fScoringMinZs.size() || z - fScoringMinZs[igem] > fScoringZ) return;
 
-  // Get momentum of the track.
-  G4ThreeVector curDirection = aStep->GetPreStepPoint()->GetMomentumDirection();
-  G4double px = curDirection.x();
-  G4double py = curDirection.y();
-  G4double pz = curDirection.z();
-
   // Record the hit info.
-  Run::GetInstance()->SetRpcTrkInfo(igem, px/MeV, py/MeV, pz/MeV, totalenergy/MeV, energy/MeV, x/mm, y/mm, z/mm);
+  Run::GetInstance()->SetRpcAllInfo(igem, energy/MeV, x/mm, y/mm, z/mm);
+  if(aStep->GetTrack()->GetTrackID() == 1) {
+    // Get momentum of the track.
+    G4ThreeVector curDirection = aStep->GetPreStepPoint()->GetMomentumDirection();
+    G4double px = curDirection.x();
+    G4double py = curDirection.y();
+    G4double pz = curDirection.z();
+
+    Run::GetInstance()->SetRpcTrkInfo(igem, px/MeV, py/MeV, pz/MeV, totalenergy/MeV, energy/MeV, x/mm, y/mm, z/mm);
+  }
 }

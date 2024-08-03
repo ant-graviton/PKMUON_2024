@@ -9,3 +9,6 @@ v0.1.0	Optimize scoring volume localization
 
 v0.1.1	Add DetectorConstruction::GetScoringZs
 	APIs of DetectorConstruction added
+
+v0.1.2	Add branches RpcAll*
+	APIs of DetectorConstruction added and renamed
