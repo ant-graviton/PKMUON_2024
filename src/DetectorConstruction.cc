@@ -57,7 +57,8 @@
 #include "G4UserLimits.hh"
 
 DetectorConstruction::DetectorConstruction(int o)
-  : fOptions(o), fGpsPrimaryGeneratorAction(NULL), fWorld(NULL), fElectrodeVolume(NULL)
+  : fOptions(o), fGpsPrimaryGeneratorAction(NULL), fWorld(NULL), fElectrodeVolume(NULL),
+  fScoringHalfX(0.0), fScoringHalfY(0.0), fScoringHalfZ(0.0)
 {
   if(fOptions) throw std::invalid_argument("options unimplemented");
   fLogicalVolumeStore = G4LogicalVolumeStore::GetInstance();
@@ -102,9 +103,18 @@ void DetectorConstruction::DefineVolumes()
   if(p) paths = split(p, ':');
   for(const std::string &path : paths) GeometryConfig::LoadVolumes(path.c_str());
 
-  fElectrodeVolume = fLogicalVolumeStore->GetVolume("rpc_electrode");
   fWorld = new G4PVPlacement(0, {0, 0, 0}, fLogicalVolumeStore->GetVolume("world"), "world", 0, false, 0, true);
-  if(fGpsPrimaryGeneratorAction) fGpsPrimaryGeneratorAction->Initialize(this);
+  fElectrodeVolume = fLogicalVolumeStore->GetVolume("rpc_electrode");
+
+  fScoringHalfX = dynamic_cast<G4Box *>(fElectrodeVolume->GetSolid())->GetXHalfLength();
+  fScoringHalfY = dynamic_cast<G4Box *>(fElectrodeVolume->GetSolid())->GetYHalfLength();
+  fScoringHalfZ = dynamic_cast<G4Box *>(fElectrodeVolume->GetSolid())->GetZHalfLength();
+  fScoringMinZs.assign(0, 0.0);
+  WalkVolume(fWorld, [this](G4VPhysicalVolume *volume, const G4ThreeVector &r, const G4RotationMatrix &) {
+    if(volume->GetLogicalVolume() != fElectrodeVolume) return;
+    fScoringMinZs.push_back(r.z() - fScoringHalfZ);
+  });
+  sort(fScoringMinZs.begin(), fScoringMinZs.end());
 }
 
 void DetectorConstruction::DefineFields()
@@ -123,15 +133,8 @@ void DetectorConstruction::DefineFields()
 
   // Determine electric field volume.
   G4double x, y, z;
-  {
-    auto box = dynamic_cast<G4Box *>(fElectrodeVolume->GetSolid());
-    x = 2 * box->GetXHalfLength(), y = 2 * box->GetYHalfLength();
-  }
-  {
-    std::vector<std::pair<G4double, G4double>> zranges = GetScoringZRanges();
-    if(zranges.size() < 2) return;
-    z = (zranges[1].first - zranges[0].first) - (zranges[0].second + zranges[1].second);
-  }
+  x = 2 * GetScoringHalfX(), y = 2 * GetScoringHalfY();
+  z = fScoringMinZs.at(1) - fScoringMinZs.at(0) - 2 * fScoringHalfZ;
   auto electric = new G4Box("electric", x / 2, y / 2, z / 2);
 
   // Turn on electric field.
@@ -195,6 +198,7 @@ G4VPhysicalVolume *DetectorConstruction::Construct()
   DefineVolumes();
   DefineFields();
   PrintVolumes(NULL);
+  if(fGpsPrimaryGeneratorAction) fGpsPrimaryGeneratorAction->Initialize(this);
   return fWorld;
 }
 
@@ -268,22 +272,6 @@ void DetectorConstruction::WalkVolume(G4VPhysicalVolume *volume,
     if(rotation) rm = rm * *rotation;
     r -= rm * v->GetObjectTranslation();
   });
-}
-
-std::vector<std::pair<G4double, G4double>> DetectorConstruction::GetScoringZRanges() const
-{
-  // [NOTE] Call this method once before eliminating rpc_electrode.
-  if(!fScoringZRanges.empty()) return fScoringZRanges;
-  std::vector<std::pair<G4double, G4double>> &z = fScoringZRanges;
-  WalkVolume(NULL, [&z](G4VPhysicalVolume *volume, const G4ThreeVector &r, const G4RotationMatrix &) {
-    if(volume->GetLogicalVolume()->GetName() != "rpc_electrode") return;
-    auto box = dynamic_cast<G4Box *>(volume->GetLogicalVolume()->GetSolid());
-    z.emplace_back(r.z(), box->GetZHalfLength());
-  });
-  G4cout << "Scoring z ranges before sorting:" << G4endl;
-  for(auto &p : z) G4cout << " * " << p.first << ", " << p.second << G4endl;
-  std::sort(z.begin(), z.end());
-  return z;
 }
 
 G4VPhysicalVolume *DetectorConstruction::PartitionVolume(G4VPhysicalVolume *volume,
@@ -370,16 +358,6 @@ G4double DetectorConstruction::GetDetectorMinZ() const
     z = std::min(z, r.z() - box->GetZHalfLength());
   });
   return z;
-}
-
-G4double DetectorConstruction::GetScoringHalfX() const
-{
-  return dynamic_cast<G4Box *>(fElectrodeVolume->GetSolid())->GetXHalfLength();
-}
-
-G4double DetectorConstruction::GetScoringHalfY() const
-{
-  return dynamic_cast<G4Box *>(fElectrodeVolume->GetSolid())->GetYHalfLength();
 }
 
 G4double DetectorConstruction::GetDetectorHalfX() const

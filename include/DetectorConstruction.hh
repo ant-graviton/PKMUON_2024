@@ -57,9 +57,10 @@ public:
   virtual G4VPhysicalVolume *Construct();
 
   // Call these methods after Construct().
-  std::vector<std::pair<G4double, G4double>> GetScoringZRanges() const;
-  G4double GetScoringHalfX() const;
-  G4double GetScoringHalfY() const;
+  G4double GetScoringHalfX() const { return fScoringHalfX; }
+  G4double GetScoringHalfY() const { return fScoringHalfY; }
+  G4double GetScoringHalfZ() const { return fScoringHalfZ; }
+  const std::vector<G4double> &GetScoringMinZs() const { return fScoringMinZs; }
   G4double GetDetectorMinZ() const;
   G4double GetDetectorHalfX() const;
   G4double GetDetectorHalfY() const;
@@ -89,7 +90,8 @@ private:
   G4PhysicalVolumeStore *fPhysicalVolumeStore;
   G4VPhysicalVolume *fWorld;
   G4LogicalVolume *fElectrodeVolume;
-  mutable std::vector<std::pair<G4double, G4double>> fScoringZRanges;
+  G4double fScoringHalfX, fScoringHalfY, fScoringHalfZ;
+  std::vector<G4double> fScoringMinZs;
 };
 
 #endif
