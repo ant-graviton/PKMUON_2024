@@ -9,13 +9,14 @@
 
 using namespace std;
 
-TCanvas *draw_sim(const char *filename = "new_Simdata.root")
+TCanvas *draw_sim(const char *infile = "../../build/root_file/CryMuAnaPoCA_1.root",
+    const char *outfile = "draw_sim.pdf")
 {
   const Int_t Nx = 40, Ny = 40, Nz = 40;  // 控制像元大小
   const Double_t Xdown = -200, Xup = 200, Ydown = -200, Yup = 200, Zdown = -360, Zup = 360;
 
   // 输入
-  TFile *file_in = TFile::Open(filename);
+  TFile *file_in = TFile::Open(infile);
   TTree *Trec = (TTree *)file_in->Get("Trec");
   Double_t x, y, z, ang, d;
   Trec->SetBranchAddress("x", &x);
@@ -94,6 +95,6 @@ TCanvas *draw_sim(const char *filename = "new_Simdata.root")
   hxyz->SetZTitle("z [mm]");
   hxyz->SetStats(0);
 
-  c1->SaveAs("draw_sim.pdf");
+  c1->SaveAs(outfile);
   return c1;
 }

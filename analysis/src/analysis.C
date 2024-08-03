@@ -13,26 +13,27 @@
 using namespace std;
 
 void analysis(const char *infile = "../../build/root_file/CryMu_1.root",
-    const char *outfile = "../../build/root_file/CryMuAna_1.root")
+    const char *outfile = "../../build/root_file/CryMuAna_1.root",
+    bool use_rpcall = false)
 {
   TRandom *rand = new TRandom();
 
   // Input file and tree.
   TFile *file_in = new TFile(infile);
   TTree *tree_in = (TTree *)file_in->Get("T1");
-  double RpcTrkPx[16], RpcTrkPy[16], RpcTrkPz[16], RpcTrkE[16];
-  double RpcTrkEdep[16];
   double RpcTrkX[16], RpcTrkY[16], RpcTrkZ[16];
   bool RpcTrkComplete;
-  tree_in->SetBranchAddress("RpcTrkPx",       &RpcTrkPx);
-  tree_in->SetBranchAddress("RpcTrkPy",       &RpcTrkPy);
-  tree_in->SetBranchAddress("RpcTrkPz",       &RpcTrkPz);
-  tree_in->SetBranchAddress("RpcTrkE",        &RpcTrkE);
-  tree_in->SetBranchAddress("RpcTrkEdep",     &RpcTrkEdep);
-  tree_in->SetBranchAddress("RpcTrkX",        &RpcTrkX);
-  tree_in->SetBranchAddress("RpcTrkY",        &RpcTrkY);
-  tree_in->SetBranchAddress("RpcTrkZ",        &RpcTrkZ);
-  tree_in->SetBranchAddress("RpcTrkComplete", &RpcTrkComplete);
+  if(use_rpcall) {
+    tree_in->SetBranchAddress("RpcAllX",        &RpcTrkX);
+    tree_in->SetBranchAddress("RpcAllY",        &RpcTrkY);
+    tree_in->SetBranchAddress("RpcAllZ",        &RpcTrkZ);
+    tree_in->SetBranchAddress("RpcAllComplete", &RpcTrkComplete);
+  } else {
+    tree_in->SetBranchAddress("RpcTrkX",        &RpcTrkX);
+    tree_in->SetBranchAddress("RpcTrkY",        &RpcTrkY);
+    tree_in->SetBranchAddress("RpcTrkZ",        &RpcTrkZ);
+    tree_in->SetBranchAddress("RpcTrkComplete", &RpcTrkComplete);
+  }
 
   // Output file and tree.
   TFile *file_out = new TFile(outfile, "RECREATE");

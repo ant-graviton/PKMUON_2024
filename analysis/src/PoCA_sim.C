@@ -6,10 +6,12 @@
 
 using namespace std;
 
-Int_t PoCA_sim(const char *filename = "../../build/root_file/CryMuAna_1.root", bool smeared = true)
+Int_t PoCA_sim(const char *infile = "../../build/root_file/CryMuAna_1.root",
+    const char *outfile = "../../build/root_file/CryMuAnaPoCA_1.root",
+    bool smeared = true)
 {
   // 读取探测器数据
-  TFile *file_in = new TFile(filename);
+  TFile *file_in = new TFile(infile);
   TTree *T1 = (TTree *)file_in->Get("T1");
   Double_t x[4], y[4], z[4];
   if(smeared) {
@@ -20,13 +22,12 @@ Int_t PoCA_sim(const char *filename = "../../build/root_file/CryMuAna_1.root", b
     T1->SetBranchAddress("RPCY", y);
   }
   T1->SetBranchAddress("RPCZ", z);
-  // [XXX] z[0] = 450, z[1] = 250, z[2] = -250, z[3] = -450;
 
   Double_t ang;  // 散射角
   Double_t d;
   Double_t poca_x, poca_y, poca_z;
 
-  TFile *file_out = new TFile("new_Simdata.root", "RECREATE");
+  TFile *file_out = new TFile(outfile, "RECREATE");
   TTree *Trec = new TTree("Trec", "Reconstruction DATA");
   Trec->Branch("x", &poca_x);
   Trec->Branch("y", &poca_y);
