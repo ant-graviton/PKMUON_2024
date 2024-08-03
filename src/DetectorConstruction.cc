@@ -349,6 +349,13 @@ G4VPhysicalVolume *DetectorConstruction::PartitionVolume(G4VPhysicalVolume *volu
   return new G4PVPlacement(rotation, translation, logical, name, mother, false, 0, true);
 }
 
+std::vector<G4double> DetectorConstruction::GetScoringZs() const
+{
+  std::vector<G4double> zs(fScoringMinZs);
+  for(G4double &z : zs) z += fScoringHalfZ;
+  return zs;
+}
+
 G4double DetectorConstruction::GetDetectorMinZ() const
 {
   G4double z = 1.0 / 0.0;

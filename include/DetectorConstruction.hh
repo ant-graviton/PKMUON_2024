@@ -61,6 +61,7 @@ public:
   G4double GetScoringHalfY() const { return fScoringHalfY; }
   G4double GetScoringHalfZ() const { return fScoringHalfZ; }
   const std::vector<G4double> &GetScoringMinZs() const { return fScoringMinZs; }
+  std::vector<G4double> GetScoringZs() const;
   G4double GetDetectorMinZ() const;
   G4double GetDetectorHalfX() const;
   G4double GetDetectorHalfY() const;
