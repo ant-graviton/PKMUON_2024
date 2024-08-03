@@ -74,14 +74,15 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep)
   if(igem == (int)fScoringMinZs.size() || z - fScoringMinZs[igem] > fScoringZ) return;
 
   // Record the hit info.
-  Run::GetInstance()->SetRpcAllInfo(igem, energy/MeV, x/mm, y/mm, z/mm);
-  if(aStep->GetTrack()->GetTrackID() == 1) {
+  int id = aStep->GetTrack()->GetTrackID();
+  Run::GetInstance()->AddRpcAllInfo(igem, id, energy/MeV, x/mm, y/mm, z/mm);
+  if(id == 1) {
     // Get momentum of the track.
     G4ThreeVector curDirection = aStep->GetPreStepPoint()->GetMomentumDirection();
     G4double px = curDirection.x();
     G4double py = curDirection.y();
     G4double pz = curDirection.z();
 
-    Run::GetInstance()->SetRpcTrkInfo(igem, px/MeV, py/MeV, pz/MeV, totalenergy/MeV, energy/MeV, x/mm, y/mm, z/mm);
+    Run::GetInstance()->AddRpcTrkInfo(igem, px/MeV, py/MeV, pz/MeV, totalenergy/MeV, energy/MeV, x/mm, y/mm, z/mm);
   }
 }

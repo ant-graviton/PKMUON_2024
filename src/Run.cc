@@ -94,6 +94,7 @@ void Run::Fill()
       RpcAllY   [i] /= Edep;
       RpcAllZ   [i] /= Edep;
     }
+    RpcAllN[i] = RpcAllIds[i].size();
     if(!RpcAllN[i]) RpcAllComplete = false;
   }
   _tree->Fill();
@@ -105,7 +106,7 @@ void Run::AutoSave()
   _tree->AutoSave("SaveSelf Overwrite");
 }
 
-void Run::SetRpcTrkInfo(int i, double Px, double Py, double Pz,
+void Run::AddRpcTrkInfo(int i, double Px, double Py, double Pz,
     double E, double Edep, double X, double Y, double Z)
 {
   if(i < 0 || i >= 16) return;
@@ -120,14 +121,14 @@ void Run::SetRpcTrkInfo(int i, double Px, double Py, double Pz,
   RpcTrkStatus[i]  = true;
 }
 
-void Run::SetRpcAllInfo(int i, double Edep, double X, double Y, double Z)
+void Run::AddRpcAllInfo(int i, int id, double Edep, double X, double Y, double Z)
 {
   if(i < 0 || i >= 16) return;
+  RpcAllIds   [i].insert(id);
   RpcAllEdep  [i] +=      Edep;
   RpcAllX     [i] += X  * Edep;
   RpcAllY     [i] += Y  * Edep;
   RpcAllZ     [i] += Z  * Edep;
-  RpcAllN     [i] += 1;
 }
 
 void Run::Clear()
@@ -145,6 +146,7 @@ void Run::Clear()
   }
   RpcTrkComplete = false;
   for(int i = 0; i < 16; i++) {
+    RpcAllIds   [i].clear();
     RpcAllEdep  [i] = 0;
     RpcAllX     [i] = 0;
     RpcAllY     [i] = 0;

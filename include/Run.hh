@@ -6,6 +6,7 @@
 #include "globals.hh"
 #include <Rtypes.h>
 #include <stdint.h>
+#include <unordered_set>
 
 class TFile;
 class TTree;
@@ -25,9 +26,9 @@ public:
   void Fill();
   void AutoSave();
 
-  void SetRpcTrkInfo(int i, double Px, double Py, double Pz, double E,
+  void AddRpcTrkInfo(int i, double Px, double Py, double Pz, double E,
       double Edep, double X, double Y, double Z);
-  void SetRpcAllInfo(int i, double Edep, double X, double Y, double Z);
+  void AddRpcAllInfo(int i, int id, double Edep, double X, double Y, double Z);
 
 private:
   Run();
@@ -48,14 +49,15 @@ private:
   Double_t RpcTrkY[16] = {0};
   Double_t RpcTrkZ[16] = {0};
   bool RpcTrkStatus[16] = {false};
+  std::unordered_set<int> RpcAllIds[16];
   Double_t RpcAllEdep[16] = {0};
   Double_t RpcAllX[16] = {0};
   Double_t RpcAllY[16] = {0};
   Double_t RpcAllZ[16] = {0};
-  UInt_t RpcAllN[16] = {0};
 
   // Mantained by us.
   Bool_t RpcTrkComplete;
+  UInt_t RpcAllN[16] = {0};
   Bool_t RpcAllComplete;
 
   void Clear();
