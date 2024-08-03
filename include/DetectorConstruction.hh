@@ -60,8 +60,7 @@ public:
   G4double GetScoringHalfX() const { return fScoringHalfX; }
   G4double GetScoringHalfY() const { return fScoringHalfY; }
   G4double GetScoringHalfZ() const { return fScoringHalfZ; }
-  const std::vector<G4double> &GetScoringMinZs() const { return fScoringMinZs; }
-  std::vector<G4double> GetScoringZs() const;
+  std::vector<G4double> GetScoringZs() const { return fScoringZs; }
   G4double GetDetectorMinZ() const;
   G4double GetDetectorHalfX() const;
   G4double GetDetectorHalfY() const;
@@ -92,7 +91,7 @@ private:
   G4VPhysicalVolume *fWorld;
   G4LogicalVolume *fElectrodeVolume;
   G4double fScoringHalfX, fScoringHalfY, fScoringHalfZ;
-  std::vector<G4double> fScoringMinZs;
+  std::vector<G4double> fScoringZs;
 };
 
 #endif

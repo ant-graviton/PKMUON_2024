@@ -45,7 +45,7 @@ class SteppingAction : public G4UserSteppingAction
     virtual void UserSteppingAction(const G4Step*) override;
 
    private:
-    std::vector<G4double> fScoringMinZs;
+    std::vector<G4double> fScoringMaxZs;
     G4double fScoringHalfX, fScoringHalfY, fScoringZ;
 };
 

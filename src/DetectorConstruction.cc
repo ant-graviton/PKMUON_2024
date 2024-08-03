@@ -109,12 +109,12 @@ void DetectorConstruction::DefineVolumes()
   fScoringHalfX = dynamic_cast<G4Box *>(fElectrodeVolume->GetSolid())->GetXHalfLength();
   fScoringHalfY = dynamic_cast<G4Box *>(fElectrodeVolume->GetSolid())->GetYHalfLength();
   fScoringHalfZ = dynamic_cast<G4Box *>(fElectrodeVolume->GetSolid())->GetZHalfLength();
-  fScoringMinZs.assign(0, 0.0);
+  fScoringZs.assign(0, 0.0);
   WalkVolume(fWorld, [this](G4VPhysicalVolume *volume, const G4ThreeVector &r, const G4RotationMatrix &) {
     if(volume->GetLogicalVolume() != fElectrodeVolume) return;
-    fScoringMinZs.push_back(r.z() - fScoringHalfZ);
+    fScoringZs.push_back(r.z());
   });
-  sort(fScoringMinZs.begin(), fScoringMinZs.end());
+  sort(fScoringZs.begin(), fScoringZs.end());
 }
 
 void DetectorConstruction::DefineFields()
@@ -134,7 +134,7 @@ void DetectorConstruction::DefineFields()
   // Determine electric field volume.
   G4double x, y, z;
   x = 2 * GetScoringHalfX(), y = 2 * GetScoringHalfY();
-  z = fScoringMinZs.at(1) - fScoringMinZs.at(0) - 2 * fScoringHalfZ;
+  z = fScoringZs.at(1) - fScoringZs.at(0) - 2 * fScoringHalfZ;
   auto electric = new G4Box("electric", x / 2, y / 2, z / 2);
 
   // Turn on electric field.
@@ -347,13 +347,6 @@ G4VPhysicalVolume *DetectorConstruction::PartitionVolume(G4VPhysicalVolume *volu
   mother->RemoveDaughter(volume);
   delete volume;
   return new G4PVPlacement(rotation, translation, logical, name, mother, false, 0, true);
-}
-
-std::vector<G4double> DetectorConstruction::GetScoringZs() const
-{
-  std::vector<G4double> zs(fScoringMinZs);
-  for(G4double &z : zs) z += fScoringHalfZ;
-  return zs;
 }
 
 G4double DetectorConstruction::GetDetectorMinZ() const

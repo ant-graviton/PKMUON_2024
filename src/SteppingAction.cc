@@ -46,13 +46,15 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep)
 {
   if(!fScoringHalfX) {  // memoization (this term is not a typo)
     auto d = (const DetectorConstruction *)G4RunManager::GetRunManager()->GetUserDetectorConstruction();
-    fScoringMinZs = d->GetScoringMinZs();
     fScoringHalfX = d->GetScoringHalfX();
     fScoringHalfY = d->GetScoringHalfY();
     fScoringZ = 2 * d->GetScoringHalfZ();
+    auto scoringZs = d->GetScoringZs();
+
+    fScoringMaxZs = scoringZs; for(G4double &maxz : fScoringMaxZs) maxz += fScoringZ/2;
     G4cout << "Scoring ZRanges:" << G4endl;
-    for(G4double minz : d->GetScoringMinZs()) {
-      G4cout << " * " << (minz + fScoringZ/2)/mm << " +/- " << fScoringZ/2/mm << " mm" << G4endl;
+    for(G4double z : scoringZs) {
+      G4cout << " * " << z/mm << " +/- " << fScoringZ/2/mm << " mm" << G4endl;
     }
     G4cout << "Scoring HalfX: " << fScoringHalfX/mm << " mm" << G4endl;
     G4cout << "Scoring HalfY: " << fScoringHalfY/mm << " mm" << G4endl;
@@ -70,8 +72,8 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep)
   G4double y = (prePoint->GetPosition().y() + postPoint->GetPosition().y()) / 2.;
   G4double z = (prePoint->GetPosition().z() + postPoint->GetPosition().z()) / 2.;
   if(std::fabs(x) > fScoringHalfX || std::fabs(y) > fScoringHalfY) return;
-  int igem = lower_bound(fScoringMinZs.begin(), fScoringMinZs.end(), z) - fScoringMinZs.begin();
-  if(igem == (int)fScoringMinZs.size() || z - fScoringMinZs[igem] > fScoringZ) return;
+  int igem = lower_bound(fScoringMaxZs.begin(), fScoringMaxZs.end(), z) - fScoringMaxZs.begin();
+  if(igem == (int)fScoringMaxZs.size() || fScoringMaxZs[igem] - z > fScoringZ) return;
 
   // Record the hit info.
   int id = aStep->GetTrack()->GetTrackID();
