@@ -80,10 +80,10 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep)
   Run::GetInstance()->AddRpcAllInfo(igem, id, energy/MeV, x/mm, y/mm, z/mm);
   if(id == 1) {
     // Get momentum of the track.
-    G4ThreeVector curDirection = aStep->GetPreStepPoint()->GetMomentumDirection();
-    G4double px = curDirection.x();
-    G4double py = curDirection.y();
-    G4double pz = curDirection.z();
+    G4ThreeVector p = aStep->GetPreStepPoint()->GetMomentum();
+    G4double px = p.x();
+    G4double py = p.y();
+    G4double pz = p.z();
 
     Run::GetInstance()->AddRpcTrkInfo(igem, px/MeV, py/MeV, pz/MeV, totalenergy/MeV, energy/MeV, x/mm, y/mm, z/mm);
   }
