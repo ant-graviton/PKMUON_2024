@@ -10,7 +10,7 @@
 using namespace std;
 
 TCanvas *draw_sim(const char *infile = "../../build/root_file/CryMuAnaPoCA_1.root",
-    const char *outfile = "draw_sim.pdf")
+    const char *outfile = "draw_sim.pdf", Double_t minang = 0.2)
 {
   const Int_t Nx = 40, Ny = 40, Nz = 40;  // 控制像元大小
   const Double_t Xdown = -200, Xup = 200, Ydown = -200, Yup = 200, Zdown = -360, Zup = 360;
@@ -32,7 +32,7 @@ TCanvas *draw_sim(const char *infile = "../../build/root_file/CryMuAnaPoCA_1.roo
   Long64_t nentries = Trec->GetEntries();
   for(Long64_t i = 0; i < nentries; i++){
     Trec->GetEntry(i);
-    if(ang <= 0.05) continue;
+    if(ang < minang) continue;
 
     // 给 PoCA 点以及路径上的像元赋值
     Int_t u = (x-Xdown)/vox;
@@ -68,28 +68,28 @@ TCanvas *draw_sim(const char *infile = "../../build/root_file/CryMuAnaPoCA_1.roo
 
   c1->cd(1);
   hxy->Draw("colz");
-  hxy->SetTitle("XY Events - ang>0.05rad");
+  hxy->SetTitle(("XY Events (ang >= " + to_string(minang) + " rad)").c_str());
   hxy->SetXTitle("x [mm]");
   hxy->SetYTitle("y [mm]");
   hxy->SetStats(0);
 
   c1->cd(2);
   hyz->Draw("colz");
-  hyz->SetTitle("YZ Events - ang>0.05rad");
+  hyz->SetTitle(("YZ Events (ang >= " + to_string(minang) + " rad)").c_str());
   hyz->SetXTitle("y [mm]");
   hyz->SetYTitle("z [mm]");
   hyz->SetStats(0);
 
   c1->cd(3);
   hxz->Draw("colz");  
-  hxz->SetTitle("XZ Events - ang>0.05rad");
+  hxz->SetTitle(("XZ Events (ang >= " + to_string(minang) + " rad)").c_str());
   hxz->SetXTitle("x [mm]");
   hxz->SetYTitle("z [mm]");
   hxz->SetStats(0);
 
   c1->cd(4);
   hxyz->Draw("colz");  
-  hxyz->SetTitle("XYZ Events - ang>0.05rad");
+  hxyz->SetTitle(("XYZ Events (ang >= " + to_string(minang) + " rad)").c_str());
   hxyz->SetXTitle("x [mm]");
   hxyz->SetYTitle("y [mm]");
   hxyz->SetZTitle("z [mm]");
