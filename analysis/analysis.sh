@@ -24,10 +24,12 @@ wait
     hadd -f ../build/root_file/CryMuAna.root $(ls -v ../build/root_file/CryMuAna_*.root)
     root -l -q -b 'src/PoCA_sim.C("../build/root_file/CryMuAna.root", "../build/root_file/CryMuAnaPoCA.root")'
     root -l -q -b 'src/draw_sim.C("../build/root_file/CryMuAnaPoCA.root", "draw_sim_ana.pdf")'
+    root -l -q -b 'src/draw_sim.C("../build/root_file/CryMuAnaPoCA.root", "draw_sim_ana_0.05.pdf", 0.05)'
 ) &
 (
     hadd -f ../build/root_file/CryMuAll.root $(ls -v ../build/root_file/CryMuAll_*.root)
     root -l -q -b 'src/PoCA_sim.C("../build/root_file/CryMuAll.root", "../build/root_file/CryMuAllPoCA.root")'
     root -l -q -b 'src/draw_sim.C("../build/root_file/CryMuAllPoCA.root", "draw_sim_all.pdf")'
+    root -l -q -b 'src/draw_sim.C("../build/root_file/CryMuAllPoCA.root", "draw_sim_all_0.05.pdf", 0.05)'
 ) &
 wait
