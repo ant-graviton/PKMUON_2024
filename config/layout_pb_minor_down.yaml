@@ -3,8 +3,15 @@ schema: volume_schema.yaml
 
 ---
 
+target:
+  color: gray
+  solid: box
+  x: 120 mm
+  y: 120 mm
+  z: 30 mm
+  material: G4_Pb
+
 world_major_gap:
-  alternative: alternative
   hidden: hidden
   solid: box
   x: &rpc_x 430 mm
@@ -12,26 +19,33 @@ world_major_gap:
   z: 455 mm
   material: &world_material rpc_air
 
-world_minor_gap:
-  alternative: alternative
+world_minor_gap_up:
   hidden: hidden
   solid: box
   x: *rpc_x
   y: *rpc_y
-  z: 155 mm
+  z: &rpc_minor_gap_z 155 mm
+  material: *world_material
+
+world_minor_gap_down:
+  hidden: hidden
+  solid: bottom_up
+  components: [target]
+  x: *rpc_x
+  y: *rpc_y
+  z: *rpc_minor_gap_z
   material: *world_material
 
 world:
-  alternative: alternative
   hidden: hidden
   solid: bottom_up
   components:
     - rpc
-    - world_minor_gap
+    - world_minor_gap_down
     - rpc
     - world_major_gap
     - rpc
-    - world_minor_gap
+    - world_minor_gap_up
     - rpc
   padding: 20%
   material: *world_material
@@ -43,4 +57,3 @@ materials:
   - rpc_air
 external:
   - rpc
-  - world_major_gap
