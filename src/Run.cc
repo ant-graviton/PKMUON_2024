@@ -124,6 +124,10 @@ void Run::AddRpcTrkInfo(int i, double Px, double Py, double Pz,
 void Run::AddRpcAllInfo(int i, int id, double Edep, double X, double Y, double Z)
 {
   if(i < 0 || i >= 16) return;
+  if(id != 1) {  // not primary
+    auto [it, _] = RpcAllLayer.emplace(id, i);
+    if(it->second != i) return;  // not belong to this layer
+  }
   RpcAllIds   [i].insert(id);
   RpcAllEdep  [i] +=      Edep;
   RpcAllX     [i] += X  * Edep;
@@ -145,6 +149,7 @@ void Run::Clear()
     RpcTrkStatus[i] = false;
   }
   RpcTrkComplete = false;
+  RpcAllLayer.clear();
   for(int i = 0; i < 16; i++) {
     RpcAllIds   [i].clear();
     RpcAllEdep  [i] = 0;

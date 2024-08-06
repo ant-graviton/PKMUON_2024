@@ -7,6 +7,7 @@
 #include <Rtypes.h>
 #include <stdint.h>
 #include <unordered_set>
+#include <unordered_map>
 
 class TFile;
 class TTree;
@@ -49,6 +50,7 @@ private:
   Double_t RpcTrkY[16];
   Double_t RpcTrkZ[16];
   bool RpcTrkStatus[16];
+  std::unordered_map<int, int> RpcAllLayer;
   std::unordered_set<int> RpcAllIds[16];
   Double_t RpcAllEdep[16];
   Double_t RpcAllX[16];
