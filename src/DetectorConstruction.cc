@@ -159,8 +159,8 @@ void DetectorConstruction::DefineFields()
           size_t id = g_id++;
           std::vector<G4VSolid *> parts;
           parts.reserve(2);
-          auto rps = -(rm.inverse() * r);
-          auto rotation = new G4RotationMatrix(rm);
+          auto rotation = new G4RotationMatrix(rm.inverse());
+          auto rps = -(*rotation * r);
           name = "part_" + std::to_string(id) + "_0_" + solid->GetName();
           parts.push_back(new G4IntersectionSolid(name, solid, electric, rotation, rps));
           name = "part_" + std::to_string(id) + "_1_" + solid->GetName();
@@ -263,13 +263,11 @@ void DetectorConstruction::WalkVolume(G4VPhysicalVolume *volume,
   G4RotationMatrix rm = {0, 0, 0};
   WalkVolume(volume, [&r, &rm, &enter](G4VPhysicalVolume *v) {
     r += rm * v->GetObjectTranslation();
-    G4RotationMatrix *rotation = v->GetObjectRotation();
-    if(rotation) rm = rm * rotation->inverse();
+    if(G4RotationMatrix *rotation = v->GetObjectRotation()) rm = rm * *rotation;
     if(enter) enter(v, r, rm);
   }, [&r, &rm, &leave](G4VPhysicalVolume *v) {
     if(leave) leave(v, r, rm);
-    G4RotationMatrix *rotation = v->GetObjectRotation();
-    if(rotation) rm = rm * *rotation;
+    if(G4RotationMatrix *rotation = v->GetObjectRotation()) rm = rm * rotation->inverse();
     r -= rm * v->GetObjectTranslation();
   });
 }
