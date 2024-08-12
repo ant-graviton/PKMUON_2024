@@ -29,6 +29,13 @@ include(${Geant4_USE_FILE})
 include(${ROOT_USE_FILE})
 
 #----------------------------------------------------------------------------
+# Find yaml-cpp (required package)
+#
+#set(YAML_CPP_INCLUDE_DIR /opt/homebrew/opt/yaml-cpp/include)
+#set(YAML_CPP_LIBRARY /opt/homebrew/opt/yaml-cpp/lib/libyaml-cpp.dylib)
+find_package(yaml-cpp REQUIRED)
+
+#----------------------------------------------------------------------------
 # General compilation and linkage options
 #
 option(ENABLE_SANITIZER "compile and link with sanitizing flags" OFF)
@@ -60,7 +67,8 @@ add_compile_options(-g -Wall -Wshadow -Wextra -Werror)
 #----------------------------------------------------------------------------
 # Locate sources and headers for this project
 #
-include_directories(${PROJECT_SOURCE_DIR}/include ${Geant4_INCLUDE_DIR} ${ROOT_INCLUDE_DIRS})
+include_directories(${PROJECT_SOURCE_DIR}/include)
+include_directories(SYSTEM ${Geant4_INCLUDE_DIR} ${ROOT_INCLUDE_DIRS} ${YAML_CPP_INCLUDE_DIR})
 file(GLOB sources CONFIGURE_DEPENDS ${PROJECT_SOURCE_DIR}/src/*.cc)
 file(GLOB headers CONFIGURE_DEPENDS ${PROJECT_SOURCE_DIR}/include/*.hh)
 
@@ -68,7 +76,7 @@ file(GLOB headers CONFIGURE_DEPENDS ${PROJECT_SOURCE_DIR}/include/*.hh)
 # Add the executable, and link it to the Geant4 libraries
 #
 add_executable(muPos muPos.cc ${sources} ${headers})
-target_link_libraries(muPos ${Geant4_LIBRARIES} ${ROOT_LIBRARIES} yaml-cpp)
+target_link_libraries(muPos ${Geant4_LIBRARIES} ${ROOT_LIBRARIES} ${YAML_CPP_LIBRARIES})
 
 #----------------------------------------------------------------------------
 # Copy all scripts to the build directory, i.e. the directory in which we

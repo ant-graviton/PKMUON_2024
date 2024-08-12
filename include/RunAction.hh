@@ -33,9 +33,6 @@
 
 #include "G4UserRunAction.hh"
 
-class PrimaryGeneratorAction;
-class GpsPrimaryGeneratorAction;
-
 class RunAction : public G4UserRunAction
 {
   public:
