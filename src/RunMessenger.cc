@@ -9,7 +9,7 @@ RunMessenger::RunMessenger(Run* run)
   : G4UImessenger(), fRun(run)
 {
   fFileNameDir = new G4UIdirectory("/rlt/");
-  fFileNameDir->SetGuidance("Iterate with ROOT library.");
+  fFileNameDir->SetGuidance("Interact with ROOT library.");
 
   fSetFileNameCmd = new G4UIcmdWithAString("/rlt/SetFileName", this);
   fSetFileNameCmd->SetGuidance("Set output pathname.");
