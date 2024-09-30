@@ -23,9 +23,6 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-//
-// Previous authors: G. Guerrieri, S. Guatelli and M. G. Pia, INFN Genova, Italy
-// Authors (since 2007): S. Guatelli, University of Wollongong, Australia
 
 #include "SteppingAction.hh"
 #include "Run.hh"
@@ -42,7 +39,7 @@ SteppingAction::SteppingAction()
 
 SteppingAction::~SteppingAction() { }
 
-void SteppingAction::UserSteppingAction(const G4Step* aStep)
+void SteppingAction::UserSteppingAction(const G4Step *aStep)
 {
   if(!fScoringHalfX) {  // memoization (this term is not a typo)
     auto d = (const DetectorConstruction *)G4RunManager::GetRunManager()->GetUserDetectorConstruction();
@@ -51,7 +48,8 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep)
     fScoringZ = 2 * d->GetScoringHalfZ();
     auto scoringZs = d->GetScoringZs();
 
-    fScoringMaxZs = scoringZs; for(G4double &maxz : fScoringMaxZs) maxz += fScoringZ/2;
+    fScoringMaxZs = scoringZs;
+    for(G4double &maxz : fScoringMaxZs) { maxz += fScoringZ/2; }
     G4cout << "Scoring ZRanges:" << G4endl;
     for(G4double z : scoringZs) {
       G4cout << " * " << z/mm << " +/- " << fScoringZ/2/mm << " mm" << G4endl;
@@ -63,17 +61,17 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep)
   // Reject steps without energy deposition.
   G4double energy = aStep->GetTotalEnergyDeposit();
   G4double totalenergy = aStep->GetTrack()->GetTotalEnergy();
-  if(!(energy > 0)) return;
+  if(!(energy > 0)) { return; }
 
   // Reject hits outside scoring volumes.
-  G4StepPoint* prePoint  = aStep->GetPreStepPoint();
-  G4StepPoint* postPoint = aStep->GetPostStepPoint();
+  G4StepPoint *prePoint = aStep->GetPreStepPoint();
+  G4StepPoint *postPoint = aStep->GetPostStepPoint();
   G4double x = (prePoint->GetPosition().x() + postPoint->GetPosition().x()) / 2.;
   G4double y = (prePoint->GetPosition().y() + postPoint->GetPosition().y()) / 2.;
   G4double z = (prePoint->GetPosition().z() + postPoint->GetPosition().z()) / 2.;
-  if(std::fabs(x) > fScoringHalfX || std::fabs(y) > fScoringHalfY) return;
+  if(std::fabs(x) > fScoringHalfX || std::fabs(y) > fScoringHalfY) { return; }
   int igem = lower_bound(fScoringMaxZs.begin(), fScoringMaxZs.end(), z) - fScoringMaxZs.begin();
-  if(igem == (int)fScoringMaxZs.size() || fScoringMaxZs[igem] - z > fScoringZ) return;
+  if(igem == (int)fScoringMaxZs.size() || fScoringMaxZs[igem] - z > fScoringZ) { return; }
 
   // Record the hit info.
   int id = aStep->GetTrack()->GetTrackID();

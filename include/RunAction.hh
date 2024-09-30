@@ -23,25 +23,20 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-// Previous authors: G. Guerrieri, S. Guatelli and M. G. Pia, INFN Genova, Italy
-// Authors (since 2007): S. Guatelli,University of Wollongong, Australia
-// Contributions by F. Ambroglini INFN Perugia, Italy
-//
 
 #ifndef RunAction_h
 #define RunAction_h 1
 
 #include "G4UserRunAction.hh"
 
-class RunAction : public G4UserRunAction
-{
-  public:
-    RunAction();
-   ~RunAction();
+class RunAction : public G4UserRunAction {
+public:
+  RunAction();
+  ~RunAction();
 
-  public:
-    virtual void BeginOfRunAction(const G4Run*) override;
-    virtual void EndOfRunAction(const G4Run*) override;
+public:
+  virtual void BeginOfRunAction(const G4Run *) override;
+  virtual void EndOfRunAction(const G4Run *) override;
 };
 
 #endif

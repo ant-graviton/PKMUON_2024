@@ -23,9 +23,6 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-//
-/// \file GpsPrimaryGeneratorAction.cc
-/// \brief Implementation of the GpsPrimaryGeneratorActionclass
 
 #include "GpsPrimaryGeneratorAction.hh"
 #include "G4GeneralParticleSource.hh"
@@ -38,8 +35,8 @@ GpsPrimaryGeneratorAction::GpsPrimaryGeneratorAction()
 {
   fGeneralParticleSource = new G4GeneralParticleSource();
   auto c = dynamic_cast<const DetectorConstruction *>(
-      G4RunManager::GetRunManager()->GetUserDetectorConstruction());
-  if(c) ((DetectorConstruction *)c)->SetGpsPrimaryGeneratorAction(this);
+    G4RunManager::GetRunManager()->GetUserDetectorConstruction());
+  if(c) { ((DetectorConstruction *)c)->SetGpsPrimaryGeneratorAction(this); }
 }
 
 GpsPrimaryGeneratorAction::~GpsPrimaryGeneratorAction()
@@ -47,7 +44,7 @@ GpsPrimaryGeneratorAction::~GpsPrimaryGeneratorAction()
   delete fGeneralParticleSource;
 }
 
-void GpsPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
+void GpsPrimaryGeneratorAction::GeneratePrimaries(G4Event *anEvent)
 {
   fGeneralParticleSource->GeneratePrimaryVertex(anEvent);
 }

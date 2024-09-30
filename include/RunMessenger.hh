@@ -23,9 +23,6 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-/// \file electromagnetic/TestEm10/include/RunMessenger.hh
-/// \brief Definition of the RunMessenger class
-//
 
 #ifndef RunMessenger_h
 #define RunMessenger_h 1
@@ -36,17 +33,16 @@ class Run;
 class G4UIdirectory;
 class G4UIcmdWithAString;
 
-class RunMessenger: public G4UImessenger
-{
-  public:
-   RunMessenger(Run* run);
-   ~RunMessenger();
-   virtual void SetNewValue(G4UIcommand*, G4String) override;
+class RunMessenger: public G4UImessenger {
+public:
+  RunMessenger(Run *run);
+  ~RunMessenger();
+  virtual void SetNewValue(G4UIcommand *, G4String) override;
 
-  private:
-   Run* fRun;
-   G4UIdirectory* fFileNameDir;
-   G4UIcmdWithAString* fSetFileNameCmd;
+private:
+  Run *fRun;
+  G4UIdirectory *fFileNameDir;
+  G4UIcmdWithAString *fSetFileNameCmd;
 };
 
 #endif

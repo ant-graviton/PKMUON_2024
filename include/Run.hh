@@ -28,7 +28,7 @@ public:
   void AutoSave();
 
   void AddRpcTrkInfo(int i, double Px, double Py, double Pz, double E,
-      double Edep, double X, double Y, double Z);
+    double Edep, double X, double Y, double Z);
   void AddRpcAllInfo(int i, int id, double Edep, double X, double Y, double Z);
 
 private:

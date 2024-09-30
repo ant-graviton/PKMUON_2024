@@ -5,7 +5,7 @@
 #include "G4UIcmdWithAString.hh"
 #include "Run.hh"
 
-RunMessenger::RunMessenger(Run* run)
+RunMessenger::RunMessenger(Run *run)
   : G4UImessenger(), fRun(run)
 {
   fFileNameDir = new G4UIdirectory("/rlt/");
@@ -24,7 +24,7 @@ RunMessenger::~RunMessenger()
   delete fFileNameDir;
 }
 
-void RunMessenger::SetNewValue(G4UIcommand* command, G4String newValues)
+void RunMessenger::SetNewValue(G4UIcommand *command, G4String newValues)
 {
   if(command == fSetFileNameCmd) {
     G4cout << "\n---> root name from file: " << newValues << G4endl;

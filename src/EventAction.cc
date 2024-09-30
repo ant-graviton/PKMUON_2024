@@ -23,9 +23,7 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-// Previous authors: G. Guerrieri, S. Guatelli and M. G. Pia, INFN Genova, Italy
-// Authors (since 2007): S. Guatelli, University of Wollongong, Australia
-//
+
 #include "EventAction.hh"
 #include "G4Event.hh"
 #include "Run.hh"
@@ -42,5 +40,5 @@ void EventAction::EndOfEventAction(const G4Event *evt)
 
   // Save check-points.
   G4int event_id = evt->GetEventID();
-  if((event_id + 1) % 10000 == 0) Run::GetInstance()->AutoSave();
+  if((event_id + 1) % 10000 == 0) { Run::GetInstance()->AutoSave(); }
 }

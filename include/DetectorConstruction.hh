@@ -23,8 +23,6 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-/// \file DetectorConstruction.hh
-/// \brief Definition of the DetectorConstruction class
 
 #ifndef DetectorConstruction_h
 #define DetectorConstruction_h 1
@@ -68,16 +66,16 @@ public:
   // Hierarchic options.
   void PrintVolumes(G4VPhysicalVolume *) const;
   void WalkVolume(G4LogicalVolume *volume,
-      const std::function<void(G4LogicalVolume *)> &enter,
-      const std::function<void(G4LogicalVolume *)> &leave = nullptr) const;
+    const std::function<void(G4LogicalVolume *)> &enter,
+    const std::function<void(G4LogicalVolume *)> &leave = nullptr) const;
   void WalkVolume(G4VPhysicalVolume *volume,
-      const std::function<void(G4VPhysicalVolume *)> &enter,
-      const std::function<void(G4VPhysicalVolume *)> &leave = nullptr) const;
+    const std::function<void(G4VPhysicalVolume *)> &enter,
+    const std::function<void(G4VPhysicalVolume *)> &leave = nullptr) const;
   void WalkVolume(G4VPhysicalVolume *volume,
-      const std::function<void(G4VPhysicalVolume *, const G4ThreeVector &, const G4RotationMatrix &)> &enter,
-      const std::function<void(G4VPhysicalVolume *, const G4ThreeVector &, const G4RotationMatrix &)> &leave = nullptr) const;
+    const std::function<void(G4VPhysicalVolume *, const G4ThreeVector &, const G4RotationMatrix &)> &enter,
+    const std::function<void(G4VPhysicalVolume *, const G4ThreeVector &, const G4RotationMatrix &)> &leave = nullptr) const;
   G4VPhysicalVolume *PartitionVolume(G4VPhysicalVolume *volume,
-      const std::function<std::vector<G4VSolid *>(G4VSolid *, const G4ThreeVector &, const G4RotationMatrix &)> &partition) const;
+    const std::function<std::vector<G4VSolid *>(G4VSolid *, const G4ThreeVector &, const G4RotationMatrix &)> &partition) const;
 
 private:
   void DefineMaterials();

@@ -23,10 +23,7 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-/// \file RunAction.cc
-/// \brief Implementation of the RunAction class
-//
-//
+
 #include "RunAction.hh"
 #include "Run.hh"
 
@@ -37,12 +34,12 @@ RunAction::RunAction()
 
 RunAction::~RunAction() { }
 
-void RunAction::BeginOfRunAction(const G4Run*)
+void RunAction::BeginOfRunAction(const G4Run *)
 {
   Run::GetInstance()->InitTree();
 }
 
-void RunAction::EndOfRunAction(const G4Run*)
+void RunAction::EndOfRunAction(const G4Run *)
 {
   Run::GetInstance()->SaveTree();
 }

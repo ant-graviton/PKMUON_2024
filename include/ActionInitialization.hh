@@ -23,9 +23,6 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-//
-/// \file ActionInitialization.hh
-/// \brief Definition of the ActionInitialization class
 
 #ifndef ActionInitialization_h
 #define ActionInitialization_h 1
@@ -34,10 +31,9 @@
 
 class G4VSteppingVerbose;
 
-class ActionInitialization : public G4VUserActionInitialization
-{
-  public:
-    virtual void Build() const override;
+class ActionInitialization : public G4VUserActionInitialization {
+public:
+  virtual void Build() const override;
 };
 
 #endif

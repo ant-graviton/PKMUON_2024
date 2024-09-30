@@ -23,10 +23,6 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-//
-/// \file GpsPrimaryGeneratorAction.hh
-/// \brief Definition of the GpsPrimaryGeneratorActionclass
-//
 
 #ifndef GpsPrimaryGeneratorAction_h
 #define GpsPrimaryGeneratorAction_h 1
@@ -42,17 +38,16 @@ class DetectorConstruction;
 ///
 /// \author I. Hrivnacova; IPN Orsay
 
-class GpsPrimaryGeneratorAction: public G4VUserPrimaryGeneratorAction
-{
-  public:
-    GpsPrimaryGeneratorAction();
-    ~GpsPrimaryGeneratorAction();
+class GpsPrimaryGeneratorAction: public G4VUserPrimaryGeneratorAction {
+public:
+  GpsPrimaryGeneratorAction();
+  ~GpsPrimaryGeneratorAction();
 
-    virtual void GeneratePrimaries(G4Event*) override;
-    void Initialize(DetectorConstruction *);
+  virtual void GeneratePrimaries(G4Event *) override;
+  void Initialize(DetectorConstruction *);
 
-  private:
-    G4GeneralParticleSource* fGeneralParticleSource;
+private:
+  G4GeneralParticleSource *fGeneralParticleSource;
 };
 
 #endif

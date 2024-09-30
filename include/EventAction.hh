@@ -23,10 +23,7 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-// Previous authors: G. Guerrieri, S. Guatelli and M. G. Pia, INFN Genova, Italy
-// Authors (since 2007): S. Guatelli,University of Wollongong, Australia
-// Contributions by F. Ambroglini INFN Perugia, Italy
-//
+
 #ifndef EventAction_h
 #define EventAction_h 1
 
@@ -34,10 +31,10 @@
 
 class G4Event;
 
-class EventAction : public G4UserEventAction
-{
+class EventAction : public G4UserEventAction {
 public:
-  virtual void BeginOfEventAction(const G4Event*) override;
-  virtual void EndOfEventAction(const G4Event*) override;
+  virtual void BeginOfEventAction(const G4Event *) override;
+  virtual void EndOfEventAction(const G4Event *) override;
 };
+
 #endif

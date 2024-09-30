@@ -23,10 +23,6 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-// Previous authors: G. Guerrieri, S. Guatelli and M. G. Pia, INFN Genova, Italy
-// Authors (since 2007): S. Guatelli,University of Wollongong, Australia
-// Contributions by F. Ambroglini INFN Perugia, Italy
-//
 
 #ifndef SteppingAction_h
 #define SteppingAction_h 1
@@ -37,16 +33,15 @@
 
 class G4LogicalVolume;
 
-class SteppingAction : public G4UserSteppingAction
-{
-  public:
-    SteppingAction();
-   ~SteppingAction();
-    virtual void UserSteppingAction(const G4Step*) override;
+class SteppingAction : public G4UserSteppingAction {
+public:
+  SteppingAction();
+  ~SteppingAction();
+  virtual void UserSteppingAction(const G4Step *) override;
 
-   private:
-    std::vector<G4double> fScoringMaxZs;
-    G4double fScoringHalfX, fScoringHalfY, fScoringZ;
+private:
+  std::vector<G4double> fScoringMaxZs;
+  G4double fScoringHalfX, fScoringHalfY, fScoringZ;
 };
 
 #endif
