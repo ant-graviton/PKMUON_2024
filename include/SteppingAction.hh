@@ -27,9 +27,10 @@
 #ifndef SteppingAction_h
 #define SteppingAction_h 1
 
+#include <vector>
+
 #include "G4UserSteppingAction.hh"
 #include "globals.hh"
-#include <vector>
 
 class G4LogicalVolume;
 

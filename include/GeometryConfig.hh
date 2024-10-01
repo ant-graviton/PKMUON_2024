@@ -1,7 +1,9 @@
 #pragma once
 #include <yaml-cpp/yaml.h>
-#include <unordered_map>
+
 #include <string>
+#include <unordered_map>
+
 #include "G4VisAttributes.hh"
 
 class GeometryConfig {

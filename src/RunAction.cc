@@ -25,21 +25,13 @@
 //
 
 #include "RunAction.hh"
+
 #include "Run.hh"
 
-RunAction::RunAction()
-{
-  Run::GetInstance();
-}
+RunAction::RunAction() { Run::GetInstance(); }
 
 RunAction::~RunAction() { }
 
-void RunAction::BeginOfRunAction(const G4Run *)
-{
-  Run::GetInstance()->InitTree();
-}
+void RunAction::BeginOfRunAction(const G4Run *) { Run::GetInstance()->InitTree(); }
 
-void RunAction::EndOfRunAction(const G4Run *)
-{
-  Run::GetInstance()->SaveTree();
-}
+void RunAction::EndOfRunAction(const G4Run *) { Run::GetInstance()->SaveTree(); }

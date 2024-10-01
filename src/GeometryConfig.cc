@@ -1,16 +1,17 @@
 #include "GeometryConfig.hh"
-#include "G4ios.hh"
-#include "G4Element.hh"
-#include "G4Material.hh"
-#include "G4NistManager.hh"
+
 #include "G4Box.hh"
+#include "G4Color.hh"
+#include "G4Element.hh"
 #include "G4LogicalVolume.hh"
 #include "G4LogicalVolumeStore.hh"
+#include "G4Material.hh"
+#include "G4NistManager.hh"
 #include "G4PVPlacement.hh"
-#include "G4UnitsTable.hh"
 #include "G4SystemOfUnits.hh"
+#include "G4UnitsTable.hh"
 #include "G4VisAttributes.hh"
-#include "G4Color.hh"
+#include "G4ios.hh"
 
 using namespace std;
 
@@ -18,7 +19,7 @@ namespace {
 
 G4LogicalVolume *CreateBoxVolume(const string &name, G4double hx, G4double hy, G4double hz, G4Material *material)
 {
-  G4cout << " * Box " << name << ": " << hx*2/mm << ", " << hy*2/mm << ", " << hz*2/mm << " (mm)" << G4endl;
+  G4cout << " * Box " << name << ": " << hx * 2 / mm << ", " << hy * 2 / mm << ", " << hz * 2 / mm << " (mm)" << G4endl;
   auto box = new G4Box(name, hx, hy, hz);
   return new G4LogicalVolume(box, material, name);
 }
@@ -34,15 +35,15 @@ pair<bool, G4double> ParsePhysicsVariable(const string &variable)
     exit(EXIT_FAILURE);
   }
   if(iss >> unit) {
-    if(unit == "%") return {true, value / 100};
+    if(unit == "%") return { true, value / 100 };
     value *= G4UnitDefinition::GetValueOf(unit);
   }
-  return {false, value};
+  return { false, value };
 }
 
 G4double ParseAbsolutePhysicsVariable(const string &variable)
 {
-  auto[relevant, value] = ParsePhysicsVariable(variable);
+  auto [relevant, value] = ParsePhysicsVariable(variable);
   if(relevant) {
     G4cerr << "ERROR: expect absolute value: " << variable << G4endl;
     exit(EXIT_FAILURE);
@@ -79,9 +80,8 @@ G4LogicalVolume *ProcessBox(const string &name, YAML::Node node)
   return CreateBoxVolume(name, x / 2, y / 2, z / 2, material);
 }
 
-vector<G4LogicalVolume *> ProcessStackComponents(YAML::Node node,
-  G4double &hx_s, G4double &hy_s, G4double &hz_s,
-  G4double &hx_m, G4double &hy_m, G4double &hz_m)
+vector<G4LogicalVolume *> ProcessStackComponents(
+    YAML::Node node, G4double &hx_s, G4double &hy_s, G4double &hz_s, G4double &hx_m, G4double &hy_m, G4double &hz_m)
 {
   hx_s = hy_s = hz_s = 0.0;
   hx_m = hy_m = hz_m = 0.0;
@@ -111,7 +111,10 @@ vector<G4LogicalVolume *> ProcessStackComponents(YAML::Node node,
 
 void ProcessStackSize(const string &name, G4double &current, G4double target)
 {
-  if(current <= target) { current = target; return; }
+  if(current <= target) {
+    current = target;
+    return;
+  }
   G4cerr << "ERROR: " << name << " size " << target * 2 << " smaller than needed " << current * 2 << G4endl;
   exit(EXIT_FAILURE);
 }
@@ -119,7 +122,7 @@ void ProcessStackSize(const string &name, G4double &current, G4double target)
 void ProcessStackSize(const string &name, YAML::Node node, G4double &hx, G4double &hy, G4double &hz)
 {
   if(node["padding"]) {
-    auto[relevant, padding] = ParsePhysicsVariable(node["padding"].as<string>());
+    auto [relevant, padding] = ParsePhysicsVariable(node["padding"].as<string>());
     if(relevant) {
       hx *= 1 + padding;
       hy *= 1 + padding;
@@ -136,18 +139,18 @@ void ProcessStackSize(const string &name, YAML::Node node, G4double &hx, G4doubl
   }
 }
 
-void ProcessOffset(const string &name, YAML::Node node,
-  G4double hx, G4double hy, G4double hz, G4double &x, G4double &y, G4double &z)
+void ProcessOffset(
+    const string &name, YAML::Node node, G4double hx, G4double hy, G4double hz, G4double &x, G4double &y, G4double &z)
 {
   if(!node["offset"]) { return; }
   if(node["offset"].size() != 3) {
     G4cerr << "ERROR: " << name << ": offset not of length 3" << G4endl;
     exit(EXIT_FAILURE);
   }
-  G4double *h[3] = {&hx, &hy, &hz};
-  G4double *p[3] = {&x, &y, &z};
+  G4double *h[3] = { &hx, &hy, &hz };
+  G4double *p[3] = { &x, &y, &z };
   for(size_t i = 0; i < 3; ++i) {
-    auto[relevant, offset] = ParsePhysicsVariable(node["offset"][i].as<string>());
+    auto [relevant, offset] = ParsePhysicsVariable(node["offset"][i].as<string>());
     *p[i] += relevant ? *h[i] * offset : offset;
   }
 }
@@ -167,10 +170,11 @@ G4LogicalVolume *ProcessBottomUp(const string &name, YAML::Node node)
 
   auto logical = CreateBoxVolume(name, hx, hy, hz, material);
   size_t i = 0;
-  for(size_t d = 0; d < duplicate; ++d) for(G4LogicalVolume *child : children) {
+  for(size_t d = 0; d < duplicate; ++d)
+    for(G4LogicalVolume *child : children) {
       G4double ht = ((G4Box *)child->GetSolid())->GetZHalfLength();
       string child_name = name + "_" + to_string(i++) + ":" + child->GetName();
-      new G4PVPlacement(0, {x, y, z + ht}, child, child_name, logical, false, 0, true);
+      new G4PVPlacement(0, { x, y, z + ht }, child, child_name, logical, false, 0, true);
       z += ht * 2;
     }
   return logical;
@@ -191,10 +195,11 @@ G4LogicalVolume *ProcessLeftRight(const string &name, YAML::Node node)
 
   auto logical = CreateBoxVolume(name, hx, hy, hz, material);
   size_t i = 0;
-  for(size_t d = 0; d < duplicate; ++d) for(G4LogicalVolume *child : children) {
+  for(size_t d = 0; d < duplicate; ++d)
+    for(G4LogicalVolume *child : children) {
       G4double ht = ((G4Box *)child->GetSolid())->GetXHalfLength();
       string child_name = name + "_" + to_string(i++) + ":" + child->GetName();
-      new G4PVPlacement(0, {x + ht, y, z}, child, child_name, logical, false, 0, true);
+      new G4PVPlacement(0, { x + ht, y, z }, child, child_name, logical, false, 0, true);
       x += ht * 2;
     }
   return logical;
@@ -206,10 +211,13 @@ void ProcessRotation(const string &name, G4RotationMatrix *rotation, const strin
     G4cerr << "ERROR: " << name << ": Rotation degree must be multiple of 90: " << degree << G4endl;
     exit(EXIT_FAILURE);
   }
-  if(axis == "x") { rotation->rotateX(degree * CLHEP::deg); }
-  else if(axis == "y") { rotation->rotateY(degree * CLHEP::deg); }
-  else if(axis == "z") { rotation->rotateZ(degree * CLHEP::deg); }
-  else {
+  if(axis == "x") {
+    rotation->rotateX(degree * CLHEP::deg);
+  } else if(axis == "y") {
+    rotation->rotateY(degree * CLHEP::deg);
+  } else if(axis == "z") {
+    rotation->rotateZ(degree * CLHEP::deg);
+  } else {
     G4cerr << "ERROR: " << name << ": Unknown rotation axis: " << axis << G4endl;
     exit(EXIT_FAILURE);
   }
@@ -234,7 +242,7 @@ G4LogicalVolume *ProcessRotation(const string &name, YAML::Node node)
   auto logical = CreateBoxVolume(name, fabs(v.x()), fabs(v.y()), fabs(v.z()), child->GetMaterial());
   node["material"] = (string)logical->GetMaterial()->GetName();
   string child_name = name + "_0:" + child->GetName();
-  new G4PVPlacement(rotation, {0, 0, 0}, child, child_name, logical, false, 0, true);
+  new G4PVPlacement(rotation, { 0, 0, 0 }, child, child_name, logical, false, 0, true);
   return logical;
 }
 
@@ -253,12 +261,8 @@ void ProcessVisAttributes(YAML::Node node, G4VisAttributes &attr)
     if(node["alpha"]) { color.SetAlpha(node["alpha"].as<G4double>()); }
     attr.SetColor(color);
   }
-  if(node["line_style"]) {
-    attr.SetLineStyle((G4VisAttributes::LineStyle)node["line_style"].as<size_t>());
-  }
-  if(node["line_width"]) {
-    attr.SetLineWidth(ParseAbsolutePhysicsVariable(node["line_width"].as<string>()));
-  }
+  if(node["line_style"]) { attr.SetLineStyle((G4VisAttributes::LineStyle)node["line_style"].as<size_t>()); }
+  if(node["line_width"]) { attr.SetLineWidth(ParseAbsolutePhysicsVariable(node["line_width"].as<string>())); }
   if(node["color"] && !node["line_style"] && !node["line_width"]) {
     attr.SetLineWidth(0);
     attr.SetForceSolid();
@@ -283,8 +287,7 @@ void ProcessNist(const string &name, YAML::Node node)
 
 void AddElement(G4Material *material, G4Element *child, YAML::Node node)
 {
-  G4cout << " * " << material->GetName() << " <- element "
-    << child->GetName() << ", " << node.as<string>() << G4endl;
+  G4cout << " * " << material->GetName() << " <- element " << child->GetName() << ", " << node.as<string>() << G4endl;
   try {
     material->AddElement(child, node.as<G4int>());
   } catch(const YAML::BadConversion &) {
@@ -294,8 +297,7 @@ void AddElement(G4Material *material, G4Element *child, YAML::Node node)
 
 void AddMaterial(G4Material *material, G4Material *child, YAML::Node node)
 {
-  G4cout << " * " << material->GetName() << " <- material "
-    << child->GetName() << ", " << node.as<string>() << G4endl;
+  G4cout << " * " << material->GetName() << " <- material " << child->GetName() << ", " << node.as<string>() << G4endl;
   material->AddMaterial(child, node.as<G4double>());
 }
 
@@ -303,8 +305,9 @@ void AddComponent(G4Material *material, YAML::Node node)
 {
   auto it = node.begin();
   string type = "material";
-  if(node.size() == 3) { type = it++->as<string>(); }
-  else if(node.size() != 2) {
+  if(node.size() == 3) {
+    type = it++->as<string>();
+  } else if(node.size() != 2) {
     G4cerr << "ERROR: expect material component of size 2: " << node << G4endl;
     exit(EXIT_FAILURE);
   }
@@ -332,7 +335,7 @@ G4Material *ProcessMaterial(const string &name, YAML::Node node)
     return material;
   }
   G4double density = ParseAbsolutePhysicsVariable(node["density"].as<string>());
-  G4cout << " * " << name << " <- density " << density / (g/cm3) << " g/cm3" << G4endl;
+  G4cout << " * " << name << " <- density " << density / (g / cm3) << " g/cm3" << G4endl;
   G4Material *material = new G4Material(name, density, node["components"].size());
   for(YAML::Node component : node["components"]) { AddComponent(material, component); }
   return material;
@@ -344,7 +347,7 @@ G4Element *ProcessElement(const string &name, YAML::Node)
   exit(EXIT_FAILURE);
 }
 
-}
+}  // namespace
 
 unordered_map<string, G4VisAttributes> GeometryConfig::fMaterialVisAttributes;
 
@@ -404,8 +407,11 @@ void GeometryConfig::ProcessMaterials()
       exit(EXIT_FAILURE);
     }
     if(node["alternative"]) {
-      if(type == "material") { if(G4Material::GetMaterial(name.as<string>(), false)) continue; }
-      else { if(G4Element::GetElement(name.as<string>(), false)) continue; }
+      if(type == "material") {
+        if(G4Material::GetMaterial(name.as<string>(), false)) continue;
+      } else {
+        if(G4Element::GetElement(name.as<string>(), false)) continue;
+      }
     }
     G4cout << "Building " << type << " " << name << G4endl;
     if(node["from"]) {

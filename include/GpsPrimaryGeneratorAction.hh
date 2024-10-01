@@ -38,7 +38,7 @@ class DetectorConstruction;
 ///
 /// \author I. Hrivnacova; IPN Orsay
 
-class GpsPrimaryGeneratorAction: public G4VUserPrimaryGeneratorAction {
+class GpsPrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction {
 public:
   GpsPrimaryGeneratorAction();
   ~GpsPrimaryGeneratorAction();

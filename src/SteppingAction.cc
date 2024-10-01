@@ -25,14 +25,14 @@
 //
 
 #include "SteppingAction.hh"
-#include "Run.hh"
-#include "G4SystemOfUnits.hh"
+
 #include "DetectorConstruction.hh"
 #include "G4RunManager.hh"
+#include "G4SystemOfUnits.hh"
 #include "G4ios.hh"
+#include "Run.hh"
 
-SteppingAction::SteppingAction()
-  : fScoringHalfX(0), fScoringHalfY(0), fScoringZ(0)
+SteppingAction::SteppingAction() : fScoringHalfX(0), fScoringHalfY(0), fScoringZ(0)
 {
   // empty
 }
@@ -49,13 +49,11 @@ void SteppingAction::UserSteppingAction(const G4Step *aStep)
     auto scoringZs = d->GetScoringZs();
 
     fScoringMaxZs = scoringZs;
-    for(G4double &maxz : fScoringMaxZs) { maxz += fScoringZ/2; }
+    for(G4double &maxz : fScoringMaxZs) { maxz += fScoringZ / 2; }
     G4cout << "Scoring ZRanges:" << G4endl;
-    for(G4double z : scoringZs) {
-      G4cout << " * " << z/mm << " +/- " << fScoringZ/2/mm << " mm" << G4endl;
-    }
-    G4cout << "Scoring HalfX: " << fScoringHalfX/mm << " mm" << G4endl;
-    G4cout << "Scoring HalfY: " << fScoringHalfY/mm << " mm" << G4endl;
+    for(G4double z : scoringZs) { G4cout << " * " << z / mm << " +/- " << fScoringZ / 2 / mm << " mm" << G4endl; }
+    G4cout << "Scoring HalfX: " << fScoringHalfX / mm << " mm" << G4endl;
+    G4cout << "Scoring HalfY: " << fScoringHalfY / mm << " mm" << G4endl;
   }
 
   // Reject steps without energy deposition.
@@ -75,7 +73,7 @@ void SteppingAction::UserSteppingAction(const G4Step *aStep)
 
   // Record the hit info.
   int id = aStep->GetTrack()->GetTrackID();
-  Run::GetInstance()->AddRpcAllInfo(igem, id, energy/MeV, x/mm, y/mm, z/mm);
+  Run::GetInstance()->AddRpcAllInfo(igem, id, energy / MeV, x / mm, y / mm, z / mm);
   if(id == 1) {
     // Get momentum of the track.
     G4ThreeVector p = aStep->GetPreStepPoint()->GetMomentum();
@@ -83,6 +81,7 @@ void SteppingAction::UserSteppingAction(const G4Step *aStep)
     G4double py = p.y();
     G4double pz = p.z();
 
-    Run::GetInstance()->AddRpcTrkInfo(igem, px/MeV, py/MeV, pz/MeV, totalenergy/MeV, energy/MeV, x/mm, y/mm, z/mm);
+    Run::GetInstance()->AddRpcTrkInfo(
+        igem, px / MeV, py / MeV, pz / MeV, totalenergy / MeV, energy / MeV, x / mm, y / mm, z / mm);
   }
 }

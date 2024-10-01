@@ -1,15 +1,18 @@
 // 2020.5.8 by siguang wang (siguang@pku.edu.cn)
 
 #include "Run.hh"
-#include "RunMessenger.hh"
+
 #include <TFile.h>
 #include <TTree.h>
-#include <filesystem>
-#include <syscall.h>
-#include <unistd.h>
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <syscall.h>
+#include <unistd.h>
+
+#include <filesystem>
+
+#include "RunMessenger.hh"
 
 Run::Run()
 {
@@ -101,13 +104,9 @@ void Run::Fill()
   Clear();
 }
 
-void Run::AutoSave()
-{
-  _tree->AutoSave("SaveSelf Overwrite");
-}
+void Run::AutoSave() { _tree->AutoSave("SaveSelf Overwrite"); }
 
-void Run::AddRpcTrkInfo(int i, double Px, double Py, double Pz,
-  double E, double Edep, double X, double Y, double Z)
+void Run::AddRpcTrkInfo(int i, double Px, double Py, double Pz, double E, double Edep, double X, double Y, double Z)
 {
   if(i < 0 || i >= 16) { return; }
   RpcTrkPx[i] += Px * Edep;
@@ -125,7 +124,7 @@ void Run::AddRpcAllInfo(int i, int id, double Edep, double X, double Y, double Z
 {
   if(i < 0 || i >= 16) { return; }
   if(id != 1) {  // not primary
-    auto[it, _] = RpcAllLayer.emplace(id, i);
+    auto [it, _] = RpcAllLayer.emplace(id, i);
     if(it->second != i) { return; }  // not belong to this layer
   }
   RpcAllIds[i].insert(id);
@@ -174,12 +173,12 @@ uint64_t Run::GetThreadId()
     exit(EXIT_FAILURE);
   }
   return tid;
-#endif  /* __APPLE__ */
+#endif /* __APPLE__ */
 }
 
 uint64_t Run::GetSeed()
 {
-  return std::chrono::duration_cast<std::chrono::nanoseconds>(
-    std::chrono::system_clock::now().time_since_epoch()
-    ).count() + GetThreadId();
+  return std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now().time_since_epoch())
+             .count()
+      + GetThreadId();
 }

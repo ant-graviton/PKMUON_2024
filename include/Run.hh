@@ -3,11 +3,13 @@
 #ifndef GEANT4_INTRODUCTION_RUN_HH
 #define GEANT4_INTRODUCTION_RUN_HH 1
 
-#include "globals.hh"
 #include <Rtypes.h>
 #include <stdint.h>
-#include <unordered_set>
+
 #include <unordered_map>
+#include <unordered_set>
+
+#include "globals.hh"
 
 class TFile;
 class TTree;
@@ -27,8 +29,7 @@ public:
   void Fill();
   void AutoSave();
 
-  void AddRpcTrkInfo(int i, double Px, double Py, double Pz, double E,
-    double Edep, double X, double Y, double Z);
+  void AddRpcTrkInfo(int i, double Px, double Py, double Pz, double E, double Edep, double X, double Y, double Z);
   void AddRpcAllInfo(int i, int id, double Edep, double X, double Y, double Z);
 
 private:

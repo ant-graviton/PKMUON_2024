@@ -1,12 +1,12 @@
 // Origin: 2020.5.8 by siguang wang (siguang@pku.edu.cn PKU)
 
 #include "RunMessenger.hh"
-#include "G4UIdirectory.hh"
+
 #include "G4UIcmdWithAString.hh"
+#include "G4UIdirectory.hh"
 #include "Run.hh"
 
-RunMessenger::RunMessenger(Run *run)
-  : G4UImessenger(), fRun(run)
+RunMessenger::RunMessenger(Run *run) : G4UImessenger(), fRun(run)
 {
   fFileNameDir = new G4UIdirectory("/rlt/");
   fFileNameDir->SetGuidance("Interact with ROOT library.");

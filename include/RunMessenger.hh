@@ -33,7 +33,7 @@ class Run;
 class G4UIdirectory;
 class G4UIcmdWithAString;
 
-class RunMessenger: public G4UImessenger {
+class RunMessenger : public G4UImessenger {
 public:
   RunMessenger(Run *run);
   ~RunMessenger();

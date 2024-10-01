@@ -26,21 +26,21 @@
 /// \file rdecay01.cc
 /// \brief Main program of the radioactivedecay/rdecay01 example
 
-#include "Run.hh"
-#include "G4RunManager.hh"
-#include "G4UImanager.hh"
-#include "DetectorConstruction.hh"
 #include "ActionInitialization.hh"
-#include "G4UIExecutive.hh"
-#include "G4VisExecutive.hh"
+#include "DetectorConstruction.hh"
 #include "FTFP_BERT.hh"
 #include "G4EmStandardPhysics_option4.hh"
+#include "G4RunManager.hh"
 #include "G4StepLimiterPhysics.hh"
+#include "G4UIExecutive.hh"
+#include "G4UImanager.hh"
+#include "G4VisExecutive.hh"
+#include "Run.hh"
 
-int main(int argc, char** argv)
+int main(int argc, char **argv)
 {
   // Detect interactive mode (if no arguments) and define UI session.
-  G4UIExecutive* ui = NULL;
+  G4UIExecutive *ui = NULL;
   if(argc == 1) ui = new G4UIExecutive(argc, argv);
 
   // Choose the random engine.
@@ -51,11 +51,11 @@ int main(int argc, char** argv)
   CLHEP::HepRandom::setTheSeed(seed);
   G4Random::setTheSeed(seed);
 
-  G4RunManager* runManager = new G4RunManager;
+  G4RunManager *runManager = new G4RunManager;
 
   // Set mandatory initialization classes.
   runManager->SetUserInitialization(new DetectorConstruction);
-  G4VModularPhysicsList* physicsList = new FTFP_BERT;
+  G4VModularPhysicsList *physicsList = new FTFP_BERT;
   physicsList->ReplacePhysics(new G4EmStandardPhysics_option4());
   physicsList->RegisterPhysics(new G4StepLimiterPhysics());
   runManager->SetUserInitialization(physicsList);
@@ -64,12 +64,12 @@ int main(int argc, char** argv)
   runManager->Initialize();
 
   // Initialize visualization.
-  G4VisManager* visManager = nullptr;
+  G4VisManager *visManager = nullptr;
 
   // Get the pointer to the User Interface manager.
-  G4UImanager* UImanager = G4UImanager::GetUIpointer();
+  G4UImanager *UImanager = G4UImanager::GetUIpointer();
 
-  if (ui)  {  // interactive mode
+  if(ui) {  // interactive mode
     visManager = new G4VisExecutive;
     visManager->Initialize();
     UImanager->ApplyCommand("/control/execute vis.mac");

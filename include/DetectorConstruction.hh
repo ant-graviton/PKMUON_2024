@@ -27,11 +27,12 @@
 #ifndef DetectorConstruction_h
 #define DetectorConstruction_h 1
 
-#include "G4VUserDetectorConstruction.hh"
-#include "G4ThreeVector.hh"
-#include "G4RotationMatrix.hh"
-#include <vector>
 #include <functional>
+#include <vector>
+
+#include "G4RotationMatrix.hh"
+#include "G4ThreeVector.hh"
+#include "G4VUserDetectorConstruction.hh"
 
 class GpsPrimaryGeneratorAction;
 class G4VSolid;
@@ -40,12 +41,11 @@ class G4VPhysicalVolume;
 class G4LogicalVolumeStore;
 class G4PhysicalVolumeStore;
 
-#define DETECTOR_OPTION_SCORING_ONLY  0b00000001
-#define DETECTOR_OPTION_VACUUM_ENV    0b00000010
+#define DETECTOR_OPTION_SCORING_ONLY 0b00000001
+#define DETECTOR_OPTION_VACUUM_ENV   0b00000010
 
 class DetectorConstruction : public G4VUserDetectorConstruction {
 public:
-
   DetectorConstruction(int options = 0);
   ~DetectorConstruction();
 
@@ -65,17 +65,17 @@ public:
 
   // Hierarchic options.
   void PrintVolumes(G4VPhysicalVolume *) const;
-  void WalkVolume(G4LogicalVolume *volume,
-    const std::function<void(G4LogicalVolume *)> &enter,
-    const std::function<void(G4LogicalVolume *)> &leave = nullptr) const;
+  void WalkVolume(G4LogicalVolume *volume, const std::function<void(G4LogicalVolume *)> &enter,
+      const std::function<void(G4LogicalVolume *)> &leave = nullptr) const;
+  void WalkVolume(G4VPhysicalVolume *volume, const std::function<void(G4VPhysicalVolume *)> &enter,
+      const std::function<void(G4VPhysicalVolume *)> &leave = nullptr) const;
   void WalkVolume(G4VPhysicalVolume *volume,
-    const std::function<void(G4VPhysicalVolume *)> &enter,
-    const std::function<void(G4VPhysicalVolume *)> &leave = nullptr) const;
-  void WalkVolume(G4VPhysicalVolume *volume,
-    const std::function<void(G4VPhysicalVolume *, const G4ThreeVector &, const G4RotationMatrix &)> &enter,
-    const std::function<void(G4VPhysicalVolume *, const G4ThreeVector &, const G4RotationMatrix &)> &leave = nullptr) const;
+      const std::function<void(G4VPhysicalVolume *, const G4ThreeVector &, const G4RotationMatrix &)> &enter,
+      const std::function<void(G4VPhysicalVolume *, const G4ThreeVector &, const G4RotationMatrix &)> &leave =
+          nullptr) const;
   G4VPhysicalVolume *PartitionVolume(G4VPhysicalVolume *volume,
-    const std::function<std::vector<G4VSolid *>(G4VSolid *, const G4ThreeVector &, const G4RotationMatrix &)> &partition) const;
+      const std::function<std::vector<G4VSolid *>(G4VSolid *, const G4ThreeVector &, const G4RotationMatrix &)>
+          &partition) const;
 
 private:
   void DefineMaterials();

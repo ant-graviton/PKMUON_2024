@@ -25,9 +25,10 @@
 //
 
 #include "ActionInitialization.hh"
+
+#include "EventAction.hh"
 #include "GpsPrimaryGeneratorAction.hh"
 #include "RunAction.hh"
-#include "EventAction.hh"
 #include "SteppingAction.hh"
 
 void ActionInitialization::Build() const
