@@ -36,8 +36,8 @@ class G4UIcmdWithAString;
 class RunMessenger : public G4UImessenger {
 public:
   RunMessenger(Run *run);
-  ~RunMessenger();
-  virtual void SetNewValue(G4UIcommand *, G4String) override;
+  ~RunMessenger() override;
+  void SetNewValue(G4UIcommand *, G4String) override;
 
 private:
   Run *fRun;

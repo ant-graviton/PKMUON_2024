@@ -47,12 +47,12 @@ class G4PhysicalVolumeStore;
 class DetectorConstruction : public G4VUserDetectorConstruction {
 public:
   DetectorConstruction(int options = 0);
-  ~DetectorConstruction();
+  ~DetectorConstruction() override;
 
   // Call this method before Construct().
   void SetGpsPrimaryGeneratorAction(GpsPrimaryGeneratorAction *a) { fGpsPrimaryGeneratorAction = a; }
 
-  virtual G4VPhysicalVolume *Construct();
+  G4VPhysicalVolume *Construct() override;
 
   // Call these methods after Construct().
   G4double GetScoringHalfX() const { return fScoringHalfX; }

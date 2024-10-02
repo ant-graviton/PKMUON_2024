@@ -41,9 +41,9 @@ class DetectorConstruction;
 class GpsPrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction {
 public:
   GpsPrimaryGeneratorAction();
-  ~GpsPrimaryGeneratorAction();
+  ~GpsPrimaryGeneratorAction() override;
 
-  virtual void GeneratePrimaries(G4Event *) override;
+  void GeneratePrimaries(G4Event *) override;
   void Initialize(DetectorConstruction *);
 
 private:

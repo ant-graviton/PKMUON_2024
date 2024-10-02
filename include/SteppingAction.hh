@@ -37,8 +37,8 @@ class G4LogicalVolume;
 class SteppingAction : public G4UserSteppingAction {
 public:
   SteppingAction();
-  ~SteppingAction();
-  virtual void UserSteppingAction(const G4Step *) override;
+  ~SteppingAction() override;
+  void UserSteppingAction(const G4Step *) override;
 
 private:
   std::vector<G4double> fScoringMaxZs;

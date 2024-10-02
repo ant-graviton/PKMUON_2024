@@ -32,11 +32,11 @@
 class RunAction : public G4UserRunAction {
 public:
   RunAction();
-  ~RunAction();
+  ~RunAction() override;
 
 public:
-  virtual void BeginOfRunAction(const G4Run *) override;
-  virtual void EndOfRunAction(const G4Run *) override;
+  void BeginOfRunAction(const G4Run *) override;
+  void EndOfRunAction(const G4Run *) override;
 };
 
 #endif

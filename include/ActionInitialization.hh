@@ -33,7 +33,7 @@ class G4VSteppingVerbose;
 
 class ActionInitialization : public G4VUserActionInitialization {
 public:
-  virtual void Build() const override;
+  void Build() const override;
 };
 
 #endif
