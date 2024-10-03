@@ -23,8 +23,6 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-/// \file rdecay01.cc
-/// \brief Main program of the radioactivedecay/rdecay01 example
 
 #include "ActionInitialization.hh"
 #include "DetectorConstruction.hh"
@@ -44,11 +42,9 @@ int main(int argc, char **argv)
   if(argc == 1) ui = new G4UIExecutive(argc, argv);
 
   // Choose the random engine.
-  CLHEP::HepRandom::setTheEngine(new CLHEP::RanecuEngine);
   G4Random::setTheEngine(new CLHEP::RanecuEngine);
   uint64_t seed = Run::GetSeed();
   G4cout << "seed=" << seed << G4endl;
-  CLHEP::HepRandom::setTheSeed(seed);
   G4Random::setTheSeed(seed);
 
   G4RunManager *runManager = new G4RunManager;
