@@ -26,6 +26,7 @@
 
 #include "DetectorConstruction.hh"
 
+#include "G4AutoDelete.hh"
 #include "GeometryConfig.hh"
 #include "GpsPrimaryGeneratorAction.hh"
 
@@ -148,8 +149,11 @@ void DetectorConstruction::DefineFields()
   //auto int_driver = new G4MagInt_Driver(step, stepper, stepper->GetNumberOfVariables());
   //auto chord_finder = new G4ChordFinder(int_driver);
   //auto manager = new G4FieldManager(field, chord_finder);
-  auto manager = new G4FieldManager(field);
-  manager->CreateChordFinder(new G4UniformMagField(G4ThreeVector{ 0, 0, 0 }));
+  auto magField = new G4UniformMagField(G4ThreeVector{ 0, 0, 0 });
+  auto manager = new G4FieldManager(field);  // no ownership transfer
+  manager->CreateChordFinder(magField);      // no ownership transfer
+  G4AutoDelete::Register(field);
+  G4AutoDelete::Register(magField);
 
   for(G4VPhysicalVolume *rpc_electrode_pair : rpc_electrode_pairs) {
     // Split rpc_electrode_pair into two parts, w/ and w/o electric field.
@@ -164,9 +168,10 @@ void DetectorConstruction::DefineFields()
           auto rotation = new G4RotationMatrix(rm.inverse());
           auto rps = -(*rotation * r);
           name = "part_" + std::to_string(id) + "_0_" + solid->GetName();
-          parts.push_back(new G4IntersectionSolid(name, solid, electric, rotation, rps));
+          parts.push_back(new G4IntersectionSolid(name, solid, electric, rotation, rps));  // rotation owned still
           name = "part_" + std::to_string(id) + "_1_" + solid->GetName();
-          parts.push_back(new G4SubtractionSolid(name, solid, electric, rotation, rps));
+          parts.push_back(new G4SubtractionSolid(name, solid, electric, rotation, rps));  // rotation owned still
+          G4AutoDelete::Register(rotation);
           return parts;
         });
     PrintVolumes(rpc_electrode_pair);
@@ -184,8 +189,9 @@ void DetectorConstruction::DefineFields()
     auto limits = new G4UserLimits(step);
     WalkVolume(electric_volume->GetLogicalVolume(), [limits](G4LogicalVolume *volume) {
       G4cout << "Setting step limit for " << volume->GetName() << G4endl;
-      volume->SetUserLimits(limits);
+      volume->SetUserLimits(limits);  // no ownership transfer
     });
+    G4AutoDelete::Register(limits);
   }
 }
 

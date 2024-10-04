@@ -1,5 +1,6 @@
 #include "GeometryConfig.hh"
 
+#include "G4AutoDelete.hh"
 #include "G4Box.hh"
 #include "G4Color.hh"
 #include "G4Element.hh"
@@ -242,7 +243,8 @@ G4LogicalVolume *ProcessRotation(const string &name, YAML::Node node)
   auto logical = CreateBoxVolume(name, fabs(v.x()), fabs(v.y()), fabs(v.z()), child->GetMaterial());
   node["material"] = (string)logical->GetMaterial()->GetName();
   string child_name = name + "_0:" + child->GetName();
-  new G4PVPlacement(rotation, { 0, 0, 0 }, child, child_name, logical, false, 0, true);
+  new G4PVPlacement(rotation, { 0, 0, 0 }, child, child_name, logical, false, 0, true);  // rotation owned by us
+  G4AutoDelete::Register(rotation);
   return logical;
 }
 
@@ -331,12 +333,14 @@ G4Material *ProcessMaterial(const string &name, YAML::Node node)
     G4cout << " * " << node["alias"].as<string>() << " -> " << name << G4endl;
     G4Material *child = ParseMaterial(node["alias"].as<string>());
     G4Material *material = new G4Material(name, child->GetDensity(), 1);
+    G4AutoDelete::Register(material);  // owned by us
     material->AddMaterial(child, 1.0);
     return material;
   }
   G4double density = ParseAbsolutePhysicsVariable(node["density"].as<string>());
   G4cout << " * " << name << " <- density " << density / (g / cm3) << " g/cm3" << G4endl;
   G4Material *material = new G4Material(name, density, node["components"].size());
+  G4AutoDelete::Register(material);  // owned by us
   for(YAML::Node component : node["components"]) { AddComponent(material, component); }
   return material;
 }

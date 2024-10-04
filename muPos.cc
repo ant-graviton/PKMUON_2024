@@ -27,6 +27,7 @@
 #include "ActionInitialization.hh"
 #include "DetectorConstruction.hh"
 #include "FTFP_BERT.hh"
+#include "G4AutoDelete.hh"
 #include "G4EmStandardPhysics_option4.hh"
 #include "G4RunManager.hh"
 #include "G4StepLimiterPhysics.hh"
@@ -42,7 +43,9 @@ int main(int argc, char **argv)
   if(argc == 1) ui = new G4UIExecutive(argc, argv);
 
   // Choose the random engine.
-  G4Random::setTheEngine(new CLHEP::RanecuEngine);
+  auto engine = new CLHEP::RanecuEngine;
+  G4Random::setTheEngine(engine);  // ownership kept
+  G4AutoDelete::Register(engine);
   uint64_t seed = Run::GetSeed();
   G4cout << "seed=" << seed << G4endl;
   G4Random::setTheSeed(seed);
