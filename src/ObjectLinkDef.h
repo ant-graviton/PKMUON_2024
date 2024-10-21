@@ -24,18 +24,15 @@
 // ********************************************************************
 //
 
-#ifndef SteppingAction_h
-#define SteppingAction_h 1
+#ifdef __CINT__
 
-#include "G4UserSteppingAction.hh"
-#include "globals.hh"
+#pragma link off all globals;
+#pragma link off all classes;
+#pragma link off all functions;
 
-class SteppingAction : public G4UserSteppingAction {
-public:
-  SteppingAction();
-  ~SteppingAction() override;
-
-  void UserSteppingAction(const G4Step *) override;
-};
+#pragma link C++ class Track + ;
+#pragma link C++ class Params + ;
+#pragma link C++ class Edep + ;
+#pragma link C++ class Process + ;
 
 #endif

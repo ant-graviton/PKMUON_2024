@@ -2,6 +2,7 @@
 
 #include "Run.hh"
 
+#include <TClonesArray.h>
 #include <TFile.h>
 #include <TTree.h>
 #include <pthread.h>
@@ -12,14 +13,25 @@
 
 #include <filesystem>
 
+#include "DetectorConstruction.hh"
+#include "G4ParticleDefinition.hh"
+#include "G4ParticleTable.hh"
+#include "G4ProcessManager.hh"
+#include "G4RunManager.hh"
+#include "G4Step.hh"
+#include "G4Track.hh"
+#include "G4VProcess.hh"
+#include "G4ios.hh"
+#include "Object.hh"
 #include "RunMessenger.hh"
 
 Run::Run()
 {
   fRunMessenger = new RunMessenger(this);
-  rootName = "CryMu.root";
-  _tree = NULL;
-  _file = NULL;
+  fDetectorConstruction = (DetectorConstruction *)G4RunManager::GetRunManager()->GetUserDetectorConstruction();
+  fRootName = "CryMu.root";
+  fTree = NULL;
+  fFile = NULL;
 }
 
 Run::~Run()
@@ -34,130 +46,139 @@ Run *Run::GetInstance()
   return &run;
 }
 
+void Run::InitGeom()
+{
+  G4double scoringHalfZ = fDetectorConstruction->GetScoringHalfZ();
+  const std::vector<G4double> &scoringZs = fDetectorConstruction->GetScoringZs();
+
+  fScoringHalfX = fDetectorConstruction->GetScoringHalfX();
+  fScoringHalfY = fDetectorConstruction->GetScoringHalfY();
+  fScoringZ = scoringHalfZ * 2;
+  fScoringMaxZs = scoringZs;
+  for(G4double &z : fScoringMaxZs) z += scoringHalfZ;
+  fStatus.resize(fScoringMaxZs.size());
+}
+
 void Run::InitTree()
 {
   using namespace std::filesystem;
-  auto dirpath = path(rootName.c_str()).parent_path();
+  auto dirpath = path(fRootName.c_str()).parent_path();
   if(!dirpath.empty()) { create_directories(dirpath); }
 
-  _file = new TFile(rootName, "RECREATE");
-  _tree = new TTree("T1", "Simple Out Tree");
+  fFile = TFile::Open(fRootName, "RECREATE");
+  fTree = new TTree("tree", "tree");
+  //fTree->Branch("Tracks", new TClonesArray("Track"));
+  fTree->Branch("Edeps", new TClonesArray("Edep"));
 
-  _tree->Branch("RpcTrkPx", &RpcTrkPx, "RpcTrkPx[16]/D");
-  _tree->Branch("RpcTrkPy", &RpcTrkPy, "RpcTrkPy[16]/D");
-  _tree->Branch("RpcTrkPz", &RpcTrkPz, "RpcTrkPz[16]/D");
-  _tree->Branch("RpcTrkE", &RpcTrkE, "RpcTrkE[16]/D");
-  _tree->Branch("RpcTrkEdep", &RpcTrkEdep, "RpcTrkEdep[16]/D");
-  _tree->Branch("RpcTrkX", &RpcTrkX, "RpcTrkX[16]/D");
-  _tree->Branch("RpcTrkY", &RpcTrkY, "RpcTrkY[16]/D");
-  _tree->Branch("RpcTrkZ", &RpcTrkZ, "RpcTrkZ[16]/D");
-  _tree->Branch("RpcTrkStatus", &RpcTrkStatus, "RpcTrkStatus[16]/O");
-  _tree->Branch("RpcTrkComplete", &RpcTrkComplete, "RpcTrkComplete/O");
-  _tree->Branch("RpcAllEdep", &RpcAllEdep, "RpcAllEdep[16]/D");
-  _tree->Branch("RpcAllX", &RpcAllX, "RpcAllX[16]/D");
-  _tree->Branch("RpcAllY", &RpcAllY, "RpcAllY[16]/D");
-  _tree->Branch("RpcAllZ", &RpcAllZ, "RpcAllZ[16]/D");
-  _tree->Branch("RpcAllN", &RpcAllN, "RpcAllN[16]/i");
-  _tree->Branch("RpcAllComplete", &RpcAllComplete, "RpcAllComplete/O");
+  // The params tree is only accessed here.
+  TTree *params = new TTree("params", "params");
 
-  Clear();
+  TClonesArray Params("Params");
+  params->Branch("Params", &Params);
+  *((::Params *)Params.ConstructedAt(0)) = *fDetectorConstruction;
+
+  TClonesArray Processes("Process");
+  params->Branch("Processes", &Processes);
+  BuildProcessMap();
+  for(auto &[name, id] : fProcessMap) *(::Process *)Processes.ConstructedAt(Processes.GetEntries()) = { id, name };
+
+  params->Fill();
+  params->Write(NULL, params->kOverwrite);
+  params->SetBranchAddress("Params", NULL);
+  params->SetBranchAddress("Processes", NULL);
 }
 
 void Run::SaveTree()
 {
-  if(!_file) { return; }
-  _file->cd();
-  _tree->Write("T1", TObject::kOverwrite);
-  _file->Close();
-  _tree = NULL;
-  _file = NULL;
+  if(!fFile) { return; }
+  fFile->cd();
+  fTree->Write(NULL, TObject::kOverwrite);
+  //delete *(TClonesArray **)fTree->GetBranch("Tracks")->GetAddress();
+  delete *(TClonesArray **)fTree->GetBranch("Edeps")->GetAddress();
+  fFile->Close();
+  fTree = NULL;
+  fFile = NULL;
 }
 
-void Run::Fill()
+void Run::FillAndReset()
 {
-  RpcTrkComplete = true;
-  for(int i = 0; i < 16; ++i) {
-    double Edep = RpcTrkEdep[i];
-    if(Edep) {
-      RpcTrkPx[i] /= Edep;
-      RpcTrkPy[i] /= Edep;
-      RpcTrkPz[i] /= Edep;
-      RpcTrkE[i] /= Edep;
-      RpcTrkX[i] /= Edep;
-      RpcTrkY[i] /= Edep;
-      RpcTrkZ[i] /= Edep;
+  //auto Tracks = *(TClonesArray **)fTree->GetBranch("Tracks")->GetAddress();
+  auto Edeps = *(TClonesArray **)fTree->GetBranch("Edeps")->GetAddress();
+
+  //// Sort the tracks by ID.
+  //std::vector<Track *> tracks;
+  //tracks.resize(Tracks->GetEntries());
+  //for(size_t i = 0; i < tracks.size(); ++i) tracks[i] = (Track *)(*Tracks)[i];
+  //sort(tracks.begin(), tracks.end(), [](Track *a, Track *b) { return a->Id < b->Id; });
+  //for(size_t i = 0; i < tracks.size(); ++i) (*Tracks)[i] = tracks[i];
+
+  // Export Edeps.
+  if(all_of(fStatus.begin(), fStatus.end(), [](bool b) { return b; })) {
+    for(auto &edep : fEdep) { *(::Edep *)Edeps->ConstructedAt(Edeps->GetEntries()) = edep; }
+    fTree->Fill();
+    Edeps->Clear();
+  }
+  fStatus.assign(fStatus.size(), false);
+
+  //Tracks->Clear();
+  fEdep.clear();
+}
+
+void Run::AutoSave() { fTree->AutoSave("SaveSelf Overwrite"); }
+
+void Run::AddStep(const G4Step *step)
+{
+  const G4ThreeVector &r = step->GetTrack()->GetPosition();
+  G4double x = r.x(), y = r.y(), z = r.z();
+  if(fabs(x) >= fScoringHalfX || fabs(y) >= fScoringHalfY) return;
+  auto ub = std::upper_bound(fScoringMaxZs.begin(), fScoringMaxZs.end(), z);
+  if(ub == fScoringMaxZs.end()) return;
+  if(z < *ub - fScoringZ) return;
+
+  G4double edep = step->GetTotalEnergyDeposit();
+  if(edep == 0) return;
+
+  Int_t zid = ub - fScoringMaxZs.begin();
+  Int_t pid = (uint32_t)step->GetTrack()->GetParticleDefinition()->GetPDGEncoding();
+  Int_t process = -1;
+  if(const G4VProcess *p = step->GetTrack()->GetCreatorProcess()) {
+    auto it = fProcessMap.find(p->GetProcessName());
+    if(it != fProcessMap.end()) process = it->second;
+  }
+  fStatus[zid] = true;
+  fEdep[{ zid, pid, process }].Add(edep, x, y);
+}
+
+void Run::AddTrack([[maybe_unused]] const G4Track *track)
+{
+  //G4cout << __PRETTY_FUNCTION__ << ": " << track->GetTrackID()
+  //  << "(" << track->GetParentID() << ")"
+  //  << G4endl;
+  //auto Tracks = *(TClonesArray **)fTree->GetBranch("Tracks")->GetAddress();
+  //*(Track *)Tracks->ConstructedAt(Tracks->GetEntries()) = *track;
+}
+
+void Run::BuildProcessMap()
+{
+  auto &iter = *G4ParticleTable::GetParticleTable()->GetIterator();
+  iter.reset();
+  while(iter()) {
+    G4ParticleDefinition *particle = iter.value();
+    G4ProcessManager *processManager = particle->GetProcessManager();
+    if(!processManager) continue;
+    G4ProcessVector *processList = processManager->GetProcessList();
+    if(!processList) continue;
+    for(size_t i = 0; i < processList->size(); ++i) {
+      G4VProcess *process = (*processList)[i];
+      //G4cout << __PRETTY_FUNCTION__ << ": " << particle->GetParticleName() << ", " << process->GetProcessName() << G4endl;
+      fProcessMap[process->GetProcessName()] = 0;  // Delay numbering to the end.
     }
-    if(!RpcTrkStatus[i]) { RpcTrkComplete = false; }
   }
-  RpcAllComplete = true;
-  for(int i = 0; i < 16; ++i) {
-    double Edep = RpcAllEdep[i];
-    if(Edep) {
-      RpcAllX[i] /= Edep;
-      RpcAllY[i] /= Edep;
-      RpcAllZ[i] /= Edep;
-    }
-    RpcAllN[i] = RpcAllIds[i].size();
-    if(!RpcAllN[i]) { RpcAllComplete = false; }
+  size_t i = 0;
+  for(auto &[name, id] : fProcessMap) {
+    id = i++;
+    G4cout << __PRETTY_FUNCTION__ << ": " << std::setw(3) << id << " " << name << G4endl;
   }
-  _tree->Fill();
-  Clear();
-}
-
-void Run::AutoSave() { _tree->AutoSave("SaveSelf Overwrite"); }
-
-void Run::AddRpcTrkInfo(int i, double Px, double Py, double Pz, double E, double Edep, double X, double Y, double Z)
-{
-  if(i < 0 || i >= 16) { return; }
-  RpcTrkPx[i] += Px * Edep;
-  RpcTrkPy[i] += Py * Edep;
-  RpcTrkPz[i] += Pz * Edep;
-  RpcTrkE[i] += E * Edep;
-  RpcTrkEdep[i] += Edep;
-  RpcTrkX[i] += X * Edep;
-  RpcTrkY[i] += Y * Edep;
-  RpcTrkZ[i] += Z * Edep;
-  RpcTrkStatus[i] = true;
-}
-
-void Run::AddRpcAllInfo(int i, int id, double Edep, double X, double Y, double Z)
-{
-  if(i < 0 || i >= 16) { return; }
-  if(id != 1) {  // not primary
-    auto [it, _] = RpcAllLayer.emplace(id, i);
-    if(it->second != i) { return; }  // not belong to this layer
-  }
-  RpcAllIds[i].insert(id);
-  RpcAllEdep[i] += Edep;
-  RpcAllX[i] += X * Edep;
-  RpcAllY[i] += Y * Edep;
-  RpcAllZ[i] += Z * Edep;
-}
-
-void Run::Clear()
-{
-  for(int i = 0; i < 16; i++) {
-    RpcTrkPx[i] = 0;
-    RpcTrkPy[i] = 0;
-    RpcTrkPz[i] = 0;
-    RpcTrkE[i] = 0;
-    RpcTrkEdep[i] = 0;
-    RpcTrkX[i] = 0;
-    RpcTrkY[i] = 0;
-    RpcTrkZ[i] = 0;
-    RpcTrkStatus[i] = false;
-  }
-  RpcTrkComplete = false;
-  RpcAllLayer.clear();
-  for(int i = 0; i < 16; i++) {
-    RpcAllIds[i].clear();
-    RpcAllEdep[i] = 0;
-    RpcAllX[i] = 0;
-    RpcAllY[i] = 0;
-    RpcAllZ[i] = 0;
-    RpcAllN[i] = 0;
-  }
-  RpcAllComplete = false;
 }
 
 uint64_t Run::GetThreadId()

@@ -4,17 +4,21 @@
 #define GEANT4_INTRODUCTION_RUN_HH 1
 
 #include <Rtypes.h>
-#include <stdint.h>
 
-#include <unordered_map>
-#include <unordered_set>
+#include <map>
+#include <string>
+#include <vector>
 
+#include "EdepData.hh"
 #include "globals.hh"
 
 class TFile;
 class TTree;
 
 class RunMessenger;
+class DetectorConstruction;
+class G4Step;
+class G4Track;
 
 class Run {
 public:
@@ -22,48 +26,33 @@ public:
   static uint64_t GetThreadId();
   static uint64_t GetSeed();
 
-  void SetRootName(G4String name) { rootName = name; }
+  void SetRootName(G4String name) { fRootName = name; }
 
+  void InitGeom();
   void InitTree();
   void SaveTree();
-  void Fill();
+  void FillAndReset();
   void AutoSave();
-
-  void AddRpcTrkInfo(int i, double Px, double Py, double Pz, double E, double Edep, double X, double Y, double Z);
-  void AddRpcAllInfo(int i, int id, double Edep, double X, double Y, double Z);
+  void AddTrack(const G4Track *);
+  void AddStep(const G4Step *);
 
 private:
   Run();
   ~Run();
 
   RunMessenger *fRunMessenger;
-  G4String rootName;
-  TTree *_tree;
-  TFile *_file;
+  DetectorConstruction *fDetectorConstruction;
+  G4String fRootName;
+  TTree *fTree;
+  TFile *fFile;
+  G4double fScoringHalfX, fScoringHalfY, fScoringZ;
+  G4double fScoringOffsetX, fScoringOffsetY;
+  std::vector<G4double> fScoringMaxZs;
+  std::map<std::string, int> fProcessMap;
+  std::map<EdepKey, EdepValue> fEdep;
+  std::vector<bool> fStatus;
 
-  // Altered by other routines.
-  Double_t RpcTrkPx[16];
-  Double_t RpcTrkPy[16];
-  Double_t RpcTrkPz[16];
-  Double_t RpcTrkE[16];
-  Double_t RpcTrkEdep[16];
-  Double_t RpcTrkX[16];
-  Double_t RpcTrkY[16];
-  Double_t RpcTrkZ[16];
-  bool RpcTrkStatus[16];
-  std::unordered_map<int, int> RpcAllLayer;
-  std::unordered_set<int> RpcAllIds[16];
-  Double_t RpcAllEdep[16];
-  Double_t RpcAllX[16];
-  Double_t RpcAllY[16];
-  Double_t RpcAllZ[16];
-
-  // Mantained by us.
-  Bool_t RpcTrkComplete;
-  UInt_t RpcAllN[16];
-  Bool_t RpcAllComplete;
-
-  void Clear();
+  void BuildProcessMap();
 };
 
 #endif  // GEANT4_INTRODUCTION_RUN_H

@@ -29,15 +29,16 @@
 #include "G4Event.hh"
 #include "Run.hh"
 
-void EventAction::BeginOfEventAction(const G4Event *)
-{
-  // empty
-}
+EventAction::EventAction() { }
+
+EventAction::~EventAction() { }
+
+void EventAction::BeginOfEventAction(const G4Event *) { }
 
 void EventAction::EndOfEventAction(const G4Event *evt)
 {
   // Output the event as an TTree entry.
-  Run::GetInstance()->Fill();
+  Run::GetInstance()->FillAndReset();
 
   // Save check-points.
   G4int event_id = evt->GetEventID();

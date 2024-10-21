@@ -24,18 +24,19 @@
 // ********************************************************************
 //
 
-#ifndef SteppingAction_h
-#define SteppingAction_h 1
+#ifndef TrackingAction_h
+#define TrackingAction_h 1
 
-#include "G4UserSteppingAction.hh"
+#include "G4UserTrackingAction.hh"
 #include "globals.hh"
 
-class SteppingAction : public G4UserSteppingAction {
+class TrackingAction : public G4UserTrackingAction {
 public:
-  SteppingAction();
-  ~SteppingAction() override;
+  TrackingAction();
+  ~TrackingAction() override;
 
-  void UserSteppingAction(const G4Step *) override;
+  void PreUserTrackingAction(const G4Track *) override;
+  void PostUserTrackingAction(const G4Track *) override;
 };
 
 #endif

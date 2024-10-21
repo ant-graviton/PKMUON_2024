@@ -28,15 +28,12 @@
 
 #include "DetectorConstruction.hh"
 #include "G4GeneralParticleSource.hh"
-#include "G4RunManager.hh"
 #include "G4SPSPosDistribution.hh"
 
 GpsPrimaryGeneratorAction::GpsPrimaryGeneratorAction()
     : G4VUserPrimaryGeneratorAction(), fGeneralParticleSource(nullptr)
 {
   fGeneralParticleSource = new G4GeneralParticleSource();
-  auto c = dynamic_cast<const DetectorConstruction *>(G4RunManager::GetRunManager()->GetUserDetectorConstruction());
-  if(c) { ((DetectorConstruction *)c)->SetGpsPrimaryGeneratorAction(this); }
 }
 
 GpsPrimaryGeneratorAction::~GpsPrimaryGeneratorAction() { delete fGeneralParticleSource; }
@@ -54,4 +51,12 @@ void GpsPrimaryGeneratorAction::Initialize(DetectorConstruction *detectorConstru
   posDist->SetCentreCoords({ 0, 0, detectorConstruction->GetDetectorMinZ() });
   posDist->SetHalfX(detectorConstruction->GetDetectorHalfX());
   posDist->SetHalfY(detectorConstruction->GetDetectorHalfY());
+}
+
+void GpsPrimaryGeneratorAction::SetTotalEnergy(G4double energy)
+{
+  auto eneDist = fGeneralParticleSource->GetCurrentSource()->GetEneDist();
+  energy -= fGeneralParticleSource->GetCurrentSource()->GetParticleDefinition()->GetPDGMass();
+  if(energy < 0) throw std::invalid_argument("energy less than mass");
+  eneDist->SetMonoEnergy(energy);
 }

@@ -30,6 +30,7 @@
 #include "GpsPrimaryGeneratorAction.hh"
 #include "RunAction.hh"
 #include "SteppingAction.hh"
+#include "TrackingAction.hh"
 
 void ActionInitialization::Build() const
 {
@@ -44,4 +45,7 @@ void ActionInitialization::Build() const
 
   SteppingAction *stepAction = new SteppingAction;
   SetUserAction(stepAction);
+
+  TrackingAction *trackAction = new TrackingAction;
+  SetUserAction(trackAction);
 }

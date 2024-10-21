@@ -24,18 +24,61 @@
 // ********************************************************************
 //
 
-#ifndef SteppingAction_h
-#define SteppingAction_h 1
+#include <Rtypes.h>
 
-#include "G4UserSteppingAction.hh"
-#include "globals.hh"
+#include <tuple>
 
-class SteppingAction : public G4UserSteppingAction {
+#ifndef EdepData_h
+#define EdepData_h 1
+
+struct EdepKey {
 public:
-  SteppingAction();
-  ~SteppingAction() override;
+  Int_t Id;
+  Int_t Pid;
+  Int_t Process;
 
-  void UserSteppingAction(const G4Step *) override;
+  auto Tuple() { return std::tie(Id, Pid, Process); }
+  auto Tuple() const { return std::tie(Id, Pid, Process); }
+
+  // Typically ROOT is not built with C++20, unfortunately.
+  //auto operator<=>(const EdepKey &) const = default;
+};
+
+inline bool operator<(const EdepKey &lhs, const EdepKey &rhs) { return lhs.Tuple() < rhs.Tuple(); }
+inline bool operator==(const EdepKey &lhs, const EdepKey &rhs) { return lhs.Tuple() == rhs.Tuple(); }
+
+namespace std {
+
+template<>
+struct hash<EdepKey> {
+  size_t operator()(const EdepKey &key) const
+  {
+    return hash<int>()(key.Id) ^ hash<int>()(key.Pid) ^ hash<int>()(key.Process);
+  }
+};
+
+}  // namespace std
+
+struct EdepValue {
+public:
+  Double_t Value;
+  Double_t X;
+  Double_t Y;
+
+  auto Tuple() && { return std::tie(Value, X, Y); }
+  auto Tuple() const && { return std::tie(Value, X, Y); }
+
+  EdepValue &Add(Double_t v, Double_t x, Double_t y)
+  {
+    Value += v, X += v * x, Y += v * y;
+    return *this;
+  }
+
+  EdepValue &&Finish()
+  {
+    if(Value > 0) X /= Value, Y /= Value;
+    return std::move(*this);
+  }
 };
 
 #endif

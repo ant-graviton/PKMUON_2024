@@ -2,9 +2,27 @@
 
 #include "RunMessenger.hh"
 
+#include "G4RunManager.hh"
+#include "G4Tokenizer.hh"
+#include "G4UIcmdWithADoubleAndUnit.hh"
 #include "G4UIcmdWithAString.hh"
+#include "G4UIcommand.hh"
 #include "G4UIdirectory.hh"
+#include "GpsPrimaryGeneratorAction.hh"
 #include "Run.hh"
+
+class RunMessenger::Driver {
+public:
+  Driver(RunMessenger *messenger);
+  ~Driver();
+  void SetNewValue(G4UIcommand *, G4String);
+
+private:
+  GpsPrimaryGeneratorAction *fGpsPrimaryGeneratorAction;
+
+  G4UIdirectory *fScatterDir;
+  G4UIcmdWithADoubleAndUnit *fSetTotalEnergyCmd;
+};
 
 RunMessenger::RunMessenger(Run *run) : G4UImessenger(), fRun(run)
 {
@@ -16,18 +34,46 @@ RunMessenger::RunMessenger(Run *run) : G4UImessenger(), fRun(run)
   fSetFileNameCmd->SetParameterName("fileName", true);
   fSetFileNameCmd->SetDefaultValue("rlt.root");
   fSetFileNameCmd->AvailableForStates(G4State_PreInit, G4State_Idle);
+
+  fDriver = new Driver(this);
 }
 
 RunMessenger::~RunMessenger()
 {
   delete fSetFileNameCmd;
   delete fFileNameDir;
+  delete fDriver;
 }
 
-void RunMessenger::SetNewValue(G4UIcommand *command, G4String newValues)
+void RunMessenger::SetNewValue(G4UIcommand *cmd, G4String val)
 {
-  if(command == fSetFileNameCmd) {
-    G4cout << "\n---> root name from file: " << newValues << G4endl;
-    fRun->SetRootName(newValues);
+  if(cmd == fSetFileNameCmd) {
+    G4cout << "\n---> root name from file: " << val << G4endl;
+    fRun->SetRootName(val);
+  } else {
+    fDriver->SetNewValue(cmd, val);
   }
+}
+
+RunMessenger::Driver::Driver(RunMessenger *messenger)
+{
+  fGpsPrimaryGeneratorAction =
+      (GpsPrimaryGeneratorAction *)G4RunManager::GetRunManager()->GetUserPrimaryGeneratorAction();
+
+  fSetTotalEnergyCmd = new G4UIcmdWithADoubleAndUnit("/gps/totalEnergy", messenger);
+  fSetTotalEnergyCmd->SetGuidance("Set total energy.");
+  fSetTotalEnergyCmd->SetParameterName("TotalEnergy", false);
+  fSetTotalEnergyCmd->SetUnitCategory("Energy");
+  fSetTotalEnergyCmd->AvailableForStates(G4State_PreInit, G4State_Idle);
+}
+
+RunMessenger::Driver::~Driver()
+{
+  delete fSetTotalEnergyCmd;
+  delete fScatterDir;
+}
+
+void RunMessenger::Driver::SetNewValue(G4UIcommand *cmd, [[maybe_unused]] G4String val)
+{
+  if(cmd == fSetTotalEnergyCmd) { throw std::runtime_error("setting total energy not compatible with CRY"); }
 }

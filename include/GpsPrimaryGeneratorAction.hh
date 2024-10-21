@@ -27,6 +27,7 @@
 #ifndef GpsPrimaryGeneratorAction_h
 #define GpsPrimaryGeneratorAction_h 1
 
+#include "G4Types.hh"
 #include "G4VUserPrimaryGeneratorAction.hh"
 
 class G4GeneralParticleSource;
@@ -45,6 +46,7 @@ public:
 
   void GeneratePrimaries(G4Event *) override;
   void Initialize(DetectorConstruction *);
+  void SetTotalEnergy(G4double);
 
 private:
   G4GeneralParticleSource *fGeneralParticleSource;

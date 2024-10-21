@@ -30,10 +30,13 @@ include(${ROOT_USE_FILE})
 
 #----------------------------------------------------------------------------
 # Find yaml-cpp (required package)
-#
-#set(YAML_CPP_INCLUDE_DIR /opt/homebrew/opt/yaml-cpp/include)
-#set(YAML_CPP_LIBRARY /opt/homebrew/opt/yaml-cpp/lib/libyaml-cpp.dylib)
+#  YAML_CPP_INCLUDE_DIR       - include directory
+#  YAML_CPP_LIBRARY_DIR       - directory containing libraries
+#  YAML_CPP_SHARED_LIBS_BUILT - whether we have built shared libraries or not
+#  YAML_CPP_LIBRARIES         - libraries to link against
 find_package(yaml-cpp REQUIRED)
+include_directories(SYSTEM ${YAML_CPP_INCLUDE_DIR})
+link_directories(${YAML_CPP_LIBRARY_DIR})
 
 #----------------------------------------------------------------------------
 # General compilation and linkage options
@@ -62,20 +65,28 @@ if(ENABLE_GPROF)
     add_compile_options(${GPROF_OPTIONS})
     add_link_options(${GPROF_OPTIONS})
 endif()
-add_compile_options(-g -Wall -Wshadow -Wextra -Werror)
+add_compile_options(-g -Wall -Wshadow -Wextra -Werror -Wno-error=cpp)
+
+#----------------------------------------------------------------------------
+# Process customized TObject derivates
+#
+add_custom_command(OUTPUT Object.cxx Object_rdict.pcm COMMAND rootcint -f
+Object.cxx ${PROJECT_SOURCE_DIR}/include/Object.hh ${PROJECT_SOURCE_DIR}/src/ObjectLinkDef.h
+DEPENDS include/Object.hh src/ObjectLinkDef.h
+IMPLICIT_DEPENDS include/Object.hh)
 
 #----------------------------------------------------------------------------
 # Locate sources and headers for this project
 #
 include_directories(${PROJECT_SOURCE_DIR}/include)
-include_directories(SYSTEM ${Geant4_INCLUDE_DIR} ${ROOT_INCLUDE_DIRS} ${YAML_CPP_INCLUDE_DIR})
+include_directories(SYSTEM ${Geant4_INCLUDE_DIR} ${ROOT_INCLUDE_DIRS})
 file(GLOB sources CONFIGURE_DEPENDS ${PROJECT_SOURCE_DIR}/src/*.cc)
 file(GLOB headers CONFIGURE_DEPENDS ${PROJECT_SOURCE_DIR}/include/*.hh)
 
 #----------------------------------------------------------------------------
 # Add the executable, and link it to the Geant4 libraries
 #
-add_executable(muPos muPos.cc ${sources} ${headers})
+add_executable(muPos muPos.cc ${sources} ${PROJECT_BINARY_DIR}/Object.cxx ${headers})
 target_link_libraries(muPos ${Geant4_LIBRARIES} ${ROOT_LIBRARIES} ${YAML_CPP_LIBRARIES})
 
 #----------------------------------------------------------------------------

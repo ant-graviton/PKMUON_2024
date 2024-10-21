@@ -24,18 +24,22 @@
 // ********************************************************************
 //
 
-#ifndef SteppingAction_h
-#define SteppingAction_h 1
+#include "TrackingAction.hh"
 
-#include "G4UserSteppingAction.hh"
-#include "globals.hh"
+//#include "G4VProcess.hh"
+#include "Run.hh"
 
-class SteppingAction : public G4UserSteppingAction {
-public:
-  SteppingAction();
-  ~SteppingAction() override;
+TrackingAction::TrackingAction() { }
 
-  void UserSteppingAction(const G4Step *) override;
-};
+TrackingAction::~TrackingAction() { }
 
-#endif
+void TrackingAction::PreUserTrackingAction([[maybe_unused]] const G4Track *track)
+{
+  Run::GetInstance()->AddTrack(track);
+  //if(const G4VProcess *process = track->GetCreatorProcess()) {
+  //  G4cout << __PRETTY_FUNCTION__ << ": " << track->GetTrackID() << ": "
+  //         << track->GetParticleDefinition()->GetParticleName() << ", " << process->GetProcessName() << G4endl;
+  //}
+}
+
+void TrackingAction::PostUserTrackingAction([[maybe_unused]] const G4Track *track) { }
