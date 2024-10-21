@@ -90,7 +90,7 @@ void analysis(const char *infile = "../../build/root_file/CryMu.root",
       auto edep = (Edep *)Edeps->UncheckedAt(iedep);
       assert((size_t)edep->Id < E2.size());
       assert(edep->Process < Processes->GetEntries());
-      string process; edep->Process >= 0 ? process = ((Process *)Processes->UncheckedAt(edep->Process))->Name : "";
+      string process = edep->Process >= 0 ? ((Process *)Processes->UncheckedAt(edep->Process))->Name : "";
       cout << "Processing Edep: id=" << edep->Id << " pid=" << edep->Pid << " process=" << process << endl;
       E2[edep->Id] += edep->Value;
       X2[edep->Id] += edep->Value * edep->X;
