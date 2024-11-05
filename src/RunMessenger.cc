@@ -20,7 +20,6 @@ public:
 private:
   PrimaryGeneratorAction *fPrimaryGeneratorAction;
 
-  G4UIdirectory *fScatterDir;
   G4UIcmdWithADoubleAndUnit *fSetTotalEnergyCmd;
 };
 
@@ -69,7 +68,6 @@ RunMessenger::Driver::Driver(RunMessenger *messenger)
 RunMessenger::Driver::~Driver()
 {
   delete fSetTotalEnergyCmd;
-  delete fScatterDir;
 }
 
 void RunMessenger::Driver::SetNewValue(G4UIcommand *cmd, [[maybe_unused]] G4String val)
