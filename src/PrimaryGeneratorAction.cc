@@ -10,6 +10,8 @@
 #include <iomanip>
 
 #include "DetectorConstruction.hh"
+#include "Object.hh"
+#include "Run.hh"
 using namespace std;
 
 #include "G4Event.hh"
@@ -64,7 +66,6 @@ PrimaryGeneratorAction::PrimaryGeneratorAction(const char *inputfile)
   fDetectorMinZ = NAN;
   fDetectorHalfX = NAN;
   fDetectorHalfY = NAN;
-  fHalfTimeWindow = 25 * ns;
 }
 
 //----------------------------------------------------------------------------//
@@ -132,7 +133,6 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event *anEvent)
     //G4Exception(*str);
     G4Exception("PrimaryGeneratorAction", "1", RunMustBeAborted, *str);
   }
-  G4String particleName;
   vect->clear();
   gen->genEvent(vect);
 
@@ -141,13 +141,13 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event *anEvent)
   //  << "CRY generated nparticles=" << vect->size()
   //  << G4endl;
 
+  Event *event = Run::GetInstance()->GetEvent();
+  event->Reset();
   if(__builtin_expect(vect->empty(), false)) return;
-  G4double t0 = vect->at(G4UniformRand() * vect->size())->t() * s;
   fNPrimary = 0;
-  for(unsigned j = 0; j < vect->size(); j++) {
-    particleName = CRYUtils::partName((*vect)[j]->id());
-
+  for(unsigned j = 0, j0 = G4UniformRand() * vect->size(); j < vect->size(); j++) {
     ////....debug output
+    //G4String particleName = CRYUtils::partName((*vect)[j]->id());
     //cout << scientific << setprecision(2) << "  " << setw(12) << left << particleName
     //  << "\tC=" << (*vect)[j]->charge()
     //  << "\tE[MeV]=" << (*vect)[j]->ke()
@@ -156,8 +156,7 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event *anEvent)
     //  << "\tT[s]=" << (*vect)[j]->t()
     //  << endl;
 
-    G4double t = (*vect)[j]->t() * s;
-    if(fabs(t - t0) <= fHalfTimeWindow) {
+    if(j == j0) {  // Keep only one primary to avoid bad spatial normalization.
       particleGun->SetParticleDefinition(particleTable->FindParticle((*vect)[j]->PDGid()));
       particleGun->SetParticleEnergy((*vect)[j]->ke() * MeV);
       //particleGun->SetParticlePosition(G4ThreeVector((*vect)[j]->x()*m, (*vect)[j]->y()*m, (*vect)[j]->z()*m +
@@ -168,9 +167,22 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event *anEvent)
           fDetectorMinZ,
       });
       particleGun->SetParticleMomentumDirection(G4ThreeVector((*vect)[j]->u(), (*vect)[j]->v(), -(*vect)[j]->w()));
-      particleGun->SetParticleTime((*vect)[j]->t() * s);
+      //particleGun->SetParticleTime((*vect)[j]->t() * s);
+      particleGun->SetParticleTime(0);
       particleGun->GeneratePrimaryVertex(anEvent);
       ++fNPrimary;
+      G4double mass = particleGun->GetParticleDefinition()->GetPDGMass(), e = particleGun->GetParticleEnergy() + mass;
+      event->Pid = particleGun->GetParticleDefinition()->GetPDGEncoding();
+      G4ThreeVector v = sqrt(e*e - mass*mass) * particleGun->GetParticleMomentumDirection();
+      event->Px = v.x();
+      event->Py = v.y();
+      event->Pz = v.z();
+      event->E = e;
+      v = particleGun->GetParticlePosition();
+      event->X = v.x();
+      event->Y = v.y();
+      event->Z = v.z();
+      event->T = particleGun->GetParticleTime();
     }
     delete(*vect)[j];
   }

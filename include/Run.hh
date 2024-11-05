@@ -20,6 +20,7 @@ class PrimaryGeneratorAction;
 class DetectorConstruction;
 class G4Step;
 class G4Track;
+class Event;
 
 class Run {
 public:
@@ -36,6 +37,7 @@ public:
   void AutoSave();
   void AddTrack(const G4Track *);
   void AddStep(const G4Step *);
+  Event *GetEvent();
 
 private:
   Run();
@@ -45,7 +47,7 @@ private:
   PrimaryGeneratorAction *fPrimaryGeneratorAction;
   DetectorConstruction *fDetectorConstruction;
   G4String fRootName;
-  TTree *fTree;
+  TTree *fTree, *fParams;
   TFile *fFile;
   G4double fScoringHalfX, fScoringHalfY, fScoringZ;
   G4double fScoringOffsetX, fScoringOffsetY;
@@ -53,6 +55,7 @@ private:
   std::map<std::string, int> fProcessMap;
   std::map<EdepKey, EdepValue> fEdep;
   std::vector<bool> fStatus;
+  G4long fIEvent;
 
   void BuildProcessMap();
 };

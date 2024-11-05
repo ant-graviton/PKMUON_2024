@@ -37,7 +37,6 @@ public:
 public:
   void GeneratePrimaries(G4Event *anEvent);
   G4bool IsPrimary(G4int trackID) const { return trackID > 0 && trackID <= fNPrimary; }
-  G4double GetHalfTimeWindow() const { return fHalfTimeWindow; }
   void InputCRY();
   void UpdateCRY(std::string *MessInput);
   void CRYFromFile(G4String newValue);
@@ -51,7 +50,6 @@ private:
   G4int InputState;
   G4int fNPrimary;
   G4double fDetectorMinZ, fDetectorHalfX, fDetectorHalfY;
-  G4double fHalfTimeWindow;
 };
 
 #endif
