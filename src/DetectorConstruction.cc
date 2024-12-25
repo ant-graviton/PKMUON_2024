@@ -91,7 +91,7 @@ static std::vector<std::string> split(const std::string &str, char c)
 void DetectorConstruction::DefineMaterials()
 {
   std::vector<std::string> paths = {
-    "../config/rpc_material.yaml",
+    "../config/newrpc_material.yaml",
   };
   char *p = getenv("MUPOS_MATERIAL_CONFIG");
   if(p) { paths = split(p, ':'); }
@@ -101,16 +101,16 @@ void DetectorConstruction::DefineMaterials()
 void DetectorConstruction::DefineVolumes()
 {
   std::vector<std::string> paths = {
-    "../config/rpc_readout.yaml",
-    "../config/rpc.yaml",
-    "../config/layout.yaml",
+    "../config/newrpc_readout.yaml",
+    "../config/newrpc.yaml",
+    "../config/newlayout.yaml",
   };
   char *p = getenv("MUPOS_VOLUME_CONFIG");
   if(p) { paths = split(p, ':'); }
   for(const std::string &path : paths) { GeometryConfig::LoadVolumes(path.c_str()); }
 
   fWorld = new G4PVPlacement(0, { 0, 0, 0 }, fLogicalVolumeStore->GetVolume("world"), "world", 0, false, 0, true);
-  G4LogicalVolume *rpc_electrode = fLogicalVolumeStore->GetVolume("rpc_electrode");
+  G4LogicalVolume *rpc_electrode = fLogicalVolumeStore->GetVolume("newrpc_electrode");
   fElectrodeHalfX = dynamic_cast<G4Box *>(rpc_electrode->GetSolid())->GetXHalfLength();
   fElectrodeHalfY = dynamic_cast<G4Box *>(rpc_electrode->GetSolid())->GetYHalfLength();
   fElectrodeHalfZ = dynamic_cast<G4Box *>(rpc_electrode->GetSolid())->GetZHalfLength();
@@ -126,13 +126,13 @@ void DetectorConstruction::DefineVolumes()
   for(size_t i = 0; i < fScoringZs.size(); ++i) {
     fScoringZs[i] = (fElectrodeZs[2 * i] + fElectrodeZs[2 * i + 1]) * 0.5;
   }
-  fScoringGasVolume = fLogicalVolumeStore->GetVolume("rpc_gas");
+  fScoringGasVolume = fLogicalVolumeStore->GetVolume("newrpc_gas");
 }
 
 void DetectorConstruction::DefineFields()
 {
   // Find all unique physical occurrences of rpc_electric.
-  G4String name = "rpc_electric";
+  G4String name = "newrpc_electric";
   std::vector<G4VPhysicalVolume *> rpc_electrics;
   WalkVolume(NULL, [&name, &rpc_electrics](G4VPhysicalVolume *v) {
     if(v->GetLogicalVolume()->GetName() == name) { rpc_electrics.push_back(v); }
@@ -208,7 +208,7 @@ G4VPhysicalVolume *DetectorConstruction::Construct()
 
   DefineMaterials();
   DefineVolumes();
-  DefineFields();
+  //DefineFields();
   PrintVolumes(NULL);
 
   ((PrimaryGeneratorAction *)G4RunManager::GetRunManager()->GetUserPrimaryGeneratorAction())->Initialize(this);
@@ -364,7 +364,7 @@ G4double DetectorConstruction::GetDetectorMinZ() const
 {
   G4double z = 1.0 / 0.0;
   WalkVolume(NULL, [&z](G4VPhysicalVolume *volume, const G4ThreeVector &r, const G4RotationMatrix &) {
-    if(volume->GetLogicalVolume()->GetName() != "rpc") { return; }
+    if(volume->GetLogicalVolume()->GetName() != "newrpc") { return; }
     auto box = dynamic_cast<G4Box *>(volume->GetLogicalVolume()->GetSolid());
     z = std::min(z, r.z() - box->GetZHalfLength());
   });
@@ -373,12 +373,12 @@ G4double DetectorConstruction::GetDetectorMinZ() const
 
 G4double DetectorConstruction::GetDetectorHalfX() const
 {
-  //return dynamic_cast<G4Box *>(fLogicalVolumeStore->GetVolume("rpc")->GetSolid())->GetXHalfLength();  // more precise
+  //return dynamic_cast<G4Box *>(fLogicalVolumeStore->GetVolume("newrpc")->GetSolid())->GetXHalfLength();  // more precise
   return GetScoringHalfX();  // faster
 }
 
 G4double DetectorConstruction::GetDetectorHalfY() const
 {
-  //return dynamic_cast<G4Box *>(fLogicalVolumeStore->GetVolume("rpc")->GetSolid())->GetYHalfLength();  // more precise
+  //return dynamic_cast<G4Box *>(fLogicalVolumeStore->GetVolume("newrpc")->GetSolid())->GetYHalfLength();  // more precise
   return GetScoringHalfY();  // faster
 }
