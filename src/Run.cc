@@ -23,15 +23,18 @@
 #include "G4VProcess.hh"
 #include "G4ios.hh"
 #include "Object.hh"
+#include "PrimaryGeneratorAction.hh"
 #include "RunMessenger.hh"
 
 Run::Run()
 {
   fRunMessenger = new RunMessenger(this);
+  fPrimaryGeneratorAction = (PrimaryGeneratorAction *)G4RunManager::GetRunManager()->GetUserPrimaryGeneratorAction();
   fDetectorConstruction = (DetectorConstruction *)G4RunManager::GetRunManager()->GetUserDetectorConstruction();
   fRootName = "CryMu.root";
   fTree = NULL;
   fFile = NULL;
+  fIEvent = 0;
 }
 
 Run::~Run()
@@ -66,37 +69,44 @@ void Run::InitTree()
   if(!dirpath.empty()) { create_directories(dirpath); }
 
   fFile = TFile::Open(fRootName, "RECREATE");
+
   fTree = new TTree("tree", "tree");
   //fTree->Branch("Tracks", new TClonesArray("Track"));
   fTree->Branch("Edeps", new TClonesArray("Edep"));
+  fTree->Branch("Event", new TClonesArray("Event"));
+  (*(TClonesArray **)fTree->GetBranch("Event")->GetAddress())->ConstructedAt(0);
 
-  // The params tree is only accessed here.
-  TTree *params = new TTree("params", "params");
+  fParams = new TTree("params", "params");
+  fParams->Branch("Params", new TClonesArray("Params"));
+  (*(TClonesArray **)fParams->GetBranch("Params")->GetAddress())->ConstructedAt(0);
+  fParams->Branch("Processes", new TClonesArray("Process"));
 
-  TClonesArray Params("Params");
-  params->Branch("Params", &Params);
-  *((::Params *)Params.ConstructedAt(0)) = *fDetectorConstruction;
-
-  TClonesArray Processes("Process");
-  params->Branch("Processes", &Processes);
   BuildProcessMap();
-  for(auto &[name, id] : fProcessMap) *(::Process *)Processes.ConstructedAt(Processes.GetEntries()) = { id, name };
-
-  params->Fill();
-  params->Write(NULL, params->kOverwrite);
-  params->SetBranchAddress("Params", NULL);
-  params->SetBranchAddress("Processes", NULL);
 }
 
 void Run::SaveTree()
 {
   if(!fFile) { return; }
   fFile->cd();
+
   fTree->Write(NULL, TObject::kOverwrite);
   //delete *(TClonesArray **)fTree->GetBranch("Tracks")->GetAddress();
   delete *(TClonesArray **)fTree->GetBranch("Edeps")->GetAddress();
-  fFile->Close();
+  delete *(TClonesArray **)fTree->GetBranch("Event")->GetAddress();
   fTree = NULL;
+
+  Params *params = (Params *)(*(TClonesArray **)fParams->GetBranch("Params")->GetAddress())->At(0);
+  params->NEvent = fIEvent;
+  *params = *fDetectorConstruction;
+  TClonesArray *Processes = *(TClonesArray **)fParams->GetBranch("Processes")->GetAddress();
+  for(auto &[name, id] : fProcessMap) *(::Process *)Processes->ConstructedAt(Processes->GetEntries()) = { id, name };
+  fParams->Fill();
+  fParams->Write(NULL, TObject::kOverwrite);
+  delete *(TClonesArray **)fParams->GetBranch("Params")->GetAddress();
+  delete *(TClonesArray **)fParams->GetBranch("Processes")->GetAddress();
+  fParams = NULL;
+
+  fFile->Close();
   fFile = NULL;
 }
 
@@ -122,6 +132,7 @@ void Run::FillAndReset()
 
   //Tracks->Clear();
   fEdep.clear();
+  ++fIEvent;
 }
 
 void Run::AutoSave() { fTree->AutoSave("SaveSelf Overwrite"); }
@@ -153,6 +164,7 @@ void Run::AddTrack([[maybe_unused]] const G4Track *track)
 {
   //G4cout << __PRETTY_FUNCTION__ << ": " << track->GetTrackID()
   //  << "(" << track->GetParentID() << ")"
+  //  << ": primary=" << fPrimaryGeneratorAction->IsPrimary(track->GetTrackID())
   //  << G4endl;
   //auto Tracks = *(TClonesArray **)fTree->GetBranch("Tracks")->GetAddress();
   //*(Track *)Tracks->ConstructedAt(Tracks->GetEntries()) = *track;
@@ -170,7 +182,8 @@ void Run::BuildProcessMap()
     if(!processList) continue;
     for(size_t i = 0; i < processList->size(); ++i) {
       G4VProcess *process = (*processList)[i];
-      //G4cout << __PRETTY_FUNCTION__ << ": " << particle->GetParticleName() << ", " << process->GetProcessName() << G4endl;
+      //G4cout << __PRETTY_FUNCTION__ << ": " << particle->GetParticleName() << ", " << process->GetProcessName() <<
+      //G4endl;
       fProcessMap[process->GetProcessName()] = 0;  // Delay numbering to the end.
     }
   }
@@ -180,6 +193,8 @@ void Run::BuildProcessMap()
     G4cout << __PRETTY_FUNCTION__ << ": " << std::setw(3) << id << " " << name << G4endl;
   }
 }
+
+Event *Run::GetEvent() { return (Event *)(*(TClonesArray **)fTree->GetBranch("Event")->GetAddress())->At(0); }
 
 uint64_t Run::GetThreadId()
 {
