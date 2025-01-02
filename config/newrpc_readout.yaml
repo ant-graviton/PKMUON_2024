@@ -44,7 +44,7 @@ newrpc_y_readout_bar:
   solid: box
   x: 2.923 mm
   y: &newrpc_readout_bar_y 2.124 mm
-  z: &newrpc_readout_bar_z 0.1 mm
+  z: *newrpc_readout_bar_z
   material: newrpc_readout_bar
 
 newrpc_readout_gas:
